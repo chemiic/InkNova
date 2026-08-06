@@ -1,11 +1,11 @@
 # Continue here
 
-Phase A monorepo MVP is implemented. Next work is Phase C (design/upload) when ready — see plan.
+Phase A monorepo MVP is implemented. Phase C (design) was started with Polotno and rolled back — paid SDK does not fit. Next: free client-side design (e.g. Fabric.js / Konva) when ready.
 
 ## Done (Phase A)
 
 - pnpm workspaces: `apps/web`, `apps/api`, `packages/shared`
-- Shared types (`Product`, `CartItem`, etc.)
+- Shared types (`Product`, `CartItem`, etc.) — optional `designFileId` / `templateId` reserved for Phase C
 - Nest API: catalog JSON seed (10 products), `MailService`, `POST /api/contact`, throttling, CORS
 - Web: Vite + Tailwind v4, shadcn-style UI, i18n (`nb`/`en`), layout, all Phase A pages
   - Home, Alle produkter, PDP (IKEA size cards), Handlekurv
@@ -23,9 +23,10 @@ pnpm dev:api    # :3000
 pnpm dev:web    # :5173
 ```
 
-## Next (Phase C — not started)
+## Next (Phase C — free stack)
 
-- Design/upload step before add-to-cart (PDF/PNG + templates)
-- `designFileId` / `templateId` required on cart line items
+- Design step before add-to-cart (client-only; no server file storage)
+- Free canvas (Fabric.js or Konva) + PDF export with bleed, or PNG/PDF pick into cart via IndexedDB
+- `designFileId` / `templateId` required on cart line items when design ships
 
 Plan: `requirements and assets/inknova_monorepo_mvp_e324daab.plan.md`

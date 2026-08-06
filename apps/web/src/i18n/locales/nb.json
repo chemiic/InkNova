@@ -34,6 +34,58 @@
     "empty": "Ingen produkter funnet.",
     "loading": "Laster produkter..."
   },
+  "catalog": {
+    "flyers": {
+      "name": "Flyers",
+      "description": "Profesjonelle flyers i høy kvalitet – perfekt for kampanjer og arrangementer.",
+      "leadTime": "3–5 virkedager"
+    },
+    "visittkort": {
+      "name": "Visittkort",
+      "description": "Klassiske visittkort med skarp trykk og flere størrelser.",
+      "leadTime": "3–5 virkedager"
+    },
+    "plakater": {
+      "name": "Plakater",
+      "description": "Plakater i stort format – fra A3 til A0 og populære mål.",
+      "leadTime": "4–6 virkedager"
+    },
+    "klistremerker": {
+      "name": "Klistremerker",
+      "description": "Slitesterke klistremerker i flere kvadratiske størrelser.",
+      "leadTime": "3–5 virkedager"
+    },
+    "arbeidstegninger": {
+      "name": "Arbeidstegninger",
+      "description": "Tekniske tegninger og planer i stort format.",
+      "leadTime": "2–4 virkedager"
+    },
+    "rollup": {
+      "name": "Roll-up",
+      "description": "Komplett roll-up banner 85×200 cm med kassett.",
+      "leadTime": "5–7 virkedager"
+    },
+    "magasin": {
+      "name": "Magasin",
+      "description": "Heftede magasiner i A4 eller A5.",
+      "leadTime": "5–8 virkedager"
+    },
+    "folie": {
+      "name": "Folie",
+      "description": "Tilpasset folie – maks bredde 120 cm, maks høyde 100 cm.",
+      "leadTime": "4–7 virkedager"
+    },
+    "alu-skilt": {
+      "name": "Alu skilt",
+      "description": "Holdbare aluminiumsskilt for innendørs og utendørs bruk.",
+      "leadTime": "5–8 virkedager"
+    },
+    "forex-plate": {
+      "name": "Forex plate",
+      "description": "Lett og stiv Forex-plate til skilting og displays.",
+      "leadTime": "5–8 virkedager"
+    }
+  },
   "product": {
     "size": "Størrelse",
     "quantity": "Antall",

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { catalogName } from '@/lib/catalogI18n'
 import { useCart } from '@/lib/cart'
 import { formatNok } from '@/lib/utils'
 
@@ -26,13 +27,16 @@ export function CartPage() {
 
       <ul className="mt-10 divide-y divide-line">
         {items.map((item) => (
-          <li key={item.id} className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <li
+            key={item.id}
+            className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div>
               <Link
                 to={`/produkter/${item.productSlug}`}
                 className="font-semibold text-ink hover:text-accent"
               >
-                {item.productName}
+                {catalogName(item.productId, item.productName, t)}
               </Link>
               <p className="text-sm text-ink-muted">{item.sizeLabel}</p>
               <p className="mt-1 text-sm font-medium">

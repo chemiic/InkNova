@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { ToastHost } from '@/components/ui/toast'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
 
@@ -10,6 +11,7 @@ export function RootLayout() {
         <Outlet />
       </main>
       <SiteFooter />
+      <ToastHost />
     </div>
   )
 }

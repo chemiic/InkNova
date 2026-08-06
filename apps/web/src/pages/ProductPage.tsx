@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchProduct } from '@/lib/api'
+import { catalogCopy } from '@/lib/catalogI18n'
 import { useCart } from '@/lib/cart'
+import { toast } from '@/lib/toast'
 import { cn, formatNok } from '@/lib/utils'
 
 export function ProductPage() {
@@ -19,13 +21,11 @@ export function ProductPage() {
   const [error, setError] = useState(false)
   const [sizeId, setSizeId] = useState<string | null>(null)
   const [qty, setQty] = useState(1)
-  const [added, setAdded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(false)
-    setAdded(false)
     void fetchProduct(slug)
       .then((data) => {
         if (cancelled) return
@@ -69,7 +69,7 @@ export function ProductPage() {
       qty,
       unitPrice: selectedSize.price,
     })
-    setAdded(true)
+    toast(t('product.added'))
   }
 
   if (loading) {
@@ -91,6 +91,8 @@ export function ProductPage() {
     )
   }
 
+  const copy = catalogCopy(product, t)
+
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
       <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-10">
@@ -104,9 +106,9 @@ export function ProductPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="font-display text-4xl text-ink md:text-5xl">
-            {product.name}
+            {copy.name}
           </h1>
-          <p className="mt-3 text-ink-muted">{product.description}</p>
+          <p className="mt-3 text-ink-muted">{copy.description}</p>
           {selectedSize && (
             <p className="mt-4 text-2xl font-bold text-ink">
               {formatNok(selectedSize.price)}
@@ -137,10 +139,7 @@ export function ProductPage() {
                 <button
                   key={size.id}
                   type="button"
-                  onClick={() => {
-                    setSizeId(size.id)
-                    setAdded(false)
-                  }}
+                  onClick={() => setSizeId(size.id)}
                   className={cn(
                     'rounded-lg border-2 bg-paper-card p-3 text-left transition',
                     sizeId === size.id
@@ -169,7 +168,6 @@ export function ProductPage() {
             onChange={(e) => {
               const n = Number(e.target.value)
               setQty(Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1)
-              setAdded(false)
             }}
             className="mt-2"
           />
@@ -178,11 +176,11 @@ export function ProductPage() {
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between gap-4 border-b border-line py-2">
             <dt className="text-ink-muted">{t('product.leadTime')}</dt>
-            <dd className="font-medium">{product.leadTime}</dd>
+            <dd className="font-medium">{copy.leadTime}</dd>
           </div>
           <div className="flex justify-between gap-4 border-b border-line py-2">
             <dt className="text-ink-muted">{t('product.delivery')}</dt>
-            <dd className="font-medium">{product.delivery.label}</dd>
+            <dd className="font-medium">{copy.deliveryLabel}</dd>
           </div>
           <div className="flex justify-between gap-4 border-b border-line py-2">
             <dt className="text-ink-muted">{t('product.deliveryFee')}</dt>
@@ -194,20 +192,9 @@ export function ProductPage() {
           </div>
         </dl>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            size="lg"
-            disabled={!selectedSize}
-            onClick={handleAdd}
-          >
-            {t('product.addToCart')}
-          </Button>
-          {added && (
-            <span className="text-sm font-medium text-accent">
-              {t('product.added')}
-            </span>
-          )}
-        </div>
+        <Button size="lg" disabled={!selectedSize} onClick={handleAdd}>
+          {t('product.addToCart')}
+        </Button>
       </div>
     </div>
   )

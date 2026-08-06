@@ -4,6 +4,7 @@ import type { Product, ProductCategory } from '@inknova/shared'
 import { ProductCard } from '@/components/ProductCard'
 import { Input } from '@/components/ui/input'
 import { fetchProducts } from '@/lib/api'
+import { catalogCopy } from '@/lib/catalogI18n'
 import { cn } from '@/lib/utils'
 
 const CATEGORIES: Array<ProductCategory | 'all'> = [
@@ -44,12 +45,15 @@ export function ProductsPage() {
     return products.filter((p) => {
       if (category !== 'all' && p.category !== category) return false
       if (!q) return true
+      const copy = catalogCopy(p, t)
       return (
+        copy.name.toLowerCase().includes(q) ||
+        copy.description.toLowerCase().includes(q) ||
         p.name.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q)
       )
     })
-  }, [products, query, category])
+  }, [products, query, category, t])
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">

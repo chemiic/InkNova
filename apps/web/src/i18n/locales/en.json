@@ -34,6 +34,58 @@
     "empty": "No products found.",
     "loading": "Loading products..."
   },
+  "catalog": {
+    "flyers": {
+      "name": "Flyers",
+      "description": "Professional high-quality flyers – perfect for campaigns and events.",
+      "leadTime": "3–5 business days"
+    },
+    "visittkort": {
+      "name": "Business cards",
+      "description": "Classic business cards with sharp print and several sizes.",
+      "leadTime": "3–5 business days"
+    },
+    "plakater": {
+      "name": "Posters",
+      "description": "Large-format posters – from A3 to A0 and popular sizes.",
+      "leadTime": "4–6 business days"
+    },
+    "klistremerker": {
+      "name": "Stickers",
+      "description": "Durable stickers in several square sizes.",
+      "leadTime": "3–5 business days"
+    },
+    "arbeidstegninger": {
+      "name": "Technical drawings",
+      "description": "Technical drawings and plans in large format.",
+      "leadTime": "2–4 business days"
+    },
+    "rollup": {
+      "name": "Roll-up",
+      "description": "Complete roll-up banner 85×200 cm with cassette.",
+      "leadTime": "5–7 business days"
+    },
+    "magasin": {
+      "name": "Magazine",
+      "description": "Stapled magazines in A4 or A5.",
+      "leadTime": "5–8 business days"
+    },
+    "folie": {
+      "name": "Foil",
+      "description": "Custom foil – max width 120 cm, max height 100 cm.",
+      "leadTime": "4–7 business days"
+    },
+    "alu-skilt": {
+      "name": "Aluminium signs",
+      "description": "Durable aluminium signs for indoor and outdoor use.",
+      "leadTime": "5–8 business days"
+    },
+    "forex-plate": {
+      "name": "Forex board",
+      "description": "Light and rigid Forex board for signage and displays.",
+      "leadTime": "5–8 business days"
+    }
+  },
   "product": {
     "size": "Size",
     "quantity": "Quantity",

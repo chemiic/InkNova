@@ -55,7 +55,7 @@ export interface CartItem {
   qty: number;
   /** Snapshot at add-to-cart time */
   unitPrice: MoneyNOK;
-  /** Phase C: optional until design step is required */
+  /** Phase C (free editor later): optional until design step is required */
   designFileId?: string | null;
   templateId?: string | null;
 }

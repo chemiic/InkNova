@@ -3,7 +3,7 @@
 Monorepo for the InkNova print shop: Vite/React storefront + NestJS API + shared types.
 
 **Phase A (current):** catalog, PDP, cart (localStorage), contact form → email, content pages.  
-**Later:** design/upload (C), Vipps checkout (B).
+**Later:** design (C, free client editor — not Polotno), Vipps checkout (B).
 
 ## Structure
 
