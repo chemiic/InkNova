@@ -1,0 +1,85 @@
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Pin,
+} from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+
+const socials = [
+  { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
+  { href: 'https://instagram.com', label: 'Instagram', Icon: Instagram },
+  { href: 'https://tiktok.com', label: 'TikTok', Icon: () => <span className="text-sm font-bold">Tt</span> },
+  { href: 'https://linkedin.com', label: 'LinkedIn', Icon: Linkedin },
+  { href: 'https://pinterest.com', label: 'Pinterest', Icon: Pin },
+]
+
+const footerLinks = [
+  { to: '/produkter', key: 'products' },
+  { to: '/faq', key: 'faq' },
+  { to: '/om-oss', key: 'about' },
+  { to: '/kontakt', key: 'contact' },
+  { to: '/artikler', key: 'articles' },
+  { to: '/angrerett', key: 'terms' },
+] as const
+
+export function SiteFooter() {
+  const { t } = useTranslation()
+
+  return (
+    <footer className="mt-auto border-t border-line bg-paper">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2">
+        <div>
+          <p className="font-display text-3xl text-ink">
+            Ink<span className="text-accent">Nova</span>
+          </p>
+          <p className="mt-2 text-ink-muted">{t('footer.tagline')}</p>
+          <ul className="mt-8 space-y-3">
+            {footerLinks.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className="text-lg font-semibold text-ink hover:text-accent"
+                >
+                  {t(`nav.${link.key}`)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="space-y-3 text-sm text-ink-muted">
+          <p>
+            <a
+              className="text-warm hover:underline"
+              href="mailto:Kontakt@inknova.no"
+            >
+              Kontakt@inknova.no
+            </a>
+          </p>
+          <p>
+            {t('contact.org')}: 832028452
+          </p>
+          <div className="flex flex-wrap gap-3 pt-4">
+            {socials.map(({ href, label, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper-card text-ink hover:border-accent hover:text-accent"
+              >
+                <Icon className="h-4 w-4" />
+              </a>
+            ))}
+          </div>
+          <p className="pt-6 text-xs">
+            © {new Date().getFullYear()} InkNova. {t('footer.rights')}
+          </p>
+        </div>
+      </div>
+    </footer>
+  )
+}

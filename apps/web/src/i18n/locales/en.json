@@ -1,0 +1,135 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "All products",
+    "about": "About us",
+    "faq": "FAQ",
+    "contact": "Contact us",
+    "articles": "Articles",
+    "cart": "Cart",
+    "menu": "Menu",
+    "terms": "Returns & complaints",
+    "privacy": "Privacy"
+  },
+  "announcement": "Welcome to InkNova – quality print delivered across Norway",
+  "home": {
+    "brand": "InkNova",
+    "headline": "Print that looks sharp – and feels simple",
+    "sub": "Flyers, business cards, posters and signage. Choose size, upload design later, get it by post.",
+    "ctaProducts": "Browse products",
+    "ctaContact": "Contact us",
+    "featured": "Popular products"
+  },
+  "products": {
+    "title": "All products",
+    "searchPlaceholder": "Search for business cards, flyers...",
+    "all": "All",
+    "categories": {
+      "trykk": "Print",
+      "skilt": "Signs & banners",
+      "storformat": "Large format",
+      "messe": "Trade shows"
+    },
+    "checkPrice": "Check price",
+    "empty": "No products found.",
+    "loading": "Loading products..."
+  },
+  "product": {
+    "size": "Size",
+    "quantity": "Quantity",
+    "delivery": "Delivery",
+    "leadTime": "Lead time",
+    "deliveryFee": "Shipping",
+    "addToCart": "Add to cart",
+    "added": "Added to cart",
+    "customSize": "Custom size",
+    "maxSize": "Max {{width}}×{{height}} cm",
+    "fromPrice": "From {{price}}",
+    "moreSizes": "+{{count}}"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty.",
+    "continue": "Continue shopping",
+    "total": "Total",
+    "checkoutSoon": "Checkout coming soon",
+    "remove": "Remove",
+    "qty": "Qty"
+  },
+  "contact": {
+    "title": "Contact us",
+    "email": "Your email",
+    "name": "Name",
+    "message": "Message",
+    "send": "Send",
+    "success": "Thanks! We'll get back to you soon.",
+    "error": "Something went wrong. Please try again later.",
+    "org": "Org. no.",
+    "info": "Questions about products, files or delivery? Send us a message."
+  },
+  "about": {
+    "title": "About InkNova",
+    "p1": "InkNova is a print studio for businesses and individuals who want sharp print without a complicated order flow.",
+    "p2": "We partner with Copycat Lillestrøm for production and deliver finished print by post.",
+    "p3": "From flyers and business cards to roll-ups, foil and signage – you pick the format, we handle the rest."
+  },
+  "faq": {
+    "title": "FAQ – Questions & answers",
+    "intro": "Common questions below. Can't find what you need? Contact us.",
+    "items": [
+      {
+        "q": "How do I order?",
+        "a": "Choose product and size, add to cart, upload your design (coming soon) and pay. We'll send it by post."
+      },
+      {
+        "q": "Which file formats do you accept?",
+        "a": "PDF or PNG. For print-ready PDF we recommend 3 mm bleed and crop marks."
+      },
+      {
+        "q": "Can I pay with Vipps?",
+        "a": "Yes – Vipps and card are coming in checkout. Until then, contact us to place an order."
+      },
+      {
+        "q": "How long is delivery?",
+        "a": "It varies by product and day. See lead time on the product page – typically 3–8 business days."
+      },
+      {
+        "q": "Do I have a right of withdrawal?",
+        "a": "Products are made to order, so withdrawal rights under § 22 letter e do not apply. See Returns & complaints."
+      }
+    ]
+  },
+  "articles": {
+    "title": "Articles",
+    "intro": "Tips on print, files and design.",
+    "readMore": "Read more",
+    "items": [
+      {
+        "slug": "trykkklart-pdf",
+        "title": "What is a print-ready PDF?",
+        "excerpt": "Bleed, crop marks and why they matter.",
+        "body": "A print-ready PDF is production-ready: 3 mm bleed, crop marks and the right colour profile. When uploading to InkNova, use PDF or PNG. For best results, export with bleed and crop marks from your design tool."
+      },
+      {
+        "slug": "velge-storrelse",
+        "title": "How to choose the right size",
+        "excerpt": "A-formats, business card sizes and when to go custom.",
+        "body": "A5, A4 and A6 are common for flyers. Business cards have several centimetre options. Foil can be ordered up to 120×100 cm. See the product page for all options – the price updates when you change size."
+      }
+    ]
+  },
+  "terms": {
+    "title": "Withdrawal, complaints and claims",
+    "intro": "At InkNova we want you to be happy with your order. Below are your rights when buying made-to-order print."
+  },
+  "footer": {
+    "tagline": "Print studio for Norway",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "back": "Back",
+    "language": "Language"
+  }
+}

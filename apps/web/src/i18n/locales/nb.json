@@ -1,0 +1,135 @@
+{
+  "nav": {
+    "home": "Hjem",
+    "products": "Alle produkter",
+    "about": "Om oss",
+    "faq": "FAQ",
+    "contact": "Kontakt oss",
+    "articles": "Artikler",
+    "cart": "Handlekurv",
+    "menu": "Meny",
+    "terms": "Angrerett og reklamasjon",
+    "privacy": "Personvern"
+  },
+  "announcement": "Velkommen til InkNova – kvalitetstrykk levert i hele Norge",
+  "home": {
+    "brand": "InkNova",
+    "headline": "Trykk som ser skarpt ut – og føles enkelt",
+    "sub": "Flyers, visittkort, plakater og skilting. Velg størrelse, last opp design senere, få levert i posten.",
+    "ctaProducts": "Se alle produkter",
+    "ctaContact": "Kontakt oss",
+    "featured": "Populære produkter"
+  },
+  "products": {
+    "title": "Alle produkter",
+    "searchPlaceholder": "Søk etter visittkort, flyer...",
+    "all": "Alle",
+    "categories": {
+      "trykk": "Trykksaker",
+      "skilt": "Skilt og banner",
+      "storformat": "Storformat",
+      "messe": "Messe og konferanse"
+    },
+    "checkPrice": "Sjekk pris",
+    "empty": "Ingen produkter funnet.",
+    "loading": "Laster produkter..."
+  },
+  "product": {
+    "size": "Størrelse",
+    "quantity": "Antall",
+    "delivery": "Levering",
+    "leadTime": "Leveringstid",
+    "deliveryFee": "Frakt",
+    "addToCart": "Legg i handlekurv",
+    "added": "Lagt i handlekurven",
+    "customSize": "Egendefinert størrelse",
+    "maxSize": "Maks {{width}}×{{height}} cm",
+    "fromPrice": "Fra {{price}}",
+    "moreSizes": "+{{count}}"
+  },
+  "cart": {
+    "title": "Handlekurv",
+    "empty": "Handlekurven er tom.",
+    "continue": "Fortsett å handle",
+    "total": "Sum",
+    "checkoutSoon": "Checkout kommer snart",
+    "remove": "Fjern",
+    "qty": "Antall"
+  },
+  "contact": {
+    "title": "Kontakt oss",
+    "email": "Din e-post",
+    "name": "Navn",
+    "message": "Melding",
+    "send": "Send",
+    "success": "Takk! Vi tar kontakt så snart vi kan.",
+    "error": "Noe gikk galt. Prøv igjen senere.",
+    "org": "Org. nr.",
+    "info": "Spørsmål om produkter, filer eller levering? Send oss en melding."
+  },
+  "about": {
+    "title": "Om InkNova",
+    "p1": "InkNova er et trykkeri for bedrifter og privatpersoner som vil ha skarpt trykk uten komplisert bestilling.",
+    "p2": "Vi samarbeider med Copycat Lillestrøm for produksjon, og leverer ferdige trykksaker i posten.",
+    "p3": "Fra flyers og visittkort til roll-up, folie og skilting – du velger format, vi tar oss av resten."
+  },
+  "faq": {
+    "title": "FAQ – Spørsmål og svar",
+    "intro": "Her finner du svar på vanlige spørsmål. Fant du ikke det du trengte? Kontakt oss.",
+    "items": [
+      {
+        "q": "Hvordan bestiller jeg?",
+        "a": "Velg produkt og størrelse, legg i handlekurv, last opp design (kommer snart) og betal. Du får varen tilsendt i posten."
+      },
+      {
+        "q": "Hvilke filformater godtar dere?",
+        "a": "PDF eller PNG. For trykkklart PDF anbefaler vi 3 mm bleed og skjæremerker."
+      },
+      {
+        "q": "Kan jeg betale med Vipps?",
+        "a": "Ja – Vipps og kort kommer i checkout. Inntil videre kan du kontakte oss for bestilling."
+      },
+      {
+        "q": "Hvor lang er leveringstiden?",
+        "a": "Den varierer per produkt og dag. Se leveringstid på produktsiden – typisk 3–8 virkedager."
+      },
+      {
+        "q": "Gjelder angreretten?",
+        "a": "Produktene er spesialtilpasset, så angreretten gjelder ikke etter angrerettloven § 22 bokstav e. Se siden Angrerett og reklamasjon."
+      }
+    ]
+  },
+  "articles": {
+    "title": "Artikler",
+    "intro": "Tips om trykk, filer og design.",
+    "readMore": "Les mer",
+    "items": [
+      {
+        "slug": "trykkklart-pdf",
+        "title": "Hva er et trykkklart PDF?",
+        "excerpt": "Bleed, skjæremerker og hvorfor det betyr noe for resultatet.",
+        "body": "Et trykkklart PDF er en fil som er klar for produksjon: 3 mm bleed (utfallende), skjæremerker og riktig fargeprofil. Når du laster opp egne filer til InkNova, anbefaler vi PDF eller PNG. For beste resultat – eksporter med bleed og crop marks fra designprogrammet ditt."
+      },
+      {
+        "slug": "velge-storrelse",
+        "title": "Slik velger du riktig størrelse",
+        "excerpt": "A-formater, visittkortmål og når du bør gå custom.",
+        "body": "A5, A4 og A6 er vanlige for flyers. Visittkort har flere centimeter-varianter. For folie kan du bestille innenfor maks 120×100 cm. Se produktsiden for alle alternativer – prisen oppdateres når du bytter størrelse."
+      }
+    ]
+  },
+  "terms": {
+    "title": "Angrerett, reklamasjon og klagerett",
+    "intro": "Hos InkNova ønsker vi at du skal være fornøyd. Nedenfor finner du rettigheter ved kjøp av spesialproduserte trykksaker."
+  },
+  "footer": {
+    "tagline": "Trykkstudio for Norge",
+    "rights": "Alle rettigheter forbeholdt."
+  },
+  "common": {
+    "loading": "Laster...",
+    "error": "Noe gikk galt",
+    "back": "Tilbake",
+    "language": "Språk"
+  }
+}

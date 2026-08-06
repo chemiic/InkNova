@@ -1,0 +1,166 @@
+{
+  "deliveryDefaults": {
+    "label": "3–5 virkedager",
+    "fee": 99
+  },
+  "products": [
+    {
+      "id": "flyers",
+      "slug": "flyers",
+      "category": "trykk",
+      "name": "Flyers",
+      "description": "Profesjonelle flyers i høy kvalitet – perfekt for kampanjer og arrangementer.",
+      "imageUrl": "/products/flyers.svg",
+      "leadTime": "3–5 virkedager",
+      "delivery": { "label": "3–5 virkedager", "fee": 99 },
+      "sizes": [
+        { "id": "a6", "label": "A6", "price": 299 },
+        { "id": "a5", "label": "A5", "price": 399 },
+        { "id": "a4", "label": "A4", "price": 499 }
+      ]
+    },
+    {
+      "id": "visittkort",
+      "slug": "visittkort",
+      "category": "trykk",
+      "name": "Visittkort",
+      "description": "Klassiske visittkort med skarp trykk og flere størrelser.",
+      "imageUrl": "/products/visittkort.svg",
+      "leadTime": "3–5 virkedager",
+      "delivery": { "label": "3–5 virkedager", "fee": 79 },
+      "sizes": [
+        { "id": "9x5", "label": "9×5 cm", "price": 349 },
+        { "id": "9x5.5", "label": "9×5,5 cm", "price": 369 },
+        { "id": "8.5x5", "label": "8,5×5 cm", "price": 349 },
+        { "id": "8.5x5.5", "label": "8,5×5,5 cm", "price": 369 }
+      ]
+    },
+    {
+      "id": "plakater",
+      "slug": "plakater",
+      "category": "trykk",
+      "name": "Plakater",
+      "description": "Plakater i stort format – fra A3 til A0 og populære mål.",
+      "imageUrl": "/products/plakater.svg",
+      "leadTime": "4–6 virkedager",
+      "delivery": { "label": "4–6 virkedager", "fee": 149 },
+      "sizes": [
+        { "id": "a3", "label": "A3", "price": 199 },
+        { "id": "a2", "label": "A2", "price": 299 },
+        { "id": "a1", "label": "A1", "price": 449 },
+        { "id": "a0", "label": "A0", "price": 699 },
+        { "id": "50x70", "label": "50×70 cm", "price": 349 },
+        { "id": "70x100", "label": "70×100 cm", "price": 549 }
+      ]
+    },
+    {
+      "id": "klistremerker",
+      "slug": "klistremerker",
+      "category": "trykk",
+      "name": "Klistremerker",
+      "description": "Slitesterke klistremerker i flere kvadratiske størrelser.",
+      "imageUrl": "/products/klistremerker.svg",
+      "leadTime": "3–5 virkedager",
+      "delivery": { "label": "3–5 virkedager", "fee": 79 },
+      "sizes": [
+        { "id": "5x5", "label": "5×5 cm", "price": 199 },
+        { "id": "8x8", "label": "8×8 cm", "price": 249 },
+        { "id": "10x10", "label": "10×10 cm", "price": 299 },
+        { "id": "15x15", "label": "15×15 cm", "price": 399 }
+      ]
+    },
+    {
+      "id": "arbeidstegninger",
+      "slug": "arbeidstegninger",
+      "category": "trykk",
+      "name": "Arbeidstegninger",
+      "description": "Tekniske tegninger og planer i stort format.",
+      "imageUrl": "/products/arbeidstegninger.svg",
+      "leadTime": "2–4 virkedager",
+      "delivery": { "label": "2–4 virkedager", "fee": 129 },
+      "sizes": [
+        { "id": "a3", "label": "A3", "price": 149 },
+        { "id": "a2", "label": "A2", "price": 229 },
+        { "id": "a1", "label": "A1", "price": 349 },
+        { "id": "a0", "label": "A0", "price": 499 }
+      ]
+    },
+    {
+      "id": "rollup",
+      "slug": "rollup",
+      "category": "messe",
+      "name": "Roll-up",
+      "description": "Komplett roll-up banner 85×200 cm med kassett.",
+      "imageUrl": "/products/rollup.svg",
+      "leadTime": "5–7 virkedager",
+      "delivery": { "label": "5–7 virkedager", "fee": 199 },
+      "sizes": [{ "id": "85x200", "label": "85×200 cm", "price": 1299 }]
+    },
+    {
+      "id": "magasin",
+      "slug": "magasin",
+      "category": "trykk",
+      "name": "Magasin",
+      "description": "Heftede magasiner i A4 eller A5.",
+      "imageUrl": "/products/magasin.svg",
+      "leadTime": "5–8 virkedager",
+      "delivery": { "label": "5–8 virkedager", "fee": 149 },
+      "sizes": [
+        { "id": "a5", "label": "A5", "price": 899 },
+        { "id": "a4", "label": "A4", "price": 1199 }
+      ]
+    },
+    {
+      "id": "folie",
+      "slug": "folie",
+      "category": "storformat",
+      "name": "Folie",
+      "description": "Tilpasset folie – maks bredde 120 cm, maks høyde 100 cm.",
+      "imageUrl": "/products/folie.svg",
+      "leadTime": "4–7 virkedager",
+      "delivery": { "label": "4–7 virkedager", "fee": 149 },
+      "sizes": [],
+      "customSize": {
+        "maxWidthCm": 120,
+        "maxHeightCm": 100,
+        "basePrice": 599
+      }
+    },
+    {
+      "id": "alu-skilt",
+      "slug": "alu-skilt",
+      "category": "skilt",
+      "name": "Alu skilt",
+      "description": "Holdbare aluminiumsskilt for innendørs og utendørs bruk.",
+      "imageUrl": "/products/alu-skilt.svg",
+      "leadTime": "5–8 virkedager",
+      "delivery": { "label": "5–8 virkedager", "fee": 199 },
+      "sizes": [
+        { "id": "a3", "label": "A3", "price": 499 },
+        { "id": "a2", "label": "A2", "price": 699 },
+        { "id": "a1", "label": "A1", "price": 999 },
+        { "id": "a0", "label": "A0", "price": 1499 },
+        { "id": "50x70", "label": "50×70 cm", "price": 799 },
+        { "id": "70x100", "label": "70×100 cm", "price": 1199 }
+      ]
+    },
+    {
+      "id": "forex-plate",
+      "slug": "forex-plate",
+      "category": "skilt",
+      "name": "Forex plate",
+      "description": "Lett og stiv Forex-plate til skilting og displays.",
+      "imageUrl": "/products/forex-plate.svg",
+      "leadTime": "5–8 virkedager",
+      "delivery": { "label": "5–8 virkedager", "fee": 199 },
+      "sizes": [
+        { "id": "a3", "label": "A3", "price": 399 },
+        { "id": "a2", "label": "A2", "price": 549 },
+        { "id": "a1", "label": "A1", "price": 799 },
+        { "id": "a0", "label": "A0", "price": 1199 },
+        { "id": "50x70", "label": "50×70 cm", "price": 649 },
+        { "id": "70x100", "label": "70×100 cm", "price": 949 }
+      ]
+    }
+  ]
+}

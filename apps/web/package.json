@@ -1,0 +1,38 @@
+{
+  "name": "@inknova/web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "tsc -b --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@inknova/shared": "workspace:*",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-slot": "^1.1.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "i18next": "^24.2.3",
+    "lucide-react": "^0.483.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-i18next": "^15.4.1",
+    "react-router-dom": "^7.4.0",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.14",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "esbuild": "0.27.0",
+    "tailwindcss": "^4.0.14",
+    "typescript": "~5.8.2",
+    "vite": "^8.2.0"
+  }
+}
