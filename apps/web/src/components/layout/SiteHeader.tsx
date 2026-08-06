@@ -23,12 +23,8 @@ export function SiteHeader() {
   const isNb = i18n.language.startsWith('nb')
 
   return (
-    <header className="sticky top-0 z-50">
-      <div className="bg-ink px-4 py-2 text-center text-sm font-medium text-white/90">
-        <StableI18nText i18nKey="announcement" />
-      </div>
-      <div className="border-b border-white/10 bg-ink text-white">
-        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[minmax(7rem,auto)_1fr_minmax(7.5rem,auto)] items-center gap-3 px-4">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-ink text-white">
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[minmax(7rem,auto)_1fr_minmax(7.5rem,auto)] items-center gap-3 px-4">
           <Link to="/" className="justify-self-start" aria-label="InkNova">
             <Logo color="#fff" className="h-8 sm:h-9" />
           </Link>
@@ -85,35 +81,34 @@ export function SiteHeader() {
               {open ? <X /> : <Menu />}
             </Button>
           </div>
-        </div>
-
-        {open && (
-          <div className="border-t border-white/10 px-4 py-4 md:hidden">
-            <div className="flex flex-col gap-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="text-base font-medium text-white/90"
-                  onClick={() => setOpen(false)}
-                >
-                  {t(`nav.${link.key}`)}
-                </Link>
-              ))}
-              <button
-                type="button"
-                className="text-left text-sm text-white/70"
-                onClick={() => {
-                  void i18n.changeLanguage(isNb ? 'en' : 'nb')
-                  setOpen(false)
-                }}
-              >
-                {t('common.language')}: {isNb ? 'EN' : 'NO'}
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {open && (
+        <div className="border-t border-white/10 px-4 py-4 md:hidden">
+          <div className="flex flex-col gap-3">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-base font-medium text-white/90"
+                onClick={() => setOpen(false)}
+              >
+                {t(`nav.${link.key}`)}
+              </Link>
+            ))}
+            <button
+              type="button"
+              className="text-left text-sm text-white/70"
+              onClick={() => {
+                void i18n.changeLanguage(isNb ? 'en' : 'nb')
+                setOpen(false)
+              }}
+            >
+              {t('common.language')}: {isNb ? 'EN' : 'NO'}
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
