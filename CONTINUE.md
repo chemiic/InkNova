@@ -1,26 +1,19 @@
-# Continue here (WIP — Phase A)
+# Continue here
 
-Paused mid-implementation of Phase A monorepo. Resume from this checkpoint.
+Phase A monorepo MVP is implemented. Next work is Phase C (design/upload) when ready — see plan.
 
-## Done
+## Done (Phase A)
 
 - pnpm workspaces: `apps/web`, `apps/api`, `packages/shared`
 - Shared types (`Product`, `CartItem`, etc.)
-- Nest API: `CatalogModule` + JSON `catalog.json` seed (10 products), `MailService` (Nodemailer), `POST /api/contact`, throttling, CORS
-- Web foundations: Vite + Tailwind v4, shadcn-style UI kits, i18n (`nb`/`en`), header/footer, `ProductCard`, cart (`localStorage`), API client
-- Env examples: `apps/api/.env.example` (local `.env` is gitignored, `MAIL_DRY_RUN=true`)
+- Nest API: catalog JSON seed (10 products), `MailService`, `POST /api/contact`, throttling, CORS
+- Web: Vite + Tailwind v4, shadcn-style UI, i18n (`nb`/`en`), layout, all Phase A pages
+  - Home, Alle produkter, PDP (IKEA size cards), Handlekurv
+  - Om oss, FAQ, Kontakt, Artikler (+ detail), Angrerett
+- Product placeholder SVGs in `apps/web/public/products/`
+- Deploy notes: root README, `ecosystem.config.cjs`, Nginx sketch
 
-## Not done yet (finish Phase A)
-
-1. **Web pages / routing** — replace default Vite `App.tsx`; add routes + pages:
-   - Home, Alle produkter, Product PDP (IKEA size cards), Handlekurv
-   - Om oss, FAQ, Kontakt form, Artikler (+ article detail), Angrerett
-2. **Product placeholder images** — `/public/products/*.svg` referenced by catalog
-3. **Wire app** — `main.tsx` → router + i18n; remove boilerplate
-4. **Build verify** — `pnpm --filter @inknova/shared build`, run api + web, fix TS
-5. **Deploy notes** — root README, `ecosystem.config.cjs`, Nginx snippet
-
-## Quick start after pull
+## Quick start
 
 ```bash
 pnpm install
@@ -30,4 +23,9 @@ pnpm dev:api    # :3000
 pnpm dev:web    # :5173
 ```
 
-Plan file (do not edit unless iterating plan): Cursor plans `inknova_monorepo_mvp_e324daab`.
+## Next (Phase C — not started)
+
+- Design/upload step before add-to-cart (PDF/PNG + templates)
+- `designFileId` / `templateId` required on cart line items
+
+Plan: `requirements and assets/inknova_monorepo_mvp_e324daab.plan.md`

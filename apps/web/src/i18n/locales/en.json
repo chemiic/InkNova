@@ -120,7 +120,49 @@
   },
   "terms": {
     "title": "Withdrawal, complaints and claims",
-    "intro": "At InkNova we want you to be happy with your order. Below are your rights when buying made-to-order print."
+    "intro": "At InkNova we want you to be happy with the products you order. Below is information about your rights when buying made-to-order print.",
+    "withdrawal": {
+      "title": "Right of withdrawal",
+      "p1": "All products ordered from InkNova are produced to the customer's specifications. This applies when you:",
+      "bullets": [
+        "design the product yourself in our webshop",
+        "upload finished print files",
+        "use our templates and customise them (e.g. replace logo, text or images)"
+      ],
+      "p2": "Production starts shortly after the order is placed. Because products are made to order and cannot be resold, the right of withdrawal under the Cancellation Act § 22 letter e does not apply.",
+      "p3": "Please carefully check design, text, images, colours, measurements and other information before completing your order."
+    },
+    "complaint": {
+      "title": "Right to complain",
+      "p1": "You have a right to complain under the Consumer Purchases Act if the product has a production defect or differs from what was agreed.",
+      "applies": "The right to complain applies if, for example:",
+      "appliesList": [
+        "the product was made with the wrong material or size",
+        "the print has a production defect",
+        "you received the wrong item",
+        "the item was damaged in delivery due to production or packaging"
+      ],
+      "notApplies": "The right to complain does not apply if the fault is due to:",
+      "notAppliesList": [
+        "typos, layout errors or other issues in a design you submitted, uploaded or approved",
+        "errors in finished files provided by the customer",
+        "errors or defects in text, logo or images placed in our templates by the customer",
+        "images with too low resolution",
+        "colours or graphics you added or changed in a template",
+        "minor colour differences between screen and print"
+      ]
+    },
+    "how": {
+      "title": "How to complain",
+      "p1": "If you find a fault, contact us as soon as possible and within a reasonable time after discovering it. Send us:",
+      "list": ["order number", "a description of the fault", "clear photos of the product"],
+      "p2": "We assess complaints as quickly as possible. If the complaint is justified, we will normally offer a reprint, fix, price reduction or refund in line with applicable law."
+    },
+    "before": {
+      "title": "Important before ordering",
+      "p1": "As a customer you are responsible for the design and content you submit being correct. InkNova does not check or proofread text, layout, spelling or image quality before production — including when using our templates or uploading finished files.",
+      "p2": "By placing an order you confirm that the design has been checked and is ready for production."
+    }
   },
   "footer": {
     "tagline": "Print studio for Norway",

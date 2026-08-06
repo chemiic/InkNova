@@ -120,7 +120,49 @@
   },
   "terms": {
     "title": "Angrerett, reklamasjon og klagerett",
-    "intro": "Hos InkNova ønsker vi at du skal være fornøyd. Nedenfor finner du rettigheter ved kjøp av spesialproduserte trykksaker."
+    "intro": "Hos InkNova ønsker vi at du skal være fornøyd med produktene du bestiller. Nedenfor finner du informasjon om hvilke rettigheter du har ved kjøp av spesialproduserte trykksaker.",
+    "withdrawal": {
+      "title": "Angrerett",
+      "p1": "Alle produkter som bestilles hos InkNova produseres etter kundens egne spesifikasjoner. Dette gjelder både når du:",
+      "bullets": [
+        "designer produktet selv i vår nettbutikk",
+        "laster opp ferdige trykkfiler",
+        "benytter våre maler og tilpasser disse (for eksempel ved å bytte ut logo, tekst eller bilder i et ferdig design)"
+      ],
+      "p2": "Produksjonen starter kort tid etter at bestillingen er sendt inn. Ettersom produktene er spesialtilpasset og ikke kan selges videre til andre, gjelder ikke angreretten etter angrerettloven § 22 bokstav e.",
+      "p3": "Vi anbefaler derfor at du kontrollerer design, tekst, bilder, farger, mål og annen informasjon nøye før du fullfører bestillingen."
+    },
+    "complaint": {
+      "title": "Reklamasjonsrett",
+      "p1": "Du har reklamasjonsrett i henhold til forbrukerkjøpsloven dersom produktet har en produksjonsfeil eller avviker fra det som er avtalt.",
+      "applies": "Reklamasjonsretten gjelder blant annet dersom:",
+      "appliesList": [
+        "produktet er produsert med feil materiale eller størrelse",
+        "trykket har produksjonsfeil",
+        "du har mottatt feil vare",
+        "varen er skadet ved levering som skyldes produksjon eller emballering"
+      ],
+      "notApplies": "Reklamasjonsretten gjelder ikke dersom feilen skyldes:",
+      "notAppliesList": [
+        "skrivefeil, layoutfeil eller andre forhold i designet som kunden selv har sendt inn, lastet opp eller godkjent",
+        "feil i ferdige filer som er levert av kunden",
+        "feil eller mangler i tekst, logo eller bilder som er plassert i våre maler av kunden",
+        "bilder med for lav oppløsning",
+        "valg av farger eller grafikk som kunden selv har lagt inn eller endret i en mal",
+        "små fargeavvik mellom skjerm og ferdig trykk, da farger kan oppleves ulikt på ulike skjermer og i trykk"
+      ]
+    },
+    "how": {
+      "title": "Slik reklamerer du",
+      "p1": "Oppdager du en feil ved produktet, ber vi deg kontakte oss så snart som mulig og innen rimelig tid etter at feilen ble oppdaget. Send oss:",
+      "list": ["ordrenummer", "en beskrivelse av feilen", "tydelige bilder av produktet"],
+      "p2": "Vi vurderer reklamasjonen så raskt som mulig. Dersom reklamasjonen er berettiget, vil vi normalt tilby omtrykk, utbedring, prisavslag eller refusjon i samsvar med gjeldende lovverk."
+    },
+    "before": {
+      "title": "Viktig før bestilling",
+      "p1": "Som kunde er du ansvarlig for at designet og innholdet du sender inn er korrekt. InkNova foretar ikke kontroll eller korrektur av tekst, layout, stavefeil eller bildekvalitet før produksjon – heller ikke ved bruk av våre maler eller ved opplasting av ferdige filer.",
+      "p2": "Ved å sende inn bestillingen bekrefter du at designet er kontrollert og klart for produksjon."
+    }
   },
   "footer": {
     "tagline": "Trykkstudio for Norge",

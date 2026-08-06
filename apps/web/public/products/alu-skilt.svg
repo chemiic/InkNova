@@ -1,0 +1,10 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="alu-skilt">
+  <rect width="400" height="300" fill="#eceae6"/>
+  <rect x="80" y="50" width="240" height="180" rx="8" fill="#fff" stroke="#4a5568" stroke-width="3"/>
+  <rect x="110" y="80" width="180" height="12" rx="2" fill="#4a5568" opacity="0.35"/>
+  <rect x="110" y="108" width="140" height="8" rx="2" fill="#142033" opacity="0.2"/>
+  <rect x="110" y="128" width="160" height="8" rx="2" fill="#142033" opacity="0.15"/>
+  <rect x="110" y="148" width="120" height="8" rx="2" fill="#142033" opacity="0.12"/>
+  <circle cx="300" cy="200" r="28" fill="#4a5568" opacity="0.85"/>
+  <text x="200" y="270" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#142033">ALU-SKILT</text>
+</svg>

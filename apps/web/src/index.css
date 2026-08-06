@@ -2,16 +2,17 @@
 
 @theme {
   --font-sans: "DM Sans", "Segoe UI", sans-serif;
-  --font-display: "Fraunces", "Georgia", serif;
+  --font-display: "Outfit", "DM Sans", sans-serif;
 
-  --color-ink: #142033;
-  --color-ink-muted: #4a5568;
-  --color-paper: #f7f5f2;
+  /* Monochrome brand — no teal/orange from earlier reference */
+  --color-ink: #0a0a0a;
+  --color-ink-muted: #6b6b6b;
+  --color-paper: #f2f2f2;
   --color-paper-card: #ffffff;
-  --color-accent: #0f9d94;
-  --color-accent-hover: #0d8680;
-  --color-warm: #e07a3d;
-  --color-line: #e2ddd6;
+  --color-accent: #1a1a1a;
+  --color-accent-hover: #333333;
+  --color-warm: #8a8a8a;
+  --color-line: #e0e0e0;
 }
 
 @layer base {
@@ -28,4 +29,34 @@
   #root {
     min-height: 100vh;
   }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@utility animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+
+@utility animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
 }

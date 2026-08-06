@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { Logo } from '@/components/Logo'
 
 const socials = [
   { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
@@ -31,16 +32,14 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-line bg-paper">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2">
         <div>
-          <p className="font-display text-3xl text-ink">
-            Ink<span className="text-accent">Nova</span>
-          </p>
-          <p className="mt-2 text-ink-muted">{t('footer.tagline')}</p>
+          <Logo color="#0a0a0a" className="h-14" />
+          <p className="mt-3 text-ink-muted">{t('footer.tagline')}</p>
           <ul className="mt-8 space-y-3">
             {footerLinks.map((link) => (
               <li key={link.to}>
                 <Link
                   to={link.to}
-                  className="text-lg font-semibold text-ink hover:text-accent"
+                  className="text-lg font-semibold text-ink hover:opacity-70"
                 >
                   {t(`nav.${link.key}`)}
                 </Link>
@@ -52,7 +51,7 @@ export function SiteFooter() {
         <div className="space-y-3 text-sm text-ink-muted">
           <p>
             <a
-              className="text-warm hover:underline"
+              className="text-ink hover:underline"
               href="mailto:Kontakt@inknova.no"
             >
               Kontakt@inknova.no
@@ -69,7 +68,7 @@ export function SiteFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={label}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper-card text-ink hover:border-accent hover:text-accent"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper-card text-ink hover:border-ink"
               >
                 <Icon className="h-4 w-4" />
               </a>
