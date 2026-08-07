@@ -1,3 +1,5 @@
+import { createId } from '@/lib/utils'
+
 export type TextAlign = 'left' | 'center' | 'right'
 
 export type TextElement = {
@@ -94,7 +96,7 @@ export const DEFAULT_TEMPLATE_COPY: TemplateCopy = {
 }
 
 export function uid(prefix = 'el'): string {
-  return `${prefix}-${crypto.randomUUID().slice(0, 8)}`
+  return `${prefix}-${createId().slice(0, 8)}`
 }
 
 export function makePage(

@@ -27,7 +27,7 @@ import { fetchProduct } from '@/lib/api'
 import { catalogCopy } from '@/lib/catalogI18n'
 import { useCart } from '@/lib/cart'
 import { saveDesignPdf } from '@/lib/designStore'
-import { formatNok } from '@/lib/utils'
+import { createId, formatNok } from '@/lib/utils'
 
 export function DesignPage() {
   const { slug = '' } = useParams()
@@ -238,7 +238,7 @@ export function DesignPage() {
     setConfirming(true)
     setExportError(null)
     try {
-      const designPdfKey = crypto.randomUUID()
+      const designPdfKey = createId()
       const fileName = `${product.slug}-${selectedSize.id}.pdf`
       await saveDesignPdf(designPdfKey, previewBlob, fileName)
       addToCart({

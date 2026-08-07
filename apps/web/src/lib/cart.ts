@@ -1,6 +1,7 @@
 import type { CartItem } from '@inknova/shared'
 import { useSyncExternalStore } from 'react'
 import { deleteDesignPdf, deleteDesignPdfs } from './designStore'
+import { createId } from './utils'
 
 const STORAGE_KEY = 'inknova-cart'
 
@@ -67,7 +68,7 @@ export function addToCart(item: Omit<CartItem, 'id'>) {
       i.id === existing.id ? { ...i, qty: i.qty + item.qty } : i,
     )
   } else {
-    items = [...items, { ...item, id: crypto.randomUUID() }]
+    items = [...items, { ...item, id: createId() }]
   }
   persist()
 }
