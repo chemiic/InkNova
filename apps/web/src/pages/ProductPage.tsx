@@ -1,20 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
-import type { Product, SizeOption } from '@inknova/shared'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import {
+  effectiveMinQuantity,
+  lineTotalFromPack,
+  type Product,
+  type SizeOption,
+} from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchProduct } from '@/lib/api'
 import { catalogCopy } from '@/lib/catalogI18n'
-import { useCart } from '@/lib/cart'
-import { toast } from '@/lib/toast'
 import { cn, formatNok } from '@/lib/utils'
 
 export function ProductPage() {
   const { slug = '' } = useParams()
+  const navigate = useNavigate()
   const { t } = useTranslation()
-  const { addToCart } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -31,6 +34,7 @@ export function ProductPage() {
         if (cancelled) return
         setProduct(data)
         setSizeId(data.sizes[0]?.id ?? (data.customSize ? 'custom' : null))
+        setQty(effectiveMinQuantity(data.minQuantity))
       })
       .catch(() => {
         if (!cancelled) {
@@ -58,18 +62,13 @@ export function ProductPage() {
     return product.sizes.find((s) => s.id === sizeId) ?? null
   }, [product, sizeId, t])
 
-  function handleAdd() {
+  function handleContinue() {
     if (!product || !selectedSize) return
-    addToCart({
-      productId: product.id,
-      productSlug: product.slug,
-      productName: product.name,
+    const params = new URLSearchParams({
       sizeId: selectedSize.id,
-      sizeLabel: selectedSize.label,
-      qty,
-      unitPrice: selectedSize.price,
+      qty: String(qty),
     })
-    toast(t('product.added'))
+    navigate(`/produkter/${product.slug}/design?${params}`)
   }
 
   if (loading) {
@@ -92,6 +91,10 @@ export function ProductPage() {
   }
 
   const copy = catalogCopy(product, t)
+  const minQty = effectiveMinQuantity(product.minQuantity)
+  const packPrice = selectedSize?.price ?? null
+  const estimatedTotal =
+    packPrice != null ? lineTotalFromPack(packPrice, qty, minQty) : null
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
@@ -110,9 +113,21 @@ export function ProductPage() {
           </h1>
           <p className="mt-3 text-ink-muted">{copy.description}</p>
           {selectedSize && (
-            <p className="mt-4 text-2xl font-bold text-ink">
-              {formatNok(selectedSize.price)}
-            </p>
+            <div className="mt-4">
+              <p className="text-2xl font-bold text-ink">
+                {minQty > 1
+                  ? t('product.priceForQty', {
+                      price: formatNok(selectedSize.price),
+                      count: minQty,
+                    })
+                  : formatNok(selectedSize.price)}
+              </p>
+              {minQty > 1 && (
+                <p className="mt-1 text-sm text-ink-muted">
+                  {t('product.minOrder', { count: minQty })}
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -149,7 +164,12 @@ export function ProductPage() {
                 >
                   <span className="block text-sm font-semibold">{size.label}</span>
                   <span className="mt-1 block text-sm text-ink-muted">
-                    {formatNok(size.price)}
+                    {minQty > 1
+                      ? t('product.priceForQty', {
+                          price: formatNok(size.price),
+                          count: minQty,
+                        })
+                      : formatNok(size.price)}
                   </span>
                 </button>
               ))}
@@ -157,20 +177,38 @@ export function ProductPage() {
           )}
         </div>
 
-        <div className="max-w-[8rem]">
+        <div className="max-w-xs">
           <Label htmlFor="qty">{t('product.quantity')}</Label>
           <Input
             id="qty"
             type="number"
-            min={1}
-            max={999}
+            min={minQty}
+            max={9999}
+            step={1}
             value={qty}
             onChange={(e) => {
               const n = Number(e.target.value)
-              setQty(Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1)
+              setQty(
+                Number.isFinite(n) && n >= minQty
+                  ? Math.floor(n)
+                  : minQty,
+              )
             }}
-            className="mt-2"
+            className="mt-2 max-w-[12rem]"
           />
+          {minQty > 1 && (
+            <p className="mt-2 text-sm text-ink-muted">
+              {t('product.minOrder', { count: minQty })}
+            </p>
+          )}
+          {estimatedTotal != null && (minQty > 1 || qty > 1) && (
+            <p className="mt-2 text-sm font-medium text-ink">
+              {t('product.lineTotal', {
+                count: qty,
+                total: formatNok(estimatedTotal),
+              })}
+            </p>
+          )}
         </div>
 
         <dl className="space-y-2 text-sm">
@@ -192,8 +230,8 @@ export function ProductPage() {
           </div>
         </dl>
 
-        <Button size="lg" disabled={!selectedSize} onClick={handleAdd}>
-          {t('product.addToCart')}
+        <Button size="lg" disabled={!selectedSize} onClick={handleContinue}>
+          {t('product.continueDesign')}
         </Button>
       </div>
     </div>

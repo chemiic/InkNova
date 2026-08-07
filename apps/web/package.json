@@ -17,10 +17,13 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^24.2.3",
+    "jspdf": "^4.2.1",
+    "konva": "^10.3.0",
     "lucide-react": "^0.483.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-i18next": "^15.4.1",
+    "react-konva": "^19.2.5",
     "react-router-dom": "^7.4.0",
     "tailwind-merge": "^3.0.2"
   },

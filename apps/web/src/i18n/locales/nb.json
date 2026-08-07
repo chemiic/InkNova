@@ -15,7 +15,7 @@
   "home": {
     "brand": "InkNova",
     "headline": "Trykk som ser skarpt ut – og føles enkelt",
-    "sub": "Flyers, visittkort, plakater og skilting. Velg størrelse, last opp design senere, få levert i posten.",
+    "sub": "Flyers, visittkort, plakater og skilting. Velg størrelse, design selv, få levert i posten.",
     "ctaProducts": "Se alle produkter",
     "ctaContact": "Kontakt oss",
     "featured": "Populære produkter"
@@ -93,12 +93,18 @@
     "leadTime": "Leveringstid",
     "deliveryFee": "Frakt",
     "addToCart": "Legg i handlekurv",
+    "continueDesign": "Fortsett til design",
     "added": "Lagt i handlekurven",
     "customSize": "Egendefinert størrelse",
     "maxSize": "Maks {{width}}×{{height}} cm",
     "fromPrice": "Fra {{price}}",
-    "moreSizes": "+{{count}}"
+    "fromPriceMin": "Fra {{price}} (min. {{count}} stk)",
+    "priceForQty": "{{price}} for {{count}} stk",
+    "lineTotal": "Totalt for {{count}} stk: {{total}}",
+    "moreSizes": "+{{count}}",
+    "minOrder": "Minstebestilling: {{count}} stk"
   },
+
   "cart": {
     "title": "Handlekurv",
     "empty": "Handlekurven er tom.",
@@ -106,7 +112,82 @@
     "total": "Sum",
     "checkoutSoon": "Checkout kommer snart",
     "remove": "Fjern",
-    "qty": "Antall"
+    "qty": "Antall",
+    "designReady": "Design klart",
+    "previewDesign": "Se design",
+    "previewMissing": "Kunne ikke laste design-PDF."
+  },
+  "design": {
+    "title": "Design produktet",
+    "sub": "Flytt tekst og bilder, bytt bakgrunn, eller start fra en mal. PDF med 3 mm bleed lagres kun i nettleseren til checkout.",
+    "trimSize": "Trim {{width}}×{{height}} mm (+ {{bleed}} mm bleed)",
+    "bleedHint": "Skjærelinje · {{bleed}} mm utfallende (bleed)",
+    "addToCart": "Legg i handlekurv",
+    "preview": "Forhåndsvis",
+    "previewTitle": "Forhåndsvisning av design",
+    "previewClose": "Lukk",
+    "previewEditMore": "Rediger mer",
+    "previewOpenTab": "Åpne PDF i ny fane",
+    "previewConfirm": "Bekreft og legg i handlekurv",
+    "exporting": "Eksporterer PDF…",
+    "exportError": "Kunne ikke eksportere PDF. Prøv igjen.",
+    "templates": "Maler",
+    "pages": "Sider",
+    "pageCount": "{{count}} sider",
+    "pageLabels": {
+      "front": "Forside",
+      "back": "Bakside",
+      "page": "Side",
+      "pageN": "Side {{n}}"
+    },
+    "layers": "Lag",
+    "layersEmpty": "Ingen elementer ennå.",
+    "layersHint": "Dra for å endre rekkefølge. Øverst = bak, nederst = foran.",
+    "background": "Bakgrunn",
+    "backgroundColor": "Farge",
+    "uploadBackgroundImage": "Last opp bakgrunnsbilde",
+    "replaceBackgroundImage": "Bytt bakgrunnsbilde",
+    "clearBackgroundImage": "Fjern bakgrunnsbilde",
+    "backgroundImageHint": "Bildet fyller hele siden inkl. 3 mm bleed (utfallende).",
+    "addText": "Tekst",
+    "addImage": "Bildeplass",
+    "newText": "Ny tekst",
+    "imageSlot": "Last opp bilde",
+    "textProps": "Tekst",
+    "imageProps": "Bilde",
+    "text": "Innhold",
+    "font": "Skrift",
+    "fontSize": "Størrelse",
+    "color": "Farge",
+    "align": "Justering",
+    "alignLeft": "Venstre",
+    "alignCenter": "Midtstilt",
+    "alignRight": "Høyre",
+    "uploadImage": "Last opp bilde",
+    "replaceImage": "Bytt bilde",
+    "clearImage": "Fjern bilde",
+    "delete": "Slett element",
+    "templateNames": {
+      "blank": "Tom side",
+      "classicCard": "Klassisk visittkort (2 sider)",
+      "flyerHero": "Flyer med bilde",
+      "posterSimple": "Enkel plakat"
+    },
+    "templateCopy": {
+      "logo": "Logo",
+      "yourName": "Ditt navn",
+      "titleRole": "Tittel / rolle",
+      "contactLine": "epost@firma.no  ·  +47 000 00 000",
+      "companyName": "Firmanavn AS",
+      "website": "www.firma.no",
+      "image": "Bilde",
+      "headline": "Overskrift",
+      "shortDescription": "Kort beskrivelse av tilbudet eller arrangementet.",
+      "event": "EVENT",
+      "titleHere": "Tittel her",
+      "photo": "Foto",
+      "datePlaceTime": "Dato · Sted · Tid"
+    }
   },
   "contact": {
     "title": "Kontakt oss",
@@ -131,11 +212,11 @@
     "items": [
       {
         "q": "Hvordan bestiller jeg?",
-        "a": "Velg produkt og størrelse, legg i handlekurv, last opp design (kommer snart) og betal. Du får varen tilsendt i posten."
+        "a": "Velg produkt og størrelse, design i editoren, legg i handlekurv og betal. Du får varen tilsendt i posten."
       },
       {
         "q": "Hvilke filformater godtar dere?",
-        "a": "PDF eller PNG. For trykkklart PDF anbefaler vi 3 mm bleed og skjæremerker."
+        "a": "I editoren laster du opp PNG/JPEG til bildeplasser. Vi eksporterer trykkklart PDF med 3 mm bleed og skjæremerker."
       },
       {
         "q": "Kan jeg betale med Vipps?",

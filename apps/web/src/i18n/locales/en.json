@@ -15,7 +15,7 @@
   "home": {
     "brand": "InkNova",
     "headline": "Print that looks sharp – and feels simple",
-    "sub": "Flyers, business cards, posters and signage. Choose size, upload design later, get it by post.",
+    "sub": "Flyers, business cards, posters and signage. Choose size, design it yourself, get it by post.",
     "ctaProducts": "Browse products",
     "ctaContact": "Contact us",
     "featured": "Popular products"
@@ -93,12 +93,18 @@
     "leadTime": "Lead time",
     "deliveryFee": "Shipping",
     "addToCart": "Add to cart",
+    "continueDesign": "Continue to design",
     "added": "Added to cart",
     "customSize": "Custom size",
     "maxSize": "Max {{width}}×{{height}} cm",
     "fromPrice": "From {{price}}",
-    "moreSizes": "+{{count}}"
+    "fromPriceMin": "From {{price}} (min. {{count}})",
+    "priceForQty": "{{price}} for {{count}}",
+    "lineTotal": "Total for {{count}}: {{total}}",
+    "moreSizes": "+{{count}}",
+    "minOrder": "Minimum order: {{count}}"
   },
+
   "cart": {
     "title": "Cart",
     "empty": "Your cart is empty.",
@@ -106,7 +112,82 @@
     "total": "Total",
     "checkoutSoon": "Checkout coming soon",
     "remove": "Remove",
-    "qty": "Qty"
+    "qty": "Qty",
+    "designReady": "Design ready",
+    "previewDesign": "View design",
+    "previewMissing": "Could not load design PDF."
+  },
+  "design": {
+    "title": "Design your product",
+    "sub": "Move text and images, change the background, or start from a template. A PDF with 3 mm bleed stays in your browser until checkout.",
+    "trimSize": "Trim {{width}}×{{height}} mm (+ {{bleed}} mm bleed)",
+    "bleedHint": "Cut line · {{bleed}} mm bleed",
+    "addToCart": "Add to cart",
+    "preview": "Preview",
+    "previewTitle": "Design preview",
+    "previewClose": "Close",
+    "previewEditMore": "Keep editing",
+    "previewOpenTab": "Open PDF in new tab",
+    "previewConfirm": "Confirm and add to cart",
+    "exporting": "Exporting PDF…",
+    "exportError": "Could not export PDF. Please try again.",
+    "templates": "Templates",
+    "pages": "Pages",
+    "pageCount": "{{count}} pages",
+    "pageLabels": {
+      "front": "Front",
+      "back": "Back",
+      "page": "Page",
+      "pageN": "Page {{n}}"
+    },
+    "layers": "Layers",
+    "layersEmpty": "No elements yet.",
+    "layersHint": "Drag to reorder. Top = back, bottom = front.",
+    "background": "Background",
+    "backgroundColor": "Color",
+    "uploadBackgroundImage": "Upload background image",
+    "replaceBackgroundImage": "Replace background image",
+    "clearBackgroundImage": "Remove background image",
+    "backgroundImageHint": "The image fills the whole page including 3 mm bleed.",
+    "addText": "Text",
+    "addImage": "Image slot",
+    "newText": "New text",
+    "imageSlot": "Upload image",
+    "textProps": "Text",
+    "imageProps": "Image",
+    "text": "Content",
+    "font": "Font",
+    "fontSize": "Size",
+    "color": "Color",
+    "align": "Align",
+    "alignLeft": "Left",
+    "alignCenter": "Center",
+    "alignRight": "Right",
+    "uploadImage": "Upload image",
+    "replaceImage": "Replace image",
+    "clearImage": "Clear image",
+    "delete": "Delete element",
+    "templateNames": {
+      "blank": "Blank",
+      "classicCard": "Classic business card (2 sides)",
+      "flyerHero": "Flyer with image",
+      "posterSimple": "Simple poster"
+    },
+    "templateCopy": {
+      "logo": "Logo",
+      "yourName": "Your name",
+      "titleRole": "Title / role",
+      "contactLine": "email@company.com  ·  +47 000 00 000",
+      "companyName": "Company Name Ltd",
+      "website": "www.company.com",
+      "image": "Image",
+      "headline": "Headline",
+      "shortDescription": "Short description of the offer or event.",
+      "event": "EVENT",
+      "titleHere": "Title here",
+      "photo": "Photo",
+      "datePlaceTime": "Date · Place · Time"
+    }
   },
   "contact": {
     "title": "Contact us",
@@ -131,11 +212,11 @@
     "items": [
       {
         "q": "How do I order?",
-        "a": "Choose product and size, add to cart, upload your design (coming soon) and pay. We'll send it by post."
+        "a": "Choose product and size, design in the editor, add to cart and pay. We'll send it by post."
       },
       {
         "q": "Which file formats do you accept?",
-        "a": "PDF or PNG. For print-ready PDF we recommend 3 mm bleed and crop marks."
+        "a": "In the editor you upload PNG/JPEG into image slots. We export a print-ready PDF with 3 mm bleed and crop marks."
       },
       {
         "q": "Can I pay with Vipps?",

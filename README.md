@@ -2,8 +2,9 @@
 
 Monorepo for the InkNova print shop: Vite/React storefront + NestJS API + shared types.
 
-**Phase A (current):** catalog, PDP, cart (localStorage), contact form → email, content pages.  
-**Later:** design (C, free client editor — not Polotno), Vipps checkout (B).
+**Phase A:** catalog, PDP, cart (localStorage), contact form → email, content pages.  
+**Phase C:** free Konva editor → print-ready PDF in IndexedDB (no server file storage).  
+**Later:** Vipps checkout (B) — attach PDF from browser to Copycat mail.
 
 ## Structure
 

@@ -5,6 +5,7 @@ import { ArticleDetailPage } from '@/pages/ArticleDetailPage'
 import { ArticlesPage } from '@/pages/ArticlesPage'
 import { CartPage } from '@/pages/CartPage'
 import { ContactPage } from '@/pages/ContactPage'
+import { DesignPage } from '@/pages/DesignPage'
 import { FaqPage } from '@/pages/FaqPage'
 import { HomePage } from '@/pages/HomePage'
 import { ProductPage } from '@/pages/ProductPage'
@@ -19,6 +20,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="produkter" element={<ProductsPage />} />
           <Route path="produkter/:slug" element={<ProductPage />} />
+          <Route path="produkter/:slug/design" element={<DesignPage />} />
           <Route path="handlekurv" element={<CartPage />} />
           <Route path="om-oss" element={<AboutPage />} />
           <Route path="faq" element={<FaqPage />} />

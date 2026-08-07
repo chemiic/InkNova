@@ -1,5 +1,6 @@
 import type { CartItem } from '@inknova/shared'
 import { useSyncExternalStore } from 'react'
+import { deleteDesignPdf, deleteDesignPdfs } from './designStore'
 
 const STORAGE_KEY = 'inknova-cart'
 
@@ -8,11 +9,27 @@ type Listener = () => void
 let items: CartItem[] = load()
 const listeners = new Set<Listener>()
 
+function isValidItem(raw: unknown): raw is CartItem {
+  if (!raw || typeof raw !== 'object') return false
+  const i = raw as Partial<CartItem>
+  return (
+    typeof i.id === 'string' &&
+    typeof i.productId === 'string' &&
+    typeof i.sizeId === 'string' &&
+    typeof i.qty === 'number' &&
+    typeof i.unitPrice === 'number' &&
+    typeof i.designPdfKey === 'string' &&
+    i.designPdfKey.length > 0
+  )
+}
+
 function load(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
-    return JSON.parse(raw) as CartItem[]
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(isValidItem)
   } catch {
     return []
   }
@@ -33,12 +50,15 @@ function getSnapshot() {
 }
 
 export function addToCart(item: Omit<CartItem, 'id'>) {
-  const id = crypto.randomUUID()
+  if (!item.designPdfKey) {
+    throw new Error('designPdfKey is required')
+  }
+
   const existing = items.find(
     (i) =>
       i.productId === item.productId &&
       i.sizeId === item.sizeId &&
-      (i.designFileId ?? null) === (item.designFileId ?? null) &&
+      i.designPdfKey === item.designPdfKey &&
       (i.templateId ?? null) === (item.templateId ?? null),
   )
 
@@ -47,28 +67,37 @@ export function addToCart(item: Omit<CartItem, 'id'>) {
       i.id === existing.id ? { ...i, qty: i.qty + item.qty } : i,
     )
   } else {
-    items = [...items, { ...item, id }]
+    items = [...items, { ...item, id: crypto.randomUUID() }]
   }
   persist()
 }
 
 export function updateQty(id: string, qty: number) {
   if (qty < 1) {
-    removeFromCart(id)
+    void removeFromCart(id)
     return
   }
   items = items.map((i) => (i.id === id ? { ...i, qty } : i))
   persist()
 }
 
-export function removeFromCart(id: string) {
+export async function removeFromCart(id: string) {
+  const target = items.find((i) => i.id === id)
   items = items.filter((i) => i.id !== id)
   persist()
+  if (target?.designPdfKey) {
+    const stillUsed = items.some((i) => i.designPdfKey === target.designPdfKey)
+    if (!stillUsed) {
+      await deleteDesignPdf(target.designPdfKey)
+    }
+  }
 }
 
-export function clearCart() {
+export async function clearCart() {
+  const keys = [...new Set(items.map((i) => i.designPdfKey).filter(Boolean))]
   items = []
   persist()
+  await deleteDesignPdfs(keys)
 }
 
 export function cartCount(list: CartItem[]) {
@@ -76,7 +105,10 @@ export function cartCount(list: CartItem[]) {
 }
 
 export function cartTotal(list: CartItem[]) {
-  return list.reduce((sum, i) => sum + i.unitPrice * i.qty, 0)
+  return list.reduce(
+    (sum, i) => sum + Math.round(i.unitPrice * i.qty),
+    0,
+  )
 }
 
 export function useCart() {

@@ -1,4 +1,4 @@
-import type { Product } from '@inknova/shared'
+import { effectiveMinQuantity, type Product } from '@inknova/shared'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { t } = useTranslation()
   const price = lowestPrice(product)
   const copy = catalogCopy(product, t)
+  const minQty = effectiveMinQuantity(product.minQuantity)
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg bg-paper-card shadow-sm ring-1 ring-line">
@@ -32,7 +33,12 @@ export function ProductCard({ product }: { product: Product }) {
             {copy.description}
           </p>
           <p className="mt-2 text-sm font-semibold text-ink">
-            {t('product.fromPrice', { price: formatNok(price) })}
+            {minQty > 1
+              ? t('product.fromPriceMin', {
+                  price: formatNok(price),
+                  count: minQty,
+                })
+              : t('product.fromPrice', { price: formatNok(price) })}
           </p>
         </div>
         <Button asChild className="mt-auto w-fit uppercase tracking-wide">

@@ -13,6 +13,7 @@
       "imageUrl": "/products/flyers.svg",
       "leadTime": "3–5 virkedager",
       "delivery": { "label": "3–5 virkedager", "fee": 99 },
+      "minQuantity": 40,
       "sizes": [
         { "id": "a6", "label": "A6", "price": 299 },
         { "id": "a5", "label": "A5", "price": 399 },
@@ -28,6 +29,7 @@
       "imageUrl": "/products/visittkort.svg",
       "leadTime": "3–5 virkedager",
       "delivery": { "label": "3–5 virkedager", "fee": 79 },
+      "minQuantity": 50,
       "sizes": [
         { "id": "9x5", "label": "9×5 cm", "price": 349 },
         { "id": "9x5.5", "label": "9×5,5 cm", "price": 369 },
@@ -105,6 +107,7 @@
       "imageUrl": "/products/magasin.svg",
       "leadTime": "5–8 virkedager",
       "delivery": { "label": "5–8 virkedager", "fee": 149 },
+      "minQuantity": 20,
       "sizes": [
         { "id": "a5", "label": "A5", "price": 899 },
         { "id": "a4", "label": "A4", "price": 1199 }

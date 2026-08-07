@@ -1,32 +1,34 @@
 # Continue here
 
-Phase A monorepo MVP is implemented. Phase C (design) was started with Polotno and rolled back — paid SDK does not fit. Next: free client-side design (e.g. Fabric.js / Konva) when ready.
+Phase C (client design) uses free **Konva + react-konva** — no Polotno.
 
-## Done (Phase A)
+## Done
 
+### Phase A
 - pnpm workspaces: `apps/web`, `apps/api`, `packages/shared`
-- Shared types (`Product`, `CartItem`, etc.) — optional `designFileId` / `templateId` reserved for Phase C
-- Nest API: catalog JSON seed (10 products), `MailService`, `POST /api/contact`, throttling, CORS
-- Web: Vite + Tailwind v4, shadcn-style UI, i18n (`nb`/`en`), layout, all Phase A pages
-  - Home, Alle produkter, PDP (IKEA size cards), Handlekurv
-  - Om oss, FAQ, Kontakt, Artikler (+ detail), Angrerett
-- Product placeholder SVGs in `apps/web/public/products/`
-- Deploy notes: root README, `ecosystem.config.cjs`, Nginx sketch
+- Nest API: catalog, contact mail
+- Web: catalog, PDP, cart, content pages, i18n
+
+### Phase C
+- PDP → `/produkter/:slug/design` (Konva editor)
+- Text / image slots / background; stub templates per product
+- Google Fonts picker (curated set)
+- Export print-ready PDF (3 mm bleed + crop marks) → IndexedDB only
+- Cart requires `designPdfKey` (no server file storage)
 
 ## Quick start
 
 ```bash
 pnpm install
 pnpm --filter @inknova/shared build
-cp apps/api/.env.example apps/api/.env   # if missing
+cp apps/api/.env.example apps/api/.env
 pnpm dev:api    # :3000
 pnpm dev:web    # :5173
 ```
 
-## Next (Phase C — free stack)
+## Next (Phase B)
 
-- Design step before add-to-cart (client-only; no server file storage)
-- Free canvas (Fabric.js or Konva) + PDF export with bleed, or PNG/PDF pick into cart via IndexedDB
-- `designFileId` / `templateId` required on cart line items when design ships
+- Checkout + Vipps
+- On pay: attach PDF from IndexedDB to Copycat mail (buffer only, no disk persist)
 
 Plan: `requirements and assets/inknova_monorepo_mvp_e324daab.plan.md`
