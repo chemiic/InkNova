@@ -2,18 +2,20 @@
   "name": "@inknova/shared",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node ./scripts/write-cjs-package.cjs",
+    "dev": "tsc -p tsconfig.esm.json --watch",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
