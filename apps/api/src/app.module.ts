@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { CatalogModule } from './catalog/catalog.module';
 import { ContactModule } from './contact/contact.module';
 import { MailModule } from './mail/mail.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MailModule } from './mail/mail.module';
     CatalogModule,
     ContactModule,
     MailModule,
+    OrdersModule,
   ],
   providers: [
     {

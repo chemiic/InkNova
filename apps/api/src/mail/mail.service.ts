@@ -30,9 +30,15 @@ export class MailService {
       this.config.get<string>('SMTP_USER') ||
       'noreply@inknova.no';
 
+    const attachmentNote = input.attachments?.length
+      ? ` | Attachments: ${input.attachments
+          .map((a) => `${a.filename} (${a.content.length} B)`)
+          .join(', ')}`
+      : '';
+
     if (!this.transporter) {
       this.logger.log(
-        `[MAIL_DRY_RUN] To: ${input.to} | Subject: ${input.subject}\n${input.text}`,
+        `[MAIL_DRY_RUN] To: ${input.to} | Subject: ${input.subject}${attachmentNote}\n${input.text}`,
       );
       return;
     }
@@ -44,6 +50,11 @@ export class MailService {
       text: input.text,
       html: input.html,
       replyTo: input.replyTo,
+      attachments: input.attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType ?? 'application/pdf',
+      })),
     });
   }
 }

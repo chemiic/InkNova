@@ -152,6 +152,61 @@ export interface ContactPayload {
   name?: string;
 }
 
+/** Checkout customer + delivery address (NO) */
+export interface CheckoutCustomer {
+  name: string;
+  email: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  postalCode: string;
+  city: string;
+}
+
+export type PaymentMethod = "vipps" | "card";
+
+/** Line item sent at checkout (server recalculates unitPrice) */
+export interface CheckoutLineItemInput {
+  productId: string;
+  productSlug: string;
+  sizeId: string;
+  sizeLabel: string;
+  qty: number;
+  /** Original filename for the print PDF attached to this line */
+  designFileName: string;
+}
+
+export interface CreateOrderPayload {
+  customer: CheckoutCustomer;
+  paymentMethod: PaymentMethod;
+  items: CheckoutLineItemInput[];
+}
+
+export type OrderStatus =
+  | "pending_payment"
+  | "paid"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export interface CreateOrderResponse {
+  ok: true;
+  orderId: string;
+  reference: string;
+  status: OrderStatus;
+  /** Present when Vipps redirect is required */
+  redirectUrl?: string;
+  totalNok?: number;
+}
+
+export interface OrderStatusResponse {
+  ok: true;
+  orderId: string;
+  reference: string;
+  status: OrderStatus;
+  totalNok: number;
+}
+
 export interface ApiSuccess {
   ok: true;
 }

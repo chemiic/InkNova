@@ -3,15 +3,15 @@
 Monorepo for the InkNova print shop: Vite/React storefront + NestJS API + shared types.
 
 **Phase A:** catalog, PDP, cart (localStorage), contact form → email, content pages.  
-**Phase C:** free Konva editor → print-ready PDF in IndexedDB (no server file storage).  
-**Later:** Vipps checkout (B) — attach PDF from browser to Copycat mail.
+**Phase C:** Konva editor or PDF/PNG upload → print-ready PDF in IndexedDB.  
+**Phase B:** Checkout + Vipps (dry-run locally) → Copycat mail with PDF attachments.
 
 ## Structure
 
 ```
 apps/web          Vite + React + Tailwind + i18n (nb/en)
-apps/api          NestJS — catalog + contact mail
-packages/shared   Product / CartItem types
+apps/api          NestJS — catalog, contact, orders/Vipps
+packages/shared   Product / CartItem / checkout types
 ```
 
 ## Local setup
@@ -35,6 +35,10 @@ Or both: `pnpm dev`.
 | `PORT` | default `3000` |
 | `CORS_ORIGIN` | e.g. `http://localhost:5173` |
 | `MAIL_DRY_RUN` | `true` locally — logs mail instead of sending |
+| `PAYMENT_DRY_RUN` | `true` locally — complete orders without live Vipps |
+| `COPYCAT_TO` | Print-shop inbox (defaults to `CONTACT_TO`) |
+| `WEB_ORIGIN` | Public site URL for Vipps return (defaults to `CORS_ORIGIN`) |
+| `VIPPS_*` | ePayment keys when `PAYMENT_DRY_RUN=false` |
 | `SMTP_HOST` | `send.one.com` |
 | `SMTP_PORT` | `587` |
 | `SMTP_USER` / `SMTP_PASS` | mailbox credentials |
@@ -80,6 +84,7 @@ server {
   index index.html;
 
   location /api/ {
+    client_max_body_size 50m;
     proxy_pass http://127.0.0.1:3000;
     proxy_http_version 1.1;
     proxy_set_header Host $host;

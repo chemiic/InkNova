@@ -127,8 +127,8 @@ export function CartPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
-        <Button disabled size="lg" variant="secondary">
-          {t('cart.checkoutSoon')}
+        <Button asChild size="lg">
+          <Link to="/kasse">{t('cart.checkout')}</Link>
         </Button>
         <Button asChild size="lg" variant="outline">
           <Link to="/produkter">{t('cart.continue')}</Link>
