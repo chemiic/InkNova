@@ -11,6 +11,8 @@ type Props = {
   error?: string | null
   /** Confirm / add-to-cart; omit for view-only (cart) */
   confirmLabel?: string
+  /** Secondary dismiss when confirm is shown (default: Keep editing) */
+  dismissLabel?: string
   confirming?: boolean
   onConfirm?: () => void
   onClose: () => void
@@ -24,6 +26,7 @@ export function DesignPreviewModal({
   loading = false,
   error = null,
   confirmLabel,
+  dismissLabel,
   confirming = false,
   onConfirm,
   onClose,
@@ -129,7 +132,9 @@ export function DesignPreviewModal({
             disabled={confirming}
             onClick={onClose}
           >
-            {onConfirm ? t('design.previewEditMore') : t('design.previewClose')}
+            {onConfirm
+              ? (dismissLabel ?? t('design.previewEditMore'))
+              : t('design.previewClose')}
           </Button>
           {onConfirm && confirmLabel && (
             <Button

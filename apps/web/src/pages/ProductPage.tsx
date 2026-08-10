@@ -62,12 +62,13 @@ export function ProductPage() {
     return product.sizes.find((s) => s.id === sizeId) ?? null
   }, [product, sizeId, t])
 
-  function handleContinue() {
+  function handleContinue(mode?: 'upload') {
     if (!product || !selectedSize) return
     const params = new URLSearchParams({
       sizeId: selectedSize.id,
       qty: String(qty),
     })
+    if (mode === 'upload') params.set('mode', 'upload')
     navigate(`/produkter/${product.slug}/design?${params}`)
   }
 
@@ -230,9 +231,24 @@ export function ProductPage() {
           </div>
         </dl>
 
-        <Button size="lg" disabled={!selectedSize} onClick={handleContinue}>
-          {t('product.continueDesign')}
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button
+            size="lg"
+            disabled={!selectedSize}
+            onClick={() => handleContinue()}
+          >
+            {t('product.continueDesign')}
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            disabled={!selectedSize}
+            onClick={() => handleContinue('upload')}
+          >
+            {t('product.uploadOwnFile')}
+          </Button>
+        </div>
+        <p className="text-sm text-ink-muted">{t('product.uploadOwnFileHint')}</p>
       </div>
     </div>
   )
