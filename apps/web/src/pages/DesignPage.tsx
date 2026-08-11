@@ -177,6 +177,21 @@ export function DesignPage() {
     setSelectedId(null)
   }
 
+  /** Place uploaded artwork as a full-bleed background scaled to the format. */
+  function applyOwnFile(dataUrl: string) {
+    if (!dims || !product) return
+    const next = buildDoc('blank', product.slug)
+    const targetIndex = next.pages.length === 1 ? 0 : pageIndex
+    next.pages = next.pages.map((p, i) =>
+      i === targetIndex
+        ? { ...p, backgroundImage: dataUrl, elements: [] }
+        : p,
+    )
+    setTemplateId('own-file')
+    setDoc(next)
+    setSelectedId(null)
+  }
+
   function selectPage(index: number) {
     setPageIndex(index)
     setSelectedId(null)
@@ -584,6 +599,7 @@ export function DesignPage() {
             selectedId={selectedId}
             templateId={templateId}
             onSelectTemplate={applyTemplate}
+            onOwnFile={applyOwnFile}
             onSelectPage={selectPage}
             onPatchPage={patchPage}
             onChangeElement={changeElement}
@@ -607,9 +623,13 @@ export function DesignPage() {
                       : 'bg-paper-card text-ink-muted hover:text-ink'
                   }`}
                 >
-                  {t(`design.pageLabels.${p.labelKey}`, {
-                    defaultValue: t('design.pageLabels.pageN', { n: i + 1 }),
-                  })}
+                  {doc!.pages.length > 1 && p.labelKey === 'page'
+                    ? t('design.pageLabels.pageN', { n: i + 1 })
+                    : t(`design.pageLabels.${p.labelKey}`, {
+                        defaultValue: t('design.pageLabels.pageN', {
+                          n: i + 1,
+                        }),
+                      })}
                 </button>
               ))}
             </div>

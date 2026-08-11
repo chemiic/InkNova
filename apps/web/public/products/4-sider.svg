@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="4-siders program">
+  <rect width="400" height="300" fill="#eceae6"/>
+  <rect x="70" y="55" width="100" height="140" rx="4" fill="#fff" stroke="#142033" stroke-width="2" opacity="0.9"/>
+  <rect x="178" y="55" width="100" height="140" rx="4" fill="#fff" stroke="#0f9d94" stroke-width="2.5"/>
+  <rect x="230" y="70" width="100" height="140" rx="4" fill="#fff" stroke="#142033" stroke-width="2" opacity="0.55"/>
+  <rect x="198" y="85" width="60" height="8" rx="2" fill="#0f9d94" opacity="0.4"/>
+  <rect x="198" y="105" width="50" height="6" rx="2" fill="#142033" opacity="0.18"/>
+  <rect x="198" y="120" width="55" height="6" rx="2" fill="#142033" opacity="0.14"/>
+  <rect x="198" y="135" width="40" height="6" rx="2" fill="#142033" opacity="0.12"/>
+  <text x="200" y="260" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#142033">4-SIDER</text>
+</svg>

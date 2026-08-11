@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img">
+  <rect width="640" height="360" fill="#142033"/>
+  <circle cx="220" cy="160" r="70" fill="#e74c3c" opacity="0.85"/>
+  <circle cx="280" cy="160" r="70" fill="#2ecc71" opacity="0.75"/>
+  <circle cx="250" cy="210" r="70" fill="#3498db" opacity="0.7"/>
+  <circle cx="420" cy="140" r="55" fill="#00a8e8" opacity="0.9"/>
+  <circle cx="470" cy="180" r="55" fill="#e91e8c" opacity="0.85"/>
+  <circle cx="420" cy="210" r="55" fill="#f4d03f" opacity="0.8"/>
+  <circle cx="470" cy="210" r="55" fill="#1a1a1a" opacity="0.55"/>
+  <text x="250" y="310" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="600" fill="#f7f4ef">RGB</text>
+  <text x="445" y="310" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="600" fill="#f7f4ef">CMYK</text>
+</svg>

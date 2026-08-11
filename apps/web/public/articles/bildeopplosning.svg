@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img">
+  <rect width="640" height="360" fill="#1a2e28"/>
+  <rect x="100" y="70" width="180" height="180" rx="6" fill="#2a4038"/>
+  <g opacity="0.5">
+    <rect x="110" y="80" width="40" height="40" fill="#5c574f"/>
+    <rect x="150" y="80" width="40" height="40" fill="#7a756c"/>
+    <rect x="190" y="80" width="40" height="40" fill="#5c574f"/>
+    <rect x="230" y="80" width="40" height="40" fill="#7a756c"/>
+    <rect x="110" y="120" width="40" height="40" fill="#7a756c"/>
+    <rect x="150" y="120" width="40" height="40" fill="#5c574f"/>
+    <rect x="190" y="120" width="40" height="40" fill="#7a756c"/>
+    <rect x="230" y="120" width="40" height="40" fill="#5c574f"/>
+  </g>
+  <text x="190" y="290" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#f7f4ef" opacity="0.6">72 DPI</text>
+  <rect x="360" y="70" width="180" height="180" rx="6" fill="#0f9d94"/>
+  <circle cx="430" cy="140" r="36" fill="#f7f4ef" opacity="0.9"/>
+  <rect x="390" y="185" width="120" height="40" rx="4" fill="#142033" opacity="0.35"/>
+  <text x="450" y="290" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#f7f4ef">300 DPI</text>
+</svg>

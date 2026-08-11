@@ -5,8 +5,18 @@ import { DEFAULT_TEMPLATE_COPY, makePage, uid } from './types'
 /** Products that always have front + back in the editor */
 export const DOUBLE_SIDED_SLUGS = new Set(['visittkort'])
 
+/** Fixed page counts beyond single-sided (visittkort handled separately). */
+export const FIXED_PAGE_COUNT: Record<string, number> = {
+  '4-sider': 4,
+}
+
 export function isDoubleSidedProduct(productSlug: string): boolean {
   return DOUBLE_SIDED_SLUGS.has(productSlug)
+}
+
+export function productPageCount(productSlug: string): number {
+  if (isDoubleSidedProduct(productSlug)) return 2
+  return FIXED_PAGE_COUNT[productSlug] ?? 1
 }
 
 /**
@@ -17,11 +27,13 @@ export function applyProductPageStructure(
   doc: DesignDoc,
   productSlug: string,
 ): DesignDoc {
-  if (!isDoubleSidedProduct(productSlug)) {
+  const targetCount = productPageCount(productSlug)
+
+  if (targetCount === 1) {
     return {
       ...doc,
-      pages: doc.pages.slice(0, Math.max(1, doc.pages.length)).map((p, i) =>
-        i === 0 && (p.labelKey === 'front' || p.labelKey === 'back')
+      pages: doc.pages.slice(0, 1).map((p) =>
+        p.labelKey === 'front' || p.labelKey === 'back'
           ? { ...p, labelKey: 'page' }
           : p,
       ),
@@ -30,15 +42,25 @@ export function applyProductPageStructure(
 
   const pages = [...doc.pages]
   const bg = pages[0]?.background ?? '#ffffff'
-  while (pages.length < 2) {
-    pages.push(makePage(pages.length === 0 ? 'front' : 'back', bg))
+  while (pages.length < targetCount) {
+    const i = pages.length
+    const labelKey = isDoubleSidedProduct(productSlug)
+      ? i === 0
+        ? 'front'
+        : 'back'
+      : 'page'
+    pages.push(makePage(labelKey, bg))
   }
 
   return {
     ...doc,
-    pages: pages.slice(0, 2).map((p, i) => ({
+    pages: pages.slice(0, targetCount).map((p, i) => ({
       ...p,
-      labelKey: i === 0 ? 'front' : 'back',
+      labelKey: isDoubleSidedProduct(productSlug)
+        ? i === 0
+          ? 'front'
+          : 'back'
+        : 'page',
     })),
   }
 }
@@ -100,7 +122,7 @@ function classicCardFront(
       text: copy.titleRole,
       fontSize: Math.max(10, Math.round(height * 0.08)),
       fontFamily: DEFAULT_FONT,
-      fill: '#5c574f',
+      fill: '#3d3a36',
       align: 'left',
     },
     {
@@ -112,7 +134,7 @@ function classicCardFront(
       text: copy.contactLine,
       fontSize: Math.max(9, Math.round(height * 0.07)),
       fontFamily: DEFAULT_FONT,
-      fill: '#5c574f',
+      fill: '#3d3a36',
       align: 'left',
     },
   ]
@@ -156,7 +178,7 @@ function classicCardBack(
       text: copy.website,
       fontSize: Math.max(9, Math.round(height * 0.07)),
       fontFamily: DEFAULT_FONT,
-      fill: '#5c574f',
+      fill: '#3d3a36',
       align: 'center',
     },
   ]
@@ -224,7 +246,7 @@ function flyerHero(
           text: c.shortDescription,
           fontSize: Math.max(12, Math.round(width * 0.035)),
           fontFamily: DEFAULT_FONT,
-          fill: '#5c574f',
+          fill: '#3d3a36',
           align: 'center',
         },
         {
@@ -321,19 +343,13 @@ export const TEMPLATES: TemplateDef[] = [
   {
     id: 'flyer-hero',
     nameKey: 'flyerHero',
-    productSlugs: ['flyers', 'plakater', 'magasin'],
+    productSlugs: ['flyers', 'plakater', 'magasin', '4-sider'],
     build: flyerHero,
   },
   {
     id: 'poster-simple',
     nameKey: 'posterSimple',
-    productSlugs: [
-      'plakater',
-      'arbeidstegninger',
-      'alu-skilt',
-      'forex-plate',
-      'rollup',
-    ],
+    productSlugs: ['plakater', 'arbeidstegninger', 'rollup'],
     build: posterSimple,
   },
 ]

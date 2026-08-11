@@ -10,8 +10,6 @@ import { cn } from '@/lib/utils'
 const CATEGORIES: Array<ProductCategory | 'all'> = [
   'all',
   'trykk',
-  'skilt',
-  'storformat',
   'messe',
 ]
 

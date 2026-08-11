@@ -136,46 +136,61 @@ export function ProductPage() {
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
             {t('product.size')}
           </p>
-          {product.customSize ? (
-            <div className="rounded-lg border-2 border-accent bg-paper-card p-4">
-              <p className="font-semibold">{t('product.customSize')}</p>
-              <p className="mt-1 text-sm text-ink-muted">
-                {t('product.maxSize', {
-                  width: product.customSize.maxWidthCm,
-                  height: product.customSize.maxHeightCm,
-                })}
-              </p>
-              <p className="mt-2 font-bold">
-                {formatNok(product.customSize.basePrice)}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {product.sizes.map((size) => (
-                <button
-                  key={size.id}
-                  type="button"
-                  onClick={() => setSizeId(size.id)}
-                  className={cn(
-                    'rounded-lg border-2 bg-paper-card p-3 text-left transition',
-                    sizeId === size.id
-                      ? 'border-accent shadow-sm'
-                      : 'border-line hover:border-ink/30',
-                  )}
-                >
-                  <span className="block text-sm font-semibold">{size.label}</span>
-                  <span className="mt-1 block text-sm text-ink-muted">
-                    {minQty > 1
-                      ? t('product.priceForQty', {
-                          price: formatNok(size.price),
-                          count: minQty,
-                        })
-                      : formatNok(size.price)}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {product.sizes.map((size) => (
+              <button
+                key={size.id}
+                type="button"
+                onClick={() => setSizeId(size.id)}
+                className={cn(
+                  'rounded-lg border-2 bg-paper-card p-3 text-left transition',
+                  sizeId === size.id
+                    ? 'border-accent shadow-sm'
+                    : 'border-line hover:border-ink/30',
+                )}
+              >
+                <span className="block text-sm font-semibold">{size.label}</span>
+                <span className="mt-1 block text-sm text-ink-muted">
+                  {minQty > 1
+                    ? t('product.priceForQty', {
+                        price: formatNok(size.price),
+                        count: minQty,
+                      })
+                    : formatNok(size.price)}
+                </span>
+              </button>
+            ))}
+            {product.customSize && (
+              <button
+                type="button"
+                onClick={() => setSizeId('custom')}
+                className={cn(
+                  'rounded-lg border-2 bg-paper-card p-3 text-left transition',
+                  sizeId === 'custom'
+                    ? 'border-accent shadow-sm'
+                    : 'border-line hover:border-ink/30',
+                )}
+              >
+                <span className="block text-sm font-semibold">
+                  {t('product.customSize')}
+                </span>
+                <span className="mt-1 block text-xs text-ink-muted">
+                  {t('product.maxSize', {
+                    width: product.customSize.maxWidthCm,
+                    height: product.customSize.maxHeightCm,
+                  })}
+                </span>
+                <span className="mt-1 block text-sm text-ink-muted">
+                  {minQty > 1
+                    ? t('product.priceForQty', {
+                        price: formatNok(product.customSize.basePrice),
+                        count: minQty,
+                      })
+                    : formatNok(product.customSize.basePrice)}
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="max-w-xs">

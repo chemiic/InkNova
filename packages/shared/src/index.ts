@@ -91,7 +91,7 @@ export function lineTotalFromPack(
   return Math.round(unitPriceFromPack(packPrice, minQuantity) * qty);
 }
 
-/** Custom size product (folie): max dimensions in cm */
+/** Optional custom size: max dimensions in cm */
 export interface CustomSizeConfig {
   maxWidthCm: number;
   maxHeightCm: number;
@@ -123,6 +123,16 @@ export interface Product {
    * Size prices are for this quantity, not per piece.
    */
   minQuantity?: number;
+  /**
+   * When true, product is hidden from the public storefront.
+   * Kept in catalog for admin / future reactivation. Default: visible.
+   */
+  hidden?: boolean;
+}
+
+/** Public storefront visibility (omitted/false = visible). */
+export function isProductVisible(product: Product): boolean {
+  return product.hidden !== true;
 }
 
 export interface CartItem {

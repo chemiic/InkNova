@@ -15,7 +15,7 @@
   "home": {
     "brand": "InkNova",
     "headline": "Trykk som ser skarpt ut – og føles enkelt",
-    "sub": "Flyers, visittkort, plakater og skilting. Velg størrelse, design selv, få levert i posten.",
+    "sub": "Flyers, visittkort, plakater og program. Velg størrelse, design selv, få levert i posten.",
     "ctaProducts": "Se alle produkter",
     "ctaContact": "Kontakt oss",
     "featured": "Populære produkter"
@@ -70,20 +70,10 @@
       "description": "Heftede magasiner i A4 eller A5.",
       "leadTime": "5–8 virkedager"
     },
-    "folie": {
-      "name": "Folie",
-      "description": "Tilpasset folie – maks bredde 120 cm, maks høyde 100 cm.",
+    "4-sider": {
+      "name": "4-siders program",
+      "description": "Fire-siders programhefte i A4, A5 eller egendefinert størrelse.",
       "leadTime": "4–7 virkedager"
-    },
-    "alu-skilt": {
-      "name": "Alu skilt",
-      "description": "Holdbare aluminiumsskilt for innendørs og utendørs bruk.",
-      "leadTime": "5–8 virkedager"
-    },
-    "forex-plate": {
-      "name": "Forex plate",
-      "description": "Lett og stiv Forex-plate til skilting og displays.",
-      "leadTime": "5–8 virkedager"
     }
   },
   "product": {
@@ -176,6 +166,8 @@
     "previewConfirm": "Bekreft og legg i handlekurv",
     "exporting": "Eksporterer PDF…",
     "exportError": "Kunne ikke eksportere PDF. Prøv igjen.",
+    "ownFile": "Egen fil",
+    "ownFileHint": "Last opp bilde eller design – det skaleres til valgt format.",
     "templates": "Maler",
     "pages": "Sider",
     "pageCount": "{{count}} sider",
@@ -248,8 +240,8 @@
   "about": {
     "title": "Om InkNova",
     "p1": "InkNova er et trykkeri for bedrifter og privatpersoner som vil ha skarpt trykk uten komplisert bestilling.",
-    "p2": "Vi samarbeider med Copycat Lillestrøm for produksjon, og leverer ferdige trykksaker i posten.",
-    "p3": "Fra flyers og visittkort til roll-up, folie og skilting – du velger format, vi tar oss av resten."
+    "p2": "Vi samarbeider med lokale trykkerier for å sikre kundene våre best pris og best kvalitet.",
+    "p3": "Fra flyers og visittkort til roll-up og program – du velger format, vi tar oss av resten."
   },
   "faq": {
     "title": "FAQ – Spørsmål og svar",
@@ -286,13 +278,29 @@
         "slug": "trykkklart-pdf",
         "title": "Hva er et trykkklart PDF?",
         "excerpt": "Bleed, skjæremerker og hvorfor det betyr noe for resultatet.",
+        "image": "/articles/trykkklart-pdf.svg",
         "body": "Et trykkklart PDF er en fil som er klar for produksjon: 3 mm bleed (utfallende), skjæremerker og riktig fargeprofil. Når du laster opp egne filer til InkNova, anbefaler vi PDF eller PNG. For beste resultat – eksporter med bleed og crop marks fra designprogrammet ditt."
       },
       {
         "slug": "velge-storrelse",
         "title": "Slik velger du riktig størrelse",
         "excerpt": "A-formater, visittkortmål og når du bør gå custom.",
-        "body": "A5, A4 og A6 er vanlige for flyers. Visittkort har flere centimeter-varianter. For folie kan du bestille innenfor maks 120×100 cm. Se produktsiden for alle alternativer – prisen oppdateres når du bytter størrelse."
+        "image": "/articles/velge-storrelse.svg",
+        "body": "A5, A4 og A6 er vanlige for flyers. Visittkort har flere centimeter-varianter. Plakater og flyers kan også bestilles i egendefinert størrelse innenfor maks-målene på produktsiden. Prisen oppdateres når du bytter størrelse."
+      },
+      {
+        "slug": "rgb-eller-cmyk",
+        "title": "RGB eller CMYK – hva skal du bruke?",
+        "excerpt": "Skjerm og trykk snakker ulike fargespråk. Slik unngår du overraskelser.",
+        "image": "/articles/rgb-cmyk.svg",
+        "body": "Skjermen din viser farger i RGB (rød, grønn, blå – lys). Trykk bruker CMYK (cyan, magenta, gul og svart – blekk). Noen sterke skjermfarger kan ikke gjengis eksakt i trykk, så resultatet kan se litt dempet ut. For best kontroll: jobb i CMYK når du designer i et profesjonelt program, eller bruk editoren vår og forhåndsvis før du bestiller. Små avvik mellom skjerm og trykk er normalt."
+      },
+      {
+        "slug": "bildeopplosning",
+        "title": "Hvor skarp må bildene være?",
+        "excerpt": "DPI, piksler og hvorfor uklare bilder blir synlige i trykk.",
+        "image": "/articles/bildeopplosning.svg",
+        "body": "Til trykk anbefaler vi bilder rundt 300 DPI i den ferdige størrelsen. Et bilde som ser fint ut på mobil kan fortsatt være for lite til en A4-flyer. Tommelfingerregel: jo større trykkflate, jo flere piksler trenger du. Bruk originale filer fra kamera eller designprogram – ikke skjermbilder eller sterkt komprimerte sosiale medier-bilder når det er mulig."
       }
     ]
   },

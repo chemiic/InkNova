@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 
-type Article = { slug: string; title: string; excerpt: string; body: string }
+type Article = {
+  slug: string
+  title: string
+  excerpt: string
+  body: string
+  image?: string
+}
 
 export function ArticleDetailPage() {
   const { slug } = useParams()
@@ -28,6 +34,15 @@ export function ArticleDetailPage() {
       >
         ← {t('nav.articles')}
       </Link>
+      {article.image && (
+        <div className="mt-6 overflow-hidden rounded-lg bg-[#eceae6]">
+          <img
+            src={article.image}
+            alt=""
+            className="aspect-[16/9] w-full object-cover"
+          />
+        </div>
+      )}
       <h1 className="mt-6 font-display text-4xl text-ink md:text-5xl">
         {article.title}
       </h1>

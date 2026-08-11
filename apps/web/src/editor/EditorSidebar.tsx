@@ -23,6 +23,8 @@ type Props = {
   selectedId: string | null
   templateId: string
   onSelectTemplate: (templateId: string) => void
+  /** Upload own artwork scaled to the current format */
+  onOwnFile: (dataUrl: string) => void
   onSelectPage: (index: number) => void
   onPatchPage: (
     patch: Partial<Pick<DesignPageSide, 'background' | 'backgroundImage'>>,
@@ -42,6 +44,7 @@ export function EditorSidebar({
   selectedId,
   templateId,
   onSelectTemplate,
+  onOwnFile,
   onSelectPage,
   onPatchPage,
   onChangeElement,
@@ -53,6 +56,7 @@ export function EditorSidebar({
   const { t } = useTranslation()
   const fileRef = useRef<HTMLInputElement>(null)
   const bgFileRef = useRef<HTMLInputElement>(null)
+  const ownFileRef = useRef<HTMLInputElement>(null)
   const templates = templatesForProduct(productSlug)
   const selected = activePage.elements.find((e) => e.id === selectedId) ?? null
 
@@ -113,9 +117,45 @@ export function EditorSidebar({
     reader.readAsDataURL(file)
   }
 
+  function onOwnFilePick(files: FileList | null) {
+    const file = files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        onOwnFile(reader.result)
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
   return (
     <aside className="box-border flex w-full min-w-0 max-w-full flex-col gap-5 overflow-x-hidden border-b border-line bg-paper-card p-4 lg:border-b-0 lg:border-r">
       <div>
+        <input
+          ref={ownFileRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            onOwnFilePick(e.target.files)
+            e.target.value = ''
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => ownFileRef.current?.click()}
+          className={`mb-3 w-full min-w-0 break-words rounded-md border px-3 py-2.5 text-left text-sm font-medium transition ${
+            templateId === 'own-file'
+              ? 'border-accent bg-accent/10'
+              : 'border-line hover:border-ink/30'
+          }`}
+        >
+          {t('design.ownFile')}
+        </button>
+        <p className="-mt-2 mb-3 text-xs text-ink-muted">
+          {t('design.ownFileHint')}
+        </p>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
           {t('design.templates')}
         </p>
@@ -154,9 +194,13 @@ export function EditorSidebar({
                     : 'border-line hover:border-ink/30'
                 }`}
               >
-                {t(`design.pageLabels.${p.labelKey}`, {
-                  defaultValue: t('design.pageLabels.pageN', { n: i + 1 }),
-                })}
+                {doc.pages.length > 1 && p.labelKey === 'page'
+                  ? t('design.pageLabels.pageN', { n: i + 1 })
+                  : t(`design.pageLabels.${p.labelKey}`, {
+                      defaultValue: t('design.pageLabels.pageN', {
+                        n: i + 1,
+                      }),
+                    })}
               </button>
             ))}
           </div>

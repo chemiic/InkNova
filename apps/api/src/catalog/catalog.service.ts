@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from '@inknova/shared';
+import { isProductVisible, Product } from '@inknova/shared';
 import {
   CATALOG_PRICING_STORE,
   JsonCatalogPricingStore,
@@ -13,16 +13,28 @@ export class CatalogService {
     private readonly store: CatalogPricingStore,
   ) {}
 
-  list(): Promise<Product[]> {
+  /** Public storefront: only visible products. */
+  async list(): Promise<Product[]> {
+    const all = await this.store.findAll();
+    return all.filter(isProductVisible);
+  }
+
+  /** All products including hidden — for admin / internal use. */
+  listAll(): Promise<Product[]> {
     return this.store.findAll();
   }
 
   async getBySlug(slug: string): Promise<Product> {
     const product = await this.store.findBySlug(slug);
-    if (!product) {
+    if (!product || !isProductVisible(product)) {
       throw new NotFoundException(`Product not found: ${slug}`);
     }
     return product;
+  }
+
+  /** Lookup by slug including hidden products (admin / internal). */
+  async getBySlugAll(slug: string): Promise<Product | null> {
+    return this.store.findBySlug(slug);
   }
 }
 

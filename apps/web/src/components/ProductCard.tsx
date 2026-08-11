@@ -6,9 +6,10 @@ import { catalogCopy } from '@/lib/catalogI18n'
 import { formatNok } from '@/lib/utils'
 
 function lowestPrice(product: Product) {
-  if (product.customSize) return product.customSize.basePrice
-  if (!product.sizes.length) return 0
-  return Math.min(...product.sizes.map((s) => s.price))
+  const prices = product.sizes.map((s) => s.price)
+  if (product.customSize) prices.push(product.customSize.basePrice)
+  if (!prices.length) return 0
+  return Math.min(...prices)
 }
 
 export function ProductCard({ product }: { product: Product }) {

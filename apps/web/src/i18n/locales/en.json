@@ -15,7 +15,7 @@
   "home": {
     "brand": "InkNova",
     "headline": "Print that looks sharp – and feels simple",
-    "sub": "Flyers, business cards, posters and signage. Choose size, design it yourself, get it by post.",
+    "sub": "Flyers, business cards, posters and programmes. Choose size, design it yourself, get it by post.",
     "ctaProducts": "Browse products",
     "ctaContact": "Contact us",
     "featured": "Popular products"
@@ -70,20 +70,10 @@
       "description": "Stapled magazines in A4 or A5.",
       "leadTime": "5–8 business days"
     },
-    "folie": {
-      "name": "Foil",
-      "description": "Custom foil – max width 120 cm, max height 100 cm.",
+    "4-sider": {
+      "name": "4-page programme",
+      "description": "Four-page programme booklet in A4, A5 or a custom size.",
       "leadTime": "4–7 business days"
-    },
-    "alu-skilt": {
-      "name": "Aluminium signs",
-      "description": "Durable aluminium signs for indoor and outdoor use.",
-      "leadTime": "5–8 business days"
-    },
-    "forex-plate": {
-      "name": "Forex board",
-      "description": "Light and rigid Forex board for signage and displays.",
-      "leadTime": "5–8 business days"
     }
   },
   "product": {
@@ -176,6 +166,8 @@
     "previewConfirm": "Confirm and add to cart",
     "exporting": "Exporting PDF…",
     "exportError": "Could not export PDF. Please try again.",
+    "ownFile": "Own file",
+    "ownFileHint": "Upload an image or design – it scales to the selected format.",
     "templates": "Templates",
     "pages": "Pages",
     "pageCount": "{{count}} pages",
@@ -248,8 +240,8 @@
   "about": {
     "title": "About InkNova",
     "p1": "InkNova is a print studio for businesses and individuals who want sharp print without a complicated order flow.",
-    "p2": "We partner with Copycat Lillestrøm for production and deliver finished print by post.",
-    "p3": "From flyers and business cards to roll-ups, foil and signage – you pick the format, we handle the rest."
+    "p2": "We collaborate with local printers to give our customers the best price and the best quality.",
+    "p3": "From flyers and business cards to roll-ups and programmes – you pick the format, we handle the rest."
   },
   "faq": {
     "title": "FAQ – Questions & answers",
@@ -286,13 +278,29 @@
         "slug": "trykkklart-pdf",
         "title": "What is a print-ready PDF?",
         "excerpt": "Bleed, crop marks and why they matter.",
+        "image": "/articles/trykkklart-pdf.svg",
         "body": "A print-ready PDF is production-ready: 3 mm bleed, crop marks and the right colour profile. When uploading to InkNova, use PDF or PNG. For best results, export with bleed and crop marks from your design tool."
       },
       {
         "slug": "velge-storrelse",
         "title": "How to choose the right size",
         "excerpt": "A-formats, business card sizes and when to go custom.",
-        "body": "A5, A4 and A6 are common for flyers. Business cards have several centimetre options. Foil can be ordered up to 120×100 cm. See the product page for all options – the price updates when you change size."
+        "image": "/articles/velge-storrelse.svg",
+        "body": "A5, A4 and A6 are common for flyers. Business cards have several centimetre options. Posters and flyers can also be ordered in a custom size within the max dimensions on the product page. The price updates when you change size."
+      },
+      {
+        "slug": "rgb-eller-cmyk",
+        "title": "RGB or CMYK – which should you use?",
+        "excerpt": "Screens and print speak different colour languages. Here's how to avoid surprises.",
+        "image": "/articles/rgb-cmyk.svg",
+        "body": "Your screen shows colour in RGB (red, green, blue – light). Print uses CMYK (cyan, magenta, yellow and black – ink). Some vivid screen colours cannot be matched exactly in print, so the result can look slightly softer. For best control: work in CMYK in a pro design tool, or use our editor and preview before ordering. Small differences between screen and print are normal."
+      },
+      {
+        "slug": "bildeopplosning",
+        "title": "How sharp do images need to be?",
+        "excerpt": "DPI, pixels and why soft images show up in print.",
+        "image": "/articles/bildeopplosning.svg",
+        "body": "For print we recommend images around 300 DPI at the final size. A photo that looks fine on a phone can still be too small for an A4 flyer. Rule of thumb: the larger the print area, the more pixels you need. Prefer original files from a camera or design tool – not screenshots or heavily compressed social media images when you can avoid it."
       }
     ]
   },

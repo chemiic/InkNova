@@ -273,6 +273,11 @@ function ImageNode({
     },
   }
 
+  const slotFontSize = Math.max(
+    12,
+    Math.min(56, Math.round(Math.min(el.width, el.height) * 0.14)),
+  )
+
   return (
     <>
       {image ? (
@@ -283,17 +288,17 @@ function ImageNode({
             ref={shapeRef as React.RefObject<Konva.Rect>}
             {...common}
             fill="#e8e4de"
-            stroke="#9a9590"
+            stroke="#6b6560"
             strokeWidth={1}
             dash={[6, 4]}
           />
           <Text
             x={el.x}
-            y={el.y + el.height / 2 - 8}
+            y={el.y + el.height / 2 - slotFontSize / 2}
             width={el.width}
             text={el.slotLabel ?? '+'}
-            fontSize={14}
-            fill="#9a9590"
+            fontSize={slotFontSize}
+            fill="#5a554f"
             align="center"
             listening={false}
           />
@@ -565,16 +570,16 @@ export function DesignCanvas({
         </svg>
 
         <div
-          className="pointer-events-none absolute left-0 right-0 z-20 text-center text-[11px] font-medium tracking-wide text-[#6b6560]"
+          className="pointer-events-none absolute left-0 right-0 z-20 text-center text-xs font-semibold tracking-wide text-[#2a2825]"
           style={{ top: 'calc(100% + 10px)' }}
         >
           {dimBottom}
-          <span className="mt-0.5 block font-normal text-[#8a847e]">
+          <span className="mt-0.5 block font-medium text-[#4a4540]">
             {t('design.bleedHint', { bleed: BLEED_MM })}
           </span>
         </div>
         <div
-          className="pointer-events-none absolute z-20 text-[11px] font-medium tracking-wide text-[#6b6560]"
+          className="pointer-events-none absolute z-20 text-xs font-semibold tracking-wide text-[#2a2825]"
           style={{
             left: 'calc(100% + 12px)',
             top: '50%',
