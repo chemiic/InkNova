@@ -1,11 +1,11 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { resolveOrderDeliveryFee, type PaymentMethod } from '@inknova/shared'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import type { PaymentMethod } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { submitOrder } from '@/lib/api'
+import { fetchDeliverySettings, fetchProducts, submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { useCart } from '@/lib/cart'
 import { getDesignPdf } from '@/lib/designStore'
@@ -39,6 +39,34 @@ export function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deliveryFee, setDeliveryFee] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    void Promise.all([fetchProducts(), fetchDeliverySettings()])
+      .then(([products, delivery]) => {
+        if (cancelled) return
+        const feesByKey = new Map<string, number | null>()
+        for (const p of products) {
+          feesByKey.set(p.id, p.delivery.fee)
+          feesByKey.set(p.slug, p.delivery.fee)
+        }
+        const fees = items.map(
+          (i) => feesByKey.get(i.productId) ?? feesByKey.get(i.productSlug),
+        )
+        setDeliveryFee(
+          resolveOrderDeliveryFee(fees, delivery.defaultFee),
+        )
+      })
+      .catch(() => {
+        /* ignore — server recalculates */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [items])
+
+  const grandTotal = useMemo(() => total + deliveryFee, [total, deliveryFee])
 
   const lineSummary = useMemo(
     () =>
@@ -298,9 +326,19 @@ export function CheckoutPage() {
             </li>
           ))}
         </ul>
-        <div className="mt-4 flex justify-between border-t border-line pt-4">
-          <span className="font-semibold">{t('cart.total')}</span>
-          <span className="text-lg font-bold">{formatNok(total)}</span>
+        <div className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+          <div className="flex justify-between">
+            <span className="text-ink-muted">{t('cart.subtotal')}</span>
+            <span>{formatNok(total)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-ink-muted">{t('cart.shipping')}</span>
+            <span>{formatNok(deliveryFee)}</span>
+          </div>
+          <div className="flex justify-between pt-1">
+            <span className="font-semibold">{t('cart.total')}</span>
+            <span className="text-lg font-bold">{formatNok(grandTotal)}</span>
+          </div>
         </div>
       </aside>
     </div>

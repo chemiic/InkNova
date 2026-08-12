@@ -1,4 +1,4 @@
-import type { CartItem } from '@inknova/shared'
+import { effectiveMinQuantity, type CartItem } from '@inknova/shared'
 import { useSyncExternalStore } from 'react'
 import { deleteDesignPdf, deleteDesignPdfs } from './designStore'
 import { createId } from './utils'
@@ -24,13 +24,20 @@ function isValidItem(raw: unknown): raw is CartItem {
   )
 }
 
+function normalizeItem(item: CartItem): CartItem {
+  const minQty = effectiveMinQuantity(item.minQuantity)
+  const qty = Math.max(minQty, Math.floor(item.qty))
+  if (qty === item.qty) return item
+  return { ...item, qty }
+}
+
 function load(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as unknown
     if (!Array.isArray(parsed)) return []
-    return parsed.filter(isValidItem)
+    return parsed.filter(isValidItem).map(normalizeItem)
   } catch {
     return []
   }
@@ -55,31 +62,75 @@ export function addToCart(item: Omit<CartItem, 'id'>) {
     throw new Error('designPdfKey is required')
   }
 
+  const minQty = effectiveMinQuantity(item.minQuantity)
+  const nextItem: Omit<CartItem, 'id'> = {
+    ...item,
+    minQuantity: minQty > 1 ? minQty : item.minQuantity,
+    qty: Math.max(minQty, Math.floor(item.qty)),
+  }
+
   const existing = items.find(
     (i) =>
-      i.productId === item.productId &&
-      i.sizeId === item.sizeId &&
-      i.designPdfKey === item.designPdfKey &&
-      (i.templateId ?? null) === (item.templateId ?? null),
+      i.productId === nextItem.productId &&
+      i.sizeId === nextItem.sizeId &&
+      i.designPdfKey === nextItem.designPdfKey &&
+      (i.templateId ?? null) === (nextItem.templateId ?? null),
   )
 
   if (existing) {
     items = items.map((i) =>
-      i.id === existing.id ? { ...i, qty: i.qty + item.qty } : i,
+      i.id === existing.id
+        ? {
+            ...i,
+            qty: i.qty + nextItem.qty,
+            minQuantity: nextItem.minQuantity ?? i.minQuantity,
+          }
+        : i,
     )
   } else {
-    items = [...items, { ...item, id: createId() }]
+    items = [...items, { ...nextItem, id: createId() }]
   }
   persist()
 }
 
 export function updateQty(id: string, qty: number) {
-  if (qty < 1) {
+  const target = items.find((i) => i.id === id)
+  if (!target) return
+
+  if (!Number.isFinite(qty) || qty < 1) {
     void removeFromCart(id)
     return
   }
-  items = items.map((i) => (i.id === id ? { ...i, qty } : i))
+
+  const minQty = effectiveMinQuantity(target.minQuantity)
+  const nextQty = Math.max(minQty, Math.floor(qty))
+  items = items.map((i) => (i.id === id ? { ...i, qty: nextQty } : i))
   persist()
+}
+
+/**
+ * Backfill minstebestilling from catalog and clamp under-min lines.
+ * Keys may be productId or productSlug.
+ */
+export function syncMinQuantities(minsByProduct: Record<string, number>) {
+  let changed = false
+  items = items.map((i) => {
+    const catalogMin =
+      minsByProduct[i.productId] ?? minsByProduct[i.productSlug]
+    const minQuantity =
+      catalogMin != null
+        ? effectiveMinQuantity(catalogMin)
+        : effectiveMinQuantity(i.minQuantity)
+    const qty = Math.max(minQuantity, Math.floor(i.qty))
+    if (qty === i.qty && i.minQuantity === minQuantity) return i
+    changed = true
+    return {
+      ...i,
+      minQuantity: minQuantity > 1 ? minQuantity : i.minQuantity,
+      qty,
+    }
+  })
+  if (changed) persist()
 }
 
 export async function removeFromCart(id: string) {
@@ -120,6 +171,7 @@ export function useCart() {
     total: cartTotal(cart),
     addToCart,
     updateQty,
+    syncMinQuantities,
     removeFromCart,
     clearCart,
   }

@@ -1,7 +1,8 @@
-import { effectiveMinQuantity, type Product } from '@inknova/shared'
+import { effectiveMinQuantity, productGallery, type Product } from '@inknova/shared'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
 import { formatNok } from '@/lib/utils'
 
@@ -17,12 +18,13 @@ export function ProductCard({ product }: { product: Product }) {
   const price = lowestPrice(product)
   const copy = catalogCopy(product, t)
   const minQty = effectiveMinQuantity(product.minQuantity)
+  const cover = productGallery(product)[0] ?? product.imageUrl
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg bg-paper-card shadow-sm ring-1 ring-line">
       <Link to={`/produkter/${product.slug}`} className="block bg-[#eceae6] p-6">
         <img
-          src={product.imageUrl}
+          src={assetUrl(cover)}
           alt=""
           className="mx-auto h-40 w-full object-contain"
         />

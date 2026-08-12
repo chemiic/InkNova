@@ -13,11 +13,36 @@ import { OrderConfirmPage } from '@/pages/OrderConfirmPage'
 import { ProductPage } from '@/pages/ProductPage'
 import { ProductsPage } from '@/pages/ProductsPage'
 import { TermsPage } from '@/pages/TermsPage'
+import {
+  AdminLayout,
+  AdminRequireAuth,
+} from '@/pages/admin/AdminLayout'
+import { AdminLoginPage } from '@/pages/admin/AdminLoginPage'
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
+import { AdminProductsPage } from '@/pages/admin/AdminProductsPage'
+import { AdminProductEditPage } from '@/pages/admin/AdminProductEditPage'
+import { AdminArticlesPage } from '@/pages/admin/AdminArticlesPage'
+import { AdminArticleEditPage } from '@/pages/admin/AdminArticleEditPage'
+import { AdminDeliveryPage } from '@/pages/admin/AdminDeliveryPage'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={<AdminRequireAuth />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="products/new" element={<AdminProductEditPage />} />
+            <Route path="products/:id" element={<AdminProductEditPage />} />
+            <Route path="articles" element={<AdminArticlesPage />} />
+            <Route path="articles/new" element={<AdminArticleEditPage />} />
+            <Route path="articles/:id" element={<AdminArticleEditPage />} />
+            <Route path="delivery" element={<AdminDeliveryPage />} />
+          </Route>
+        </Route>
+
         <Route element={<RootLayout />}>
           <Route index element={<HomePage />} />
           <Route path="produkter" element={<ProductsPage />} />

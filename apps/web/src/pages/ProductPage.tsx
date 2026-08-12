@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
+  customSizeMinCm,
   effectiveMinQuantity,
   lineTotalFromPack,
+  productGallery,
   type Product,
   type SizeOption,
 } from '@inknova/shared'
@@ -11,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchProduct } from '@/lib/api'
+import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
 import { cn, formatNok } from '@/lib/utils'
 
@@ -23,7 +26,10 @@ export function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [sizeId, setSizeId] = useState<string | null>(null)
+  const [customWidthCm, setCustomWidthCm] = useState('')
+  const [customHeightCm, setCustomHeightCm] = useState('')
   const [qty, setQty] = useState(1)
+  const [activeImage, setActiveImage] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -35,6 +41,11 @@ export function ProductPage() {
         setProduct(data)
         setSizeId(data.sizes[0]?.id ?? (data.customSize ? 'custom' : null))
         setQty(effectiveMinQuantity(data.minQuantity))
+        setActiveImage(0)
+        if (data.customSize) {
+          setCustomWidthCm(String(data.customSize.maxWidthCm))
+          setCustomHeightCm(String(data.customSize.maxHeightCm))
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -50,24 +61,75 @@ export function ProductPage() {
     }
   }, [slug])
 
+  const customDims = useMemo(() => {
+    if (!product?.customSize) return null
+    const { minWidthCm, minHeightCm } = customSizeMinCm(product.customSize)
+    const width = Number(customWidthCm.replace(',', '.'))
+    const height = Number(customHeightCm.replace(',', '.'))
+    if (!Number.isFinite(width) || !Number.isFinite(height)) return null
+    if (
+      width < minWidthCm ||
+      height < minHeightCm ||
+      width > product.customSize.maxWidthCm ||
+      height > product.customSize.maxHeightCm
+    ) {
+      return null
+    }
+    return { width, height }
+  }, [product, customWidthCm, customHeightCm])
+
   const selectedSize: SizeOption | null = useMemo(() => {
     if (!product || !sizeId) return null
     if (sizeId === 'custom' && product.customSize) {
       return {
         id: 'custom',
-        label: t('product.customSize'),
+        label: customDims
+          ? t('product.customSizeDims', {
+              width: customDims.width,
+              height: customDims.height,
+            })
+          : t('product.customSize'),
         price: product.customSize.basePrice,
       }
     }
     return product.sizes.find((s) => s.id === sizeId) ?? null
-  }, [product, sizeId, t])
+  }, [product, sizeId, customDims, t])
+
+  const canContinue =
+    selectedSize != null && (sizeId !== 'custom' || customDims != null)
+
+  function clampCustomDim(
+    raw: string,
+    max: number,
+    setter: (value: string) => void,
+  ) {
+    if (raw === '' || raw === '.' || raw === ',') {
+      setter(raw)
+      return
+    }
+    const n = Number(raw.replace(',', '.'))
+    if (!Number.isFinite(n)) return
+    if (n < 0) {
+      setter('0')
+      return
+    }
+    if (n > max) {
+      setter(String(max))
+      return
+    }
+    setter(raw)
+  }
 
   function handleContinue(mode?: 'upload') {
-    if (!product || !selectedSize) return
+    if (!product || !selectedSize || !canContinue) return
     const params = new URLSearchParams({
       sizeId: selectedSize.id,
       qty: String(qty),
     })
+    if (sizeId === 'custom' && customDims) {
+      params.set('widthCm', String(customDims.width))
+      params.set('heightCm', String(customDims.height))
+    }
     if (mode === 'upload') params.set('mode', 'upload')
     navigate(`/produkter/${product.slug}/design?${params}`)
   }
@@ -92,19 +154,49 @@ export function ProductPage() {
   }
 
   const copy = catalogCopy(product, t)
+  const gallery = productGallery(product)
+  const mainImage = gallery[activeImage] ?? gallery[0] ?? product.imageUrl
   const minQty = effectiveMinQuantity(product.minQuantity)
   const packPrice = selectedSize?.price ?? null
   const estimatedTotal =
     packPrice != null ? lineTotalFromPack(packPrice, qty, minQty) : null
+  const customMins = product.customSize
+    ? customSizeMinCm(product.customSize)
+    : null
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
-      <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-10">
-        <img
-          src={product.imageUrl}
-          alt=""
-          className="max-h-80 w-full object-contain"
-        />
+      <div>
+        <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-10">
+          <img
+            src={assetUrl(mainImage)}
+            alt=""
+            className="max-h-80 w-full object-contain"
+          />
+        </div>
+        {gallery.length > 1 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {gallery.map((url, index) => (
+              <button
+                key={`${url}-${index}`}
+                type="button"
+                onClick={() => setActiveImage(index)}
+                className={cn(
+                  'border bg-[#eceae6] p-1 transition',
+                  activeImage === index
+                    ? 'border-ink'
+                    : 'border-transparent hover:border-ink/30',
+                )}
+              >
+                <img
+                  src={assetUrl(url)}
+                  alt=""
+                  className="h-14 w-14 object-contain"
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-6">
@@ -191,6 +283,67 @@ export function ProductPage() {
               </button>
             )}
           </div>
+          {sizeId === 'custom' && product.customSize && customMins && (
+            <div className="mt-4 grid max-w-sm grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="custom-width">
+                  {t('product.widthCm')}
+                </Label>
+                <Input
+                  id="custom-width"
+                  type="number"
+                  min={customMins.minWidthCm}
+                  max={product.customSize.maxWidthCm}
+                  step={0.1}
+                  inputMode="decimal"
+                  value={customWidthCm}
+                  onChange={(e) =>
+                    clampCustomDim(
+                      e.target.value,
+                      product.customSize!.maxWidthCm,
+                      setCustomWidthCm,
+                    )
+                  }
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="custom-height">
+                  {t('product.heightCm')}
+                </Label>
+                <Input
+                  id="custom-height"
+                  type="number"
+                  min={customMins.minHeightCm}
+                  max={product.customSize.maxHeightCm}
+                  step={0.1}
+                  inputMode="decimal"
+                  value={customHeightCm}
+                  onChange={(e) =>
+                    clampCustomDim(
+                      e.target.value,
+                      product.customSize!.maxHeightCm,
+                      setCustomHeightCm,
+                    )
+                  }
+                  className="mt-2"
+                />
+              </div>
+              <p className="col-span-2 text-sm text-ink-muted">
+                {t('product.sizeRange', {
+                  minWidth: customMins.minWidthCm,
+                  minHeight: customMins.minHeightCm,
+                  maxWidth: product.customSize.maxWidthCm,
+                  maxHeight: product.customSize.maxHeightCm,
+                })}
+              </p>
+              {customDims == null && (
+                <p className="col-span-2 text-sm text-red-700">
+                  {t('product.customSizeInvalid')}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="max-w-xs">
@@ -249,7 +402,7 @@ export function ProductPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button
             size="lg"
-            disabled={!selectedSize}
+            disabled={!canContinue}
             onClick={() => handleContinue()}
           >
             {t('product.continueDesign')}
@@ -257,7 +410,7 @@ export function ProductPage() {
           <Button
             size="lg"
             variant="outline"
-            disabled={!selectedSize}
+            disabled={!canContinue}
             onClick={() => handleContinue('upload')}
           >
             {t('product.uploadOwnFile')}

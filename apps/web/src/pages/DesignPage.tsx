@@ -1,5 +1,6 @@
 import {
   BLEED_MM,
+  customSizeMinCm,
   effectiveMinQuantity,
   lineTotalFromPack,
   mmToPx,
@@ -44,6 +45,8 @@ export function DesignPage() {
 
   const sizeIdParam = searchParams.get('sizeId')
   const qtyParam = Number(searchParams.get('qty') ?? '1')
+  const widthCmParam = Number(searchParams.get('widthCm') ?? '')
+  const heightCmParam = Number(searchParams.get('heightCm') ?? '')
   const modeParam = searchParams.get('mode')
   const mode: DesignMode = modeParam === 'upload' ? 'upload' : 'editor'
 
@@ -103,16 +106,48 @@ export function DesignPage() {
       sizeIdParam ?? product.sizes[0]?.id ?? (product.customSize ? 'custom' : null)
     if (!sizeId) return null
     if (sizeId === 'custom' && product.customSize) {
+      const { minWidthCm, minHeightCm } = customSizeMinCm(product.customSize)
+      const width = Number.isFinite(widthCmParam) ? widthCmParam : null
+      const height = Number.isFinite(heightCmParam) ? heightCmParam : null
+      const withinMax =
+        width != null &&
+        height != null &&
+        width >= minWidthCm &&
+        height >= minHeightCm &&
+        width <= product.customSize.maxWidthCm &&
+        height <= product.customSize.maxHeightCm
       return {
         id: 'custom',
-        label: t('product.customSize'),
+        label: withinMax
+          ? t('product.customSizeDims', { width, height })
+          : t('product.customSize'),
         price: product.customSize.basePrice,
       }
     }
     return product.sizes.find((s) => s.id === sizeId) ?? null
-  }, [product, sizeIdParam, t])
+  }, [product, sizeIdParam, widthCmParam, heightCmParam, t])
 
-  const dims = selectedSize ? sizeToMm(selectedSize.id) : null
+  const dims = useMemo(() => {
+    if (!selectedSize) return null
+    if (selectedSize.id === 'custom' && product?.customSize) {
+      const { minWidthCm, minHeightCm } = customSizeMinCm(product.customSize)
+      if (
+        !Number.isFinite(widthCmParam) ||
+        !Number.isFinite(heightCmParam) ||
+        widthCmParam < minWidthCm ||
+        heightCmParam < minHeightCm ||
+        widthCmParam > product.customSize.maxWidthCm ||
+        heightCmParam > product.customSize.maxHeightCm
+      ) {
+        return null
+      }
+      return {
+        widthMm: Math.round(widthCmParam * 10),
+        heightMm: Math.round(heightCmParam * 10),
+      }
+    }
+    return sizeToMm(selectedSize.id)
+  }, [selectedSize, product, widthCmParam, heightCmParam])
 
   function getTemplateCopy(): TemplateCopy {
     return {
@@ -291,6 +326,7 @@ export function DesignPage() {
         sizeId: selectedSize.id,
         sizeLabel: selectedSize.label,
         qty,
+        minQuantity: product.minQuantity,
         unitPrice: unitPriceFromPack(selectedSize.price, product.minQuantity),
         designPdfKey,
         designFileName: fileName,

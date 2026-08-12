@@ -1,6 +1,8 @@
 import type {
+  Article,
   CreateOrderPayload,
   CreateOrderResponse,
+  DeliverySettings,
   OrderStatusResponse,
   Product,
 } from '@inknova/shared'
@@ -30,6 +32,18 @@ export function fetchProducts() {
 
 export function fetchProduct(slug: string) {
   return request<Product>(`/api/products/${slug}`)
+}
+
+export function fetchArticles() {
+  return request<Article[]>('/api/articles')
+}
+
+export function fetchArticle(slug: string) {
+  return request<Article>(`/api/articles/${encodeURIComponent(slug)}`)
+}
+
+export function fetchDeliverySettings() {
+  return request<DeliverySettings>('/api/delivery')
 }
 
 export function submitContact(payload: {
