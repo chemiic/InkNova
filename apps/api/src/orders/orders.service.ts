@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   effectiveMinQuantity,
   lineTotalFromPack,
+  resolveOrderDeliveryFee,
   unitPriceFromPack,
   type CreateOrderResponse,
   type OrderStatusResponse,
@@ -17,6 +18,7 @@ import { randomBytes } from 'crypto';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { CatalogService } from '../catalog/catalog.service';
+import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
 import { VippsService } from '../payments/vipps.service';
 import { OrderStore, type StoredLineItem, type StoredOrder } from './order.store';
@@ -32,6 +34,7 @@ export class OrdersService {
 
   constructor(
     private readonly catalog: CatalogService,
+    private readonly db: DatabaseService,
     private readonly mail: MailService,
     private readonly vipps: VippsService,
     private readonly config: ConfigService,
@@ -90,12 +93,14 @@ export class OrdersService {
     const byId = new Map(products.map((p) => [p.id, p]));
     const bySlug = new Map(products.map((p) => [p.slug, p]));
 
+    const lineProducts: Product[] = [];
     const pricedItems: StoredLineItem[] = dto.items.map((item, index) => {
       const product =
         byId.get(item.productId) ?? bySlug.get(item.productSlug) ?? null;
       if (!product) {
         throw new BadRequestException(`Unknown product: ${item.productSlug}`);
       }
+      lineProducts.push(product);
       const packPrice = resolvePackPrice(product, item.sizeId);
       if (packPrice == null) {
         throw new BadRequestException(
@@ -131,7 +136,13 @@ export class OrdersService {
       };
     });
 
-    const totalNok = pricedItems.reduce((sum, i) => sum + i.lineTotal, 0);
+    const itemsSubtotal = pricedItems.reduce((sum, i) => sum + i.lineTotal, 0);
+    const deliveryDefaults = this.db.getDeliverySettings();
+    const deliveryFee = resolveOrderDeliveryFee(
+      lineProducts.map((p) => p.delivery.fee),
+      deliveryDefaults.defaultFee,
+    );
+    const totalNok = itemsSubtotal + deliveryFee;
     if (totalNok <= 0) {
       throw new BadRequestException('Order total must be positive');
     }
@@ -154,6 +165,7 @@ export class OrdersService {
         city: dto.customer.city.trim(),
       },
       items: pricedItems,
+      deliveryFee,
       totalNok,
       copycatSent: false,
     };
@@ -169,7 +181,6 @@ export class OrdersService {
       this.vipps.isConfigured() && !this.vipps.isDryRun();
 
     if (!useLiveVipps) {
-      // Local / until Vipps keys exist: complete immediately and notify Copycat.
       await this.finalizePaidOrder(reference);
       const completed = this.store.get(reference)!;
       return {
@@ -216,10 +227,6 @@ export class OrdersService {
     };
   }
 
-  /**
-   * Called from the web return page after Vipps redirect (or dry-run).
-   * Verifies payment, captures, sends Copycat mail once.
-   */
   async confirmPayment(reference: string): Promise<OrderStatusResponse> {
     const order = this.store.get(reference);
     if (!order) {
@@ -234,7 +241,6 @@ export class OrdersService {
     }
 
     const state = await this.vipps.getPaymentState(reference);
-    // AUTHORIZED = reserved; CAPTURED = already captured
     if (state !== 'AUTHORIZED' && state !== 'CAPTURED') {
       this.store.update(reference, { status: 'failed' });
       throw new BadRequestException(`Payment not completed (${state})`);
@@ -291,6 +297,7 @@ export class OrdersService {
           `- ${i.productName} (${i.sizeLabel}) × ${i.qty} — ${i.lineTotal} NOK — fil: ${i.designFileName}`,
       ),
       '',
+      `Frakt: ${order.deliveryFee} NOK`,
       `Sum: ${order.totalNok} NOK`,
       `Betaling: ${order.paymentMethod}`,
     ].filter((l) => l !== undefined);
@@ -319,7 +326,8 @@ export class OrdersService {
               )
               .join('')}
           </ul>
-          <p><strong>Sum:</strong> ${order.totalNok} NOK<br/>
+          <p><strong>Frakt:</strong> ${order.deliveryFee} NOK<br/>
+          <strong>Sum:</strong> ${order.totalNok} NOK<br/>
           <strong>Betaling:</strong> ${escapeHtml(order.paymentMethod)}</p>
         `,
         attachments: order.items
@@ -349,7 +357,6 @@ function resolvePackPrice(product: Product, sizeId: string): number | null {
 }
 
 function makeReference(): string {
-  // Vipps: 8–64 chars, [a-zA-Z0-9-]
   return `ink-${Date.now().toString(36)}-${randomBytes(4).toString('hex')}`;
 }
 

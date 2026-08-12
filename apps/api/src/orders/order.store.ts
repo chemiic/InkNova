@@ -21,6 +21,8 @@ export type StoredOrder = {
   paymentMethod: PaymentMethod;
   customer: CheckoutCustomer;
   items: StoredLineItem[];
+  /** Flat shipping fee included in totalNok */
+  deliveryFee: number;
   totalNok: number;
   copycatSent: boolean;
 };

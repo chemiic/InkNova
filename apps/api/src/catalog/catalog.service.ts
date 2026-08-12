@@ -2,15 +2,15 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { isProductVisible, Product } from '@inknova/shared';
 import {
   CATALOG_PRICING_STORE,
-  JsonCatalogPricingStore,
-} from './json-catalog-pricing.store';
+  SqliteCatalogPricingStore,
+} from './sqlite-catalog-pricing.store';
 import { CatalogPricingStore } from './catalog-pricing.store';
 
 @Injectable()
 export class CatalogService {
   constructor(
     @Inject(CATALOG_PRICING_STORE)
-    private readonly store: CatalogPricingStore,
+    private readonly store: CatalogPricingStore & SqliteCatalogPricingStore,
   ) {}
 
   /** Public storefront: only visible products. */
@@ -36,7 +36,16 @@ export class CatalogService {
   async getBySlugAll(slug: string): Promise<Product | null> {
     return this.store.findBySlug(slug);
   }
-}
 
-// re-export for DI typing convenience
-export type { JsonCatalogPricingStore };
+  async getById(id: string): Promise<Product | null> {
+    return this.store.findById(id);
+  }
+
+  async save(product: Product): Promise<Product> {
+    return this.store.save(product);
+  }
+
+  async remove(id: string): Promise<boolean> {
+    return this.store.remove(id);
+  }
+}

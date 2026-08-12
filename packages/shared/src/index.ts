@@ -91,12 +91,26 @@ export function lineTotalFromPack(
   return Math.round(unitPriceFromPack(packPrice, minQuantity) * qty);
 }
 
-/** Optional custom size: max dimensions in cm */
+/** Optional custom size: min/max dimensions in cm */
 export interface CustomSizeConfig {
+  /** Defaults to 5 when omitted (older catalog payloads). */
+  minWidthCm?: number;
+  /** Defaults to 5 when omitted (older catalog payloads). */
+  minHeightCm?: number;
   maxWidthCm: number;
   maxHeightCm: number;
   /** Base price stub; real pricing later */
   basePrice: MoneyNOK;
+}
+
+export function customSizeMinCm(config: CustomSizeConfig): {
+  minWidthCm: number;
+  minHeightCm: number;
+} {
+  return {
+    minWidthCm: config.minWidthCm ?? 5,
+    minHeightCm: config.minHeightCm ?? 5,
+  };
 }
 
 export interface DeliveryInfo {
@@ -106,6 +120,13 @@ export interface DeliveryInfo {
   fee: MoneyNOK | null;
 }
 
+/** Global flat delivery defaults (admin-editable). */
+export interface DeliverySettings {
+  defaultLabel: string;
+  /** Flat fee in NOK; null = free / TBD */
+  defaultFee: MoneyNOK | null;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -113,7 +134,10 @@ export interface Product {
   /** i18n key under products.<id>.name — or inline nb for seed */
   name: string;
   description: string;
+  /** Cover / primary image (usually images[0]). */
   imageUrl: string;
+  /** Gallery URLs; when empty, fall back to [imageUrl]. */
+  images?: string[];
   sizes: SizeOption[];
   customSize?: CustomSizeConfig;
   delivery: DeliveryInfo;
@@ -135,6 +159,78 @@ export function isProductVisible(product: Product): boolean {
   return product.hidden !== true;
 }
 
+/** Gallery list with cover fallback. */
+export function productGallery(product: Product): string[] {
+  if (product.images && product.images.length > 0) {
+    return product.images;
+  }
+  return product.imageUrl ? [product.imageUrl] : [];
+}
+
+/**
+ * Order shipping = max of product delivery fees in the cart;
+ * if all null/missing, use global defaultFee (or 0).
+ */
+export function resolveOrderDeliveryFee(
+  productFees: Array<MoneyNOK | null | undefined>,
+  defaultFee: MoneyNOK | null | undefined,
+): MoneyNOK {
+  const fees = productFees.filter(
+    (f): f is number => typeof f === 'number' && Number.isFinite(f) && f >= 0,
+  );
+  if (fees.length > 0) {
+    return Math.max(...fees);
+  }
+  if (typeof defaultFee === 'number' && Number.isFinite(defaultFee)) {
+    return Math.max(0, defaultFee);
+  }
+  return 0;
+}
+
+export interface ArticleLocalized {
+  title: string;
+  excerpt: string;
+  body: string;
+}
+
+export interface Article {
+  id: string;
+  slug: string;
+  titleNb: string;
+  titleEn: string;
+  excerptNb: string;
+  excerptEn: string;
+  bodyNb: string;
+  bodyEn: string;
+  imageUrl?: string | null;
+  hidden?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Public storefront visibility for articles. */
+export function isArticleVisible(article: Article): boolean {
+  return article.hidden !== true;
+}
+
+export function articleLocalized(
+  article: Article,
+  lang: 'nb' | 'en',
+): ArticleLocalized {
+  if (lang === 'en') {
+    return {
+      title: article.titleEn || article.titleNb,
+      excerpt: article.excerptEn || article.excerptNb,
+      body: article.bodyEn || article.bodyNb,
+    };
+  }
+  return {
+    title: article.titleNb,
+    excerpt: article.excerptNb,
+    body: article.bodyNb,
+  };
+}
+
 export interface CartItem {
   id: string;
   productId: string;
@@ -145,6 +241,11 @@ export interface CartItem {
   qty: number;
   /** Snapshot at add-to-cart time */
   unitPrice: MoneyNOK;
+  /**
+   * Minstebestilling snapshot (catalog `minQuantity`).
+   * Used to clamp qty in the cart UI.
+   */
+  minQuantity?: number;
   /**
    * Key for the print-ready PDF blob in browser IndexedDB.
    * Required from Phase C — never stored on the server.

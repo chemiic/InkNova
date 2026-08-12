@@ -2,8 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { AdminModule } from './admin/admin.module';
+import { ArticlesModule } from './articles/articles.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { ContactModule } from './contact/contact.module';
+import { DatabaseModule } from './database/database.module';
+import { DeliveryModule } from './delivery/delivery.module';
 import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
 
@@ -11,7 +15,11 @@ import { OrdersModule } from './orders/orders.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    DatabaseModule,
     CatalogModule,
+    ArticlesModule,
+    DeliveryModule,
+    AdminModule,
     ContactModule,
     MailModule,
     OrdersModule,

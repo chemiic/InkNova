@@ -3,19 +3,19 @@ import { CatalogController } from './catalog.controller';
 import { CatalogService } from './catalog.service';
 import {
   CATALOG_PRICING_STORE,
-  JsonCatalogPricingStore,
-} from './json-catalog-pricing.store';
+  SqliteCatalogPricingStore,
+} from './sqlite-catalog-pricing.store';
 
 @Module({
   controllers: [CatalogController],
   providers: [
     CatalogService,
-    JsonCatalogPricingStore,
+    SqliteCatalogPricingStore,
     {
       provide: CATALOG_PRICING_STORE,
-      useExisting: JsonCatalogPricingStore,
+      useExisting: SqliteCatalogPricingStore,
     },
   ],
-  exports: [CatalogService],
+  exports: [CatalogService, SqliteCatalogPricingStore],
 })
 export class CatalogModule {}

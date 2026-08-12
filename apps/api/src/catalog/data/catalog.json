@@ -21,6 +21,8 @@
         { "id": "a4", "label": "A4", "price": 499 }
       ],
       "customSize": {
+        "minWidthCm": 5,
+        "minHeightCm": 5,
         "maxWidthCm": 30,
         "maxHeightCm": 42,
         "basePrice": 549
@@ -63,6 +65,8 @@
         { "id": "70x100", "label": "70×100 cm", "price": 549 }
       ],
       "customSize": {
+        "minWidthCm": 10,
+        "minHeightCm": 10,
         "maxWidthCm": 100,
         "maxHeightCm": 140,
         "basePrice": 799
@@ -146,6 +150,8 @@
         { "id": "a4", "label": "A4", "price": 699 }
       ],
       "customSize": {
+        "minWidthCm": 10,
+        "minHeightCm": 10,
         "maxWidthCm": 25,
         "maxHeightCm": 35,
         "basePrice": 749

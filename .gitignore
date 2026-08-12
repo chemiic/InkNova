@@ -10,3 +10,5 @@ coverage
 uploads
 *.tsbuildinfo
 apps/api/uploads
+apps/api/data
+

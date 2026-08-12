@@ -1,10 +1,13 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { existsSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
@@ -21,6 +24,15 @@ async function bootstrap() {
     origin: origin.split(',').map((o) => o.trim()),
     credentials: true,
   });
+
+  const uploadDir = config.get<string>(
+    'UPLOAD_DIR',
+    join(process.cwd(), 'uploads'),
+  );
+  if (!existsSync(uploadDir)) {
+    mkdirSync(uploadDir, { recursive: true });
+  }
+  app.useStaticAssets(uploadDir, { prefix: '/uploads' });
 
   const port = Number(config.get<string>('PORT', '3000'));
   await app.listen(port);
