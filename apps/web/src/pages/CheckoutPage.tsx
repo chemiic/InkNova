@@ -1,5 +1,14 @@
 import { resolveOrderDeliveryFee, type PaymentMethod } from '@inknova/shared'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -8,20 +17,21 @@ import { Label } from '@/components/ui/label'
 import { fetchDeliverySettings, fetchProducts, submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { useCart } from '@/lib/cart'
+import {
+  applyNoPhoneInput,
+  applyNoPostalInput,
+  checkoutErrorsFromApi,
+  formatNoPostal,
+  toNoPhoneE164,
+  validateCheckoutForm,
+  type CheckoutField,
+  type CheckoutFieldErrors,
+  type CheckoutFormState,
+} from '@/lib/checkoutFields'
 import { getDesignPdf } from '@/lib/designStore'
 import { cn, formatNok } from '@/lib/utils'
 
-type FormState = {
-  name: string
-  email: string
-  phone: string
-  addressLine1: string
-  addressLine2: string
-  postalCode: string
-  city: string
-}
-
-const emptyForm: FormState = {
+const emptyForm: CheckoutFormState = {
   name: '',
   email: '',
   phone: '',
@@ -35,11 +45,30 @@ export function CheckoutPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { items, total, clearCart } = useCart()
-  const [form, setForm] = useState<FormState>(emptyForm)
+  const [form, setForm] = useState<CheckoutFormState>(emptyForm)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({})
   const [deliveryFee, setDeliveryFee] = useState(0)
+  const phoneRef = useRef<HTMLInputElement>(null)
+  const postalRef = useRef<HTMLInputElement>(null)
+  const phoneCaretRef = useRef<number | null>(null)
+  const postalCaretRef = useRef<number | null>(null)
+
+  useLayoutEffect(() => {
+    const pos = phoneCaretRef.current
+    if (pos === null || !phoneRef.current) return
+    phoneRef.current.setSelectionRange(pos, pos)
+    phoneCaretRef.current = null
+  }, [form.phone])
+
+  useLayoutEffect(() => {
+    const pos = postalCaretRef.current
+    if (pos === null || !postalRef.current) return
+    postalRef.current.setSelectionRange(pos, pos)
+    postalCaretRef.current = null
+  }, [form.postalCode])
 
   useEffect(() => {
     let cancelled = false
@@ -54,9 +83,7 @@ export function CheckoutPage() {
         const fees = items.map(
           (i) => feesByKey.get(i.productId) ?? feesByKey.get(i.productSlug),
         )
-        setDeliveryFee(
-          resolveOrderDeliveryFee(fees, delivery.defaultFee),
-        )
+        setDeliveryFee(resolveOrderDeliveryFee(fees, delivery.defaultFee))
       })
       .catch(() => {
         /* ignore — server recalculates */
@@ -80,15 +107,64 @@ export function CheckoutPage() {
     [items, t],
   )
 
-  function patch<K extends keyof FormState>(key: K, value: FormState[K]) {
+  function patch<K extends CheckoutField>(key: K, value: CheckoutFormState[K]) {
     setForm((f) => ({ ...f, [key]: value }))
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  function onPhoneChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value, caret } = applyNoPhoneInput(
+      e.target.value,
+      e.target.selectionStart ?? e.target.value.length,
+    )
+    phoneCaretRef.current = caret
+    if (value === form.phone) {
+      e.target.setSelectionRange(caret, caret)
+      return
+    }
+    patch('phone', value)
+  }
+
+  function onPostalChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value, caret } = applyNoPostalInput(
+      e.target.value,
+      e.target.selectionStart ?? e.target.value.length,
+    )
+    postalCaretRef.current = caret
+    if (value === form.postalCode) {
+      e.target.setSelectionRange(caret, caret)
+      return
+    }
+    patch('postalCode', value)
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (!items.length || submitting) return
+
+    const localErrors = validateCheckoutForm(form, t)
+    if (Object.keys(localErrors).length > 0) {
+      setFieldErrors(localErrors)
+      setError(t('checkout.errorFields'))
+      scrollToFirstError()
+      return
+    }
+
+    const phone = toNoPhoneE164(form.phone)
+    if (!phone) {
+      setFieldErrors({ phone: t('checkout.errors.phoneInvalid') })
+      setError(t('checkout.errorFields'))
+      return
+    }
+
     setSubmitting(true)
     setError(null)
+    setFieldErrors({})
     try {
       const pdfs: Blob[] = []
       for (const item of items) {
@@ -104,10 +180,10 @@ export function CheckoutPage() {
           customer: {
             name: form.name.trim(),
             email: form.email.trim(),
-            phone: form.phone.trim(),
+            phone,
             addressLine1: form.addressLine1.trim(),
             addressLine2: form.addressLine2.trim() || undefined,
-            postalCode: form.postalCode.trim(),
+            postalCode: formatNoPostal(form.postalCode),
             city: form.city.trim(),
           },
           paymentMethod,
@@ -144,7 +220,14 @@ export function CheckoutPage() {
       if (msg === 'missing-pdf') {
         setError(t('checkout.errorMissingPdf'))
       } else {
-        setError(t('checkout.errorSubmit'))
+        const apiFields = checkoutErrorsFromApi(msg, t)
+        if (Object.keys(apiFields).length > 0) {
+          setFieldErrors(apiFields)
+          setError(t('checkout.errorFields'))
+          scrollToFirstError()
+        } else {
+          setError(t('checkout.errorSubmit'))
+        }
       }
     } finally {
       setSubmitting(false)
@@ -171,47 +254,71 @@ export function CheckoutPage() {
         </h1>
         <p className="mt-3 text-ink-muted">{t('checkout.sub')}</p>
 
-        <form onSubmit={(e) => void onSubmit(e)} className="mt-10 space-y-8">
+        <form
+          onSubmit={(e) => void onSubmit(e)}
+          noValidate
+          className="mt-10 space-y-8"
+        >
           <section className="space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               {t('checkout.contactSection')}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label htmlFor="name">{t('checkout.name')}</Label>
+              <Field
+                className="sm:col-span-2"
+                id="name"
+                label={t('checkout.name')}
+                error={fieldErrors.name}
+              >
                 <Input
                   id="name"
-                  required
-                  className="mt-2"
+                  className={fieldClass(fieldErrors.name)}
                   value={form.name}
                   onChange={(e) => patch('name', e.target.value)}
                   autoComplete="name"
+                  aria-invalid={Boolean(fieldErrors.name)}
+                  aria-describedby={fieldErrors.name ? 'name-error' : undefined}
                 />
-              </div>
-              <div>
-                <Label htmlFor="email">{t('checkout.email')}</Label>
+              </Field>
+              <Field
+                id="email"
+                label={t('checkout.email')}
+                error={fieldErrors.email}
+              >
                 <Input
                   id="email"
                   type="email"
-                  required
-                  className="mt-2"
+                  className={fieldClass(fieldErrors.email)}
                   value={form.email}
                   onChange={(e) => patch('email', e.target.value)}
                   autoComplete="email"
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  aria-describedby={
+                    fieldErrors.email ? 'email-error' : undefined
+                  }
                 />
-              </div>
-              <div>
-                <Label htmlFor="phone">{t('checkout.phone')}</Label>
+              </Field>
+              <Field
+                id="phone"
+                label={t('checkout.phone')}
+                error={fieldErrors.phone}
+              >
                 <Input
+                  ref={phoneRef}
                   id="phone"
                   type="tel"
-                  required
-                  className="mt-2"
+                  inputMode="tel"
+                  className={fieldClass(fieldErrors.phone)}
                   value={form.phone}
-                  onChange={(e) => patch('phone', e.target.value)}
+                  placeholder="+47 00 00 00 00"
+                  onChange={onPhoneChange}
                   autoComplete="tel"
+                  aria-invalid={Boolean(fieldErrors.phone)}
+                  aria-describedby={
+                    fieldErrors.phone ? 'phone-error' : undefined
+                  }
                 />
-              </div>
+              </Field>
             </div>
           </section>
 
@@ -220,17 +327,24 @@ export function CheckoutPage() {
               {t('checkout.addressSection')}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label htmlFor="address1">{t('checkout.address1')}</Label>
+              <Field
+                className="sm:col-span-2"
+                id="address1"
+                label={t('checkout.address1')}
+                error={fieldErrors.addressLine1}
+              >
                 <Input
                   id="address1"
-                  required
-                  className="mt-2"
+                  className={fieldClass(fieldErrors.addressLine1)}
                   value={form.addressLine1}
                   onChange={(e) => patch('addressLine1', e.target.value)}
                   autoComplete="address-line1"
+                  aria-invalid={Boolean(fieldErrors.addressLine1)}
+                  aria-describedby={
+                    fieldErrors.addressLine1 ? 'address1-error' : undefined
+                  }
                 />
-              </div>
+              </Field>
               <div className="sm:col-span-2">
                 <Label htmlFor="address2">{t('checkout.address2')}</Label>
                 <Input
@@ -241,28 +355,44 @@ export function CheckoutPage() {
                   autoComplete="address-line2"
                 />
               </div>
-              <div>
-                <Label htmlFor="postal">{t('checkout.postalCode')}</Label>
+              <Field
+                id="postal"
+                label={t('checkout.postalCode')}
+                error={fieldErrors.postalCode}
+                hint={t('checkout.postalHint')}
+              >
                 <Input
+                  ref={postalRef}
                   id="postal"
-                  required
-                  className="mt-2"
+                  inputMode="numeric"
+                  className={fieldClass(fieldErrors.postalCode)}
                   value={form.postalCode}
-                  onChange={(e) => patch('postalCode', e.target.value)}
+                  placeholder="0000"
+                  onChange={onPostalChange}
                   autoComplete="postal-code"
+                  aria-invalid={Boolean(fieldErrors.postalCode)}
+                  aria-describedby={
+                    fieldErrors.postalCode ? 'postal-error' : 'postal-hint'
+                  }
                 />
-              </div>
-              <div>
-                <Label htmlFor="city">{t('checkout.city')}</Label>
+              </Field>
+              <Field
+                id="city"
+                label={t('checkout.city')}
+                error={fieldErrors.city}
+              >
                 <Input
                   id="city"
-                  required
-                  className="mt-2"
+                  className={fieldClass(fieldErrors.city)}
                   value={form.city}
                   onChange={(e) => patch('city', e.target.value)}
                   autoComplete="address-level1"
+                  aria-invalid={Boolean(fieldErrors.city)}
+                  aria-describedby={
+                    fieldErrors.city ? 'city-error' : undefined
+                  }
                 />
-              </div>
+              </Field>
             </div>
           </section>
 
@@ -296,7 +426,10 @@ export function CheckoutPage() {
           </section>
 
           {error && (
-            <p className="rounded-lg border border-warm/40 bg-warm/10 px-4 py-3 text-sm text-warm">
+            <p
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            >
               {error}
             </p>
           )}
@@ -343,4 +476,54 @@ export function CheckoutPage() {
       </aside>
     </div>
   )
+}
+
+function Field({
+  id,
+  label,
+  error,
+  hint,
+  className,
+  children,
+}: {
+  id: string
+  label: string
+  error?: string
+  hint?: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div className={className}>
+      <Label htmlFor={id} className={error ? 'text-red-700' : undefined}>
+        {label}
+      </Label>
+      {children}
+      {error ? (
+        <p id={`${id}-error`} className="mt-1.5 text-sm text-red-700">
+          {error}
+        </p>
+      ) : hint ? (
+        <p id={`${id}-hint`} className="mt-1.5 text-xs text-ink-muted">
+          {hint}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function fieldClass(error?: string) {
+  return cn(
+    'mt-2',
+    error &&
+      'border-red-400 bg-red-50 focus-visible:ring-red-500',
+  )
+}
+
+function scrollToFirstError() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+    })
+  })
 }
