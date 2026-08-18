@@ -10,6 +10,15 @@ export function AdminDashboardPage() {
       <p className="mt-2 text-ink-muted">{t('admin.dashboard.intro')}</p>
       <ul className="mt-8 space-y-3 text-sm">
         <li>
+          <Link className="underline hover:text-accent" to="/admin/orders">
+            {t('admin.nav.orders')}
+          </Link>
+          <span className="text-ink-muted">
+            {' '}
+            {t('admin.dashboard.ordersHint')}
+          </span>
+        </li>
+        <li>
           <Link className="underline hover:text-accent" to="/admin/products">
             {t('admin.nav.products')}
           </Link>

@@ -1,15 +1,21 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  type AdminOrder,
+  type AdminOrderItem,
+  type AdminOrderSummary,
   type Article,
+  type CheckoutCustomer,
   type CustomSizeConfig,
   type DeliverySettings,
+  type OrderStatus,
+  type PaymentMethod,
   type Product,
   type ProductCategory,
   type SizeOption,
 } from '@inknova/shared';
-import { mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { seedIfEmpty } from './seed';
 
@@ -45,10 +51,64 @@ type ArticleRow = {
   updated_at: string;
 };
 
+type OrderRow = {
+  id: string;
+  reference: string;
+  created_at: number;
+  status: string;
+  payment_method: string;
+  customer_json: string;
+  delivery_fee: number;
+  total_nok: number;
+  copycat_sent: number;
+};
+
+type OrderItemRow = {
+  id: number;
+  order_id: string;
+  product_id: string;
+  product_slug: string;
+  product_name: string;
+  size_id: string;
+  size_label: string;
+  qty: number;
+  unit_price: number;
+  line_total: number;
+  design_file_name: string;
+  pdf_path: string | null;
+};
+
+export type PersistOrderItemInput = {
+  productId: string;
+  productSlug: string;
+  productName: string;
+  sizeId: string;
+  sizeLabel: string;
+  qty: number;
+  unitPrice: number;
+  lineTotal: number;
+  designFileName: string;
+  pdfPath: string | null;
+};
+
+export type PersistOrderInput = {
+  id: string;
+  reference: string;
+  createdAt: number;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  customer: CheckoutCustomer;
+  items: PersistOrderItemInput[];
+  deliveryFee: number;
+  totalNok: number;
+  copycatSent: boolean;
+};
+
 @Injectable()
 export class DatabaseService implements OnModuleInit {
   private readonly logger = new Logger(DatabaseService.name);
   private db!: DatabaseSync;
+  private orderFilesRoot = join(process.cwd(), 'data', 'order-files');
 
   constructor(private readonly config: ConfigService) {}
 
@@ -58,12 +118,18 @@ export class DatabaseService implements OnModuleInit {
       join(process.cwd(), 'data', 'inknova.db'),
     );
     mkdirSync(dirname(dbPath), { recursive: true });
+    this.orderFilesRoot = join(dirname(dbPath), 'order-files');
+    mkdirSync(this.orderFilesRoot, { recursive: true });
     this.db = new DatabaseSync(dbPath);
     this.db.exec('PRAGMA journal_mode = WAL;');
     this.db.exec('PRAGMA foreign_keys = ON;');
     this.createSchema();
     seedIfEmpty(this);
     this.logger.log(`SQLite ready at ${dbPath}`);
+  }
+
+  getOrderFilesRoot(): string {
+    return this.orderFilesRoot;
   }
 
   get raw(): DatabaseSync {
@@ -108,6 +174,37 @@ export class DatabaseService implements OnModuleInit {
         key TEXT PRIMARY KEY,
         value_json TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS orders (
+        id TEXT PRIMARY KEY,
+        reference TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        payment_method TEXT NOT NULL,
+        customer_json TEXT NOT NULL,
+        delivery_fee REAL NOT NULL,
+        total_nok REAL NOT NULL,
+        copycat_sent INTEGER NOT NULL DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        product_slug TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        size_id TEXT NOT NULL,
+        size_label TEXT NOT NULL,
+        qty INTEGER NOT NULL,
+        unit_price REAL NOT NULL,
+        line_total REAL NOT NULL,
+        design_file_name TEXT NOT NULL,
+        pdf_path TEXT,
+        FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
     `);
   }
 
@@ -274,6 +371,175 @@ export class DatabaseService implements OnModuleInit {
       .run('delivery', JSON.stringify(settings));
     return this.getDeliverySettings();
   }
+
+  insertOrder(order: PersistOrderInput): void {
+    this.db.exec('BEGIN');
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO orders (
+            id, reference, created_at, status, payment_method,
+            customer_json, delivery_fee, total_nok, copycat_sent
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          order.id,
+          order.reference,
+          order.createdAt,
+          order.status,
+          order.paymentMethod,
+          JSON.stringify(order.customer),
+          order.deliveryFee,
+          order.totalNok,
+          order.copycatSent ? 1 : 0,
+        );
+      const insertItem = this.db.prepare(
+        `INSERT INTO order_items (
+          order_id, product_id, product_slug, product_name,
+          size_id, size_label, qty, unit_price, line_total,
+          design_file_name, pdf_path
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      );
+      for (const item of order.items) {
+        insertItem.run(
+          order.id,
+          item.productId,
+          item.productSlug,
+          item.productName,
+          item.sizeId,
+          item.sizeLabel,
+          item.qty,
+          item.unitPrice,
+          item.lineTotal,
+          item.designFileName,
+          item.pdfPath,
+        );
+      }
+      this.db.exec('COMMIT');
+    } catch (e) {
+      this.db.exec('ROLLBACK');
+      throw e;
+    }
+  }
+
+  updateOrderFlags(
+    reference: string,
+    patch: { status?: OrderStatus; copycatSent?: boolean },
+  ): void {
+    const existing = this.findOrderRowByReference(reference);
+    if (!existing) return;
+    const status = patch.status ?? existing.status;
+    const copycatSent =
+      patch.copycatSent === undefined
+        ? existing.copycat_sent
+        : patch.copycatSent
+          ? 1
+          : 0;
+    this.db
+      .prepare(
+        'UPDATE orders SET status = ?, copycat_sent = ? WHERE reference = ?',
+      )
+      .run(status, copycatSent, reference);
+  }
+
+  getOrderStatusByReference(reference: string): {
+    id: string;
+    reference: string;
+    status: OrderStatus;
+    totalNok: number;
+  } | null {
+    const row = this.findOrderRowByReference(reference);
+    if (!row) return null;
+    return {
+      id: row.id,
+      reference: row.reference,
+      status: row.status as OrderStatus,
+      totalNok: row.total_nok,
+    };
+  }
+
+  loadPersistedOrder(reference: string): PersistOrderInput | null {
+    const row = this.findOrderRowByReference(reference);
+    if (!row) return null;
+    return rowToPersistOrder(row, this.listOrderItemRows(row.id));
+  }
+
+  listAdminOrders(): AdminOrderSummary[] {
+    const rows = this.db
+      .prepare('SELECT * FROM orders ORDER BY created_at DESC')
+      .all() as OrderRow[];
+    return rows.map((row) => {
+      const items = this.listOrderItemRows(row.id);
+      const customer = JSON.parse(row.customer_json) as CheckoutCustomer;
+      return {
+        id: row.id,
+        reference: row.reference,
+        createdAt: new Date(row.created_at).toISOString(),
+        status: row.status as OrderStatus,
+        paymentMethod: row.payment_method as PaymentMethod,
+        customerName: customer.name,
+        customerEmail: customer.email,
+        itemCount: items.length,
+        itemsSummary: items
+          .map((i) => `${i.product_name} (${i.size_label}) × ${i.qty}`)
+          .join(', '),
+        totalNok: row.total_nok,
+      };
+    });
+  }
+
+  findAdminOrder(idOrRef: string): AdminOrder | null {
+    const row =
+      this.findOrderRowById(idOrRef) ?? this.findOrderRowByReference(idOrRef);
+    if (!row) return null;
+    const items = this.listOrderItemRows(row.id);
+    const customer = JSON.parse(row.customer_json) as CheckoutCustomer;
+    return {
+      id: row.id,
+      reference: row.reference,
+      createdAt: new Date(row.created_at).toISOString(),
+      status: row.status as OrderStatus,
+      paymentMethod: row.payment_method as PaymentMethod,
+      customer,
+      items: items.map((item) => rowToAdminItem(item, this.orderFilesRoot)),
+      deliveryFee: row.delivery_fee,
+      totalNok: row.total_nok,
+      copycatSent: row.copycat_sent === 1,
+    };
+  }
+
+  getOrderItemFile(
+    orderId: string,
+    itemId: number,
+  ): { absPath: string; fileName: string } | null {
+    const item = this.db
+      .prepare(
+        'SELECT * FROM order_items WHERE id = ? AND order_id = ?',
+      )
+      .get(itemId, orderId) as OrderItemRow | undefined;
+    if (!item?.pdf_path) return null;
+    const absPath = resolveInside(this.orderFilesRoot, item.pdf_path);
+    if (!absPath || !existsSync(absPath)) return null;
+    return { absPath, fileName: item.design_file_name };
+  }
+
+  private findOrderRowById(id: string): OrderRow | undefined {
+    return this.db
+      .prepare('SELECT * FROM orders WHERE id = ?')
+      .get(id) as OrderRow | undefined;
+  }
+
+  private findOrderRowByReference(reference: string): OrderRow | undefined {
+    return this.db
+      .prepare('SELECT * FROM orders WHERE reference = ?')
+      .get(reference) as OrderRow | undefined;
+  }
+
+  private listOrderItemRows(orderId: string): OrderItemRow[] {
+    return this.db
+      .prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id')
+      .all(orderId) as OrderItemRow[];
+  }
 }
 
 function rowToProduct(row: ProductRow): Product {
@@ -317,4 +583,59 @@ function rowToArticle(row: ArticleRow): Article {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function rowToPersistOrder(
+  row: OrderRow,
+  items: OrderItemRow[],
+): PersistOrderInput {
+  return {
+    id: row.id,
+    reference: row.reference,
+    createdAt: row.created_at,
+    status: row.status as OrderStatus,
+    paymentMethod: row.payment_method as PaymentMethod,
+    customer: JSON.parse(row.customer_json) as CheckoutCustomer,
+    items: items.map((item) => ({
+      productId: item.product_id,
+      productSlug: item.product_slug,
+      productName: item.product_name,
+      sizeId: item.size_id,
+      sizeLabel: item.size_label,
+      qty: item.qty,
+      unitPrice: item.unit_price,
+      lineTotal: item.line_total,
+      designFileName: item.design_file_name,
+      pdfPath: item.pdf_path,
+    })),
+    deliveryFee: row.delivery_fee,
+    totalNok: row.total_nok,
+    copycatSent: row.copycat_sent === 1,
+  };
+}
+
+function rowToAdminItem(row: OrderItemRow, filesRoot: string): AdminOrderItem {
+  const absPath = row.pdf_path
+    ? resolveInside(filesRoot, row.pdf_path)
+    : null;
+  return {
+    id: row.id,
+    productId: row.product_id,
+    productSlug: row.product_slug,
+    productName: row.product_name,
+    sizeId: row.size_id,
+    sizeLabel: row.size_label,
+    qty: row.qty,
+    unitPrice: row.unit_price,
+    lineTotal: row.line_total,
+    designFileName: row.design_file_name,
+    hasFile: Boolean(absPath && existsSync(absPath)),
+  };
+}
+
+function resolveInside(root: string, relativePath: string): string | null {
+  const abs = resolve(root, relativePath);
+  const rel = relative(resolve(root), abs);
+  if (!rel || rel.startsWith('..') || isAbsolute(rel)) return null;
+  return abs;
 }

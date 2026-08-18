@@ -43,6 +43,9 @@ export function AdminLayout() {
             <NavLink to="/admin" end className={linkClass}>
               {t('admin.nav.dashboard')}
             </NavLink>
+            <NavLink to="/admin/orders" className={linkClass}>
+              {t('admin.nav.orders')}
+            </NavLink>
             <NavLink to="/admin/products" className={linkClass}>
               {t('admin.nav.products')}
             </NavLink>

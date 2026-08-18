@@ -318,6 +318,47 @@ export interface OrderStatusResponse {
   totalNok: number;
 }
 
+/** Line item as shown in the admin panel (no PDF bytes). */
+export interface AdminOrderItem {
+  id: number;
+  productId: string;
+  productSlug: string;
+  productName: string;
+  sizeId: string;
+  sizeLabel: string;
+  qty: number;
+  unitPrice: MoneyNOK;
+  lineTotal: MoneyNOK;
+  designFileName: string;
+  hasFile: boolean;
+}
+
+export interface AdminOrder {
+  id: string;
+  reference: string;
+  createdAt: string;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  customer: CheckoutCustomer;
+  items: AdminOrderItem[];
+  deliveryFee: MoneyNOK;
+  totalNok: MoneyNOK;
+  copycatSent: boolean;
+}
+
+export interface AdminOrderSummary {
+  id: string;
+  reference: string;
+  createdAt: string;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  customerName: string;
+  customerEmail: string;
+  itemCount: number;
+  itemsSummary: string;
+  totalNok: MoneyNOK;
+}
+
 export interface ApiSuccess {
   ok: true;
 }

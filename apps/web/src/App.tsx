@@ -24,6 +24,8 @@ import { AdminProductEditPage } from '@/pages/admin/AdminProductEditPage'
 import { AdminArticlesPage } from '@/pages/admin/AdminArticlesPage'
 import { AdminArticleEditPage } from '@/pages/admin/AdminArticleEditPage'
 import { AdminDeliveryPage } from '@/pages/admin/AdminDeliveryPage'
+import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage'
+import { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage'
 
 export default function App() {
   return (
@@ -33,6 +35,8 @@ export default function App() {
         <Route path="/admin" element={<AdminRequireAuth />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="orders/:id" element={<AdminOrderDetailPage />} />
             <Route path="products" element={<AdminProductsPage />} />
             <Route path="products/new" element={<AdminProductEditPage />} />
             <Route path="products/:id" element={<AdminProductEditPage />} />

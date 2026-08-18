@@ -23,6 +23,8 @@ import { MailService } from '../mail/mail.service';
 import { VippsService } from '../payments/vipps.service';
 import { OrderStore, type StoredLineItem, type StoredOrder } from './order.store';
 import { CreateOrderDto } from './orders.dto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const MAX_FILES = 20;
@@ -170,6 +172,11 @@ export class OrdersService {
       copycatSent: false,
     };
     this.store.put(order);
+    try {
+      this.persistNewOrder(order);
+    } catch (e) {
+      this.logger.error(`Failed to persist order ${order.reference}`, e);
+    }
 
     const webOrigin = this.config.get<string>(
       'WEB_ORIGIN',
@@ -214,7 +221,7 @@ export class OrdersService {
   }
 
   async getStatus(reference: string): Promise<OrderStatusResponse> {
-    const order = this.store.get(reference);
+    const order = this.getOrder(reference);
     if (!order) {
       throw new NotFoundException('Order not found');
     }
@@ -228,7 +235,7 @@ export class OrdersService {
   }
 
   async confirmPayment(reference: string): Promise<OrderStatusResponse> {
-    const order = this.store.get(reference);
+    const order = this.getOrder(reference);
     if (!order) {
       throw new NotFoundException('Order not found');
     }
@@ -242,7 +249,7 @@ export class OrdersService {
 
     const state = await this.vipps.getPaymentState(reference);
     if (state !== 'AUTHORIZED' && state !== 'CAPTURED') {
-      this.store.update(reference, { status: 'failed' });
+      this.patchOrder(reference, { status: 'failed' });
       throw new BadRequestException(`Payment not completed (${state})`);
     }
 
@@ -254,16 +261,95 @@ export class OrdersService {
     return this.getStatus(reference);
   }
 
+  private getOrder(reference: string): StoredOrder | undefined {
+    const memory = this.store.get(reference);
+    if (memory) return memory;
+    const persisted = this.db.loadPersistedOrder(reference);
+    if (!persisted) return undefined;
+    return {
+      id: persisted.id,
+      reference: persisted.reference,
+      createdAt: persisted.createdAt,
+      status: persisted.status,
+      paymentMethod: persisted.paymentMethod,
+      customer: persisted.customer,
+      items: persisted.items.map((item) => ({
+        productId: item.productId,
+        productSlug: item.productSlug,
+        productName: item.productName,
+        sizeId: item.sizeId,
+        sizeLabel: item.sizeLabel,
+        qty: item.qty,
+        unitPrice: item.unitPrice,
+        lineTotal: item.lineTotal,
+        designFileName: item.designFileName,
+        pdf: readPdf(this.db.getOrderFilesRoot(), item.pdfPath),
+      })),
+      deliveryFee: persisted.deliveryFee,
+      totalNok: persisted.totalNok,
+      copycatSent: persisted.copycatSent,
+    };
+  }
+
+  private persistNewOrder(order: StoredOrder): void {
+    const filesRoot = this.db.getOrderFilesRoot();
+    mkdirSync(join(filesRoot, order.reference), { recursive: true });
+    const items = order.items.map((item, index) => {
+      let pdfPath: string | null = null;
+      if (item.pdf.length > 0) {
+        const name = `${index + 1}-${item.designFileName}`;
+        writeFileSync(join(filesRoot, order.reference, name), item.pdf);
+        pdfPath = `${order.reference}/${name}`;
+      }
+      return {
+        productId: item.productId,
+        productSlug: item.productSlug,
+        productName: item.productName,
+        sizeId: item.sizeId,
+        sizeLabel: item.sizeLabel,
+        qty: item.qty,
+        unitPrice: item.unitPrice,
+        lineTotal: item.lineTotal,
+        designFileName: item.designFileName,
+        pdfPath,
+      };
+    });
+    this.db.insertOrder({
+      id: order.id,
+      reference: order.reference,
+      createdAt: order.createdAt,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      customer: order.customer,
+      items,
+      deliveryFee: order.deliveryFee,
+      totalNok: order.totalNok,
+      copycatSent: order.copycatSent,
+    });
+  }
+
+  private patchOrder(
+    reference: string,
+    patch: Partial<Pick<StoredOrder, 'status' | 'copycatSent'>>,
+  ): StoredOrder | undefined {
+    const updated = this.store.update(reference, patch);
+    this.db.updateOrderFlags(reference, {
+      status: patch.status ?? updated?.status,
+      copycatSent: patch.copycatSent ?? updated?.copycatSent,
+    });
+    return updated ?? this.getOrder(reference);
+  }
+
   private async finalizePaidOrder(reference: string): Promise<void> {
-    const order = this.store.get(reference);
+    const order = this.getOrder(reference);
     if (!order) return;
     if (order.copycatSent) {
-      this.store.update(reference, { status: 'completed' });
+      this.patchOrder(reference, { status: 'completed' });
       return;
     }
-    this.store.update(reference, { status: 'paid' });
-    await this.sendCopycatMail(this.store.get(reference)!);
-    this.store.update(reference, { status: 'completed' });
+    this.patchOrder(reference, { status: 'paid' });
+    await this.sendCopycatMail(this.getOrder(reference)!);
+    this.patchOrder(reference, { status: 'completed' });
     this.store.clearAttachments(reference);
   }
 
@@ -340,7 +426,7 @@ export class OrdersService {
             contentType: 'application/pdf',
           })),
       });
-      this.store.update(order.reference, { copycatSent: true });
+      this.patchOrder(order.reference, { copycatSent: true });
     } catch (e) {
       this.logger.error('Copycat mail failed', e);
       throw e;
@@ -375,4 +461,11 @@ function escapeHtml(value: string) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function readPdf(filesRoot: string, pdfPath: string | null): Buffer {
+  if (!pdfPath) return Buffer.alloc(0);
+  const abs = join(filesRoot, pdfPath);
+  if (!existsSync(abs)) return Buffer.alloc(0);
+  return readFileSync(abs);
 }

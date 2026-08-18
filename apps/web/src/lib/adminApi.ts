@@ -1,4 +1,6 @@
 import type {
+  AdminOrder,
+  AdminOrderSummary,
   Article,
   DeliverySettings,
   Product,
@@ -135,6 +137,50 @@ export function adminUpdateDelivery(body: DeliverySettings) {
     method: 'PUT',
     body: JSON.stringify(body),
   })
+}
+
+export function adminListOrders() {
+  return adminRequest<AdminOrderSummary[]>('/api/admin/orders')
+}
+
+export function adminGetOrder(id: string) {
+  return adminRequest<AdminOrder>(
+    `/api/admin/orders/${encodeURIComponent(id)}`,
+  )
+}
+
+export async function adminDownloadOrderFile(
+  orderId: string,
+  itemId: number,
+  fileName: string,
+): Promise<void> {
+  const token = getAdminToken()
+  const headers = new Headers()
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+
+  const res = await fetch(
+    `${API_BASE}/api/admin/orders/${encodeURIComponent(orderId)}/items/${itemId}/file`,
+    { headers },
+  )
+
+  if (res.status === 401) {
+    setAdminToken(null)
+    throw new Error('unauthorized')
+  }
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(text || res.statusText)
+  }
+
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 export async function adminUpload(file: File): Promise<{ url: string }> {

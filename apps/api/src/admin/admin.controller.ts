@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,7 +19,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Article, Product } from '@inknova/shared';
 import { memoryStorage } from 'multer';
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
@@ -193,6 +194,35 @@ export class AdminController {
     return this.db.setDeliverySettings({
       defaultLabel: body.defaultLabel,
       defaultFee: body.defaultFee ?? null,
+    });
+  }
+
+  @Get('orders')
+  @UseGuards(AdminAuthGuard)
+  listOrders() {
+    return this.db.listAdminOrders();
+  }
+
+  @Get('orders/:id')
+  @UseGuards(AdminAuthGuard)
+  getOrder(@Param('id') id: string) {
+    const order = this.db.findAdminOrder(id);
+    if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
+  @Get('orders/:id/items/:itemId/file')
+  @UseGuards(AdminAuthGuard)
+  downloadOrderFile(
+    @Param('id') id: string,
+    @Param('itemId') itemId: string,
+  ) {
+    const file = this.db.getOrderItemFile(id, Number(itemId));
+    if (!file) throw new NotFoundException('File not found');
+    const safeName = file.fileName.replace(/[\r\n"]/g, '_');
+    return new StreamableFile(createReadStream(file.absPath), {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
     });
   }
 
