@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { ConsentCheckbox } from '@/components/ConsentCheckbox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,21 +13,28 @@ export function ContactPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'err'>('idle')
+  const [privacyConsent, setPrivacyConsent] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'ok' | 'err' | 'consent'>('idle')
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!privacyConsent) {
+      setStatus('consent')
+      return
+    }
     setStatus('sending')
     try {
       await submitContact({
         email,
         message,
         name: name.trim() || undefined,
+        privacyConsent: true,
       })
       setStatus('ok')
       setName('')
       setEmail('')
       setMessage('')
+      setPrivacyConsent(false)
     } catch {
       setStatus('err')
     }
@@ -77,11 +86,31 @@ export function ContactPage() {
             onChange={(e) => setMessage(e.target.value)}
           />
         </div>
-        <Button type="submit" size="lg" disabled={status === 'sending'}>
+        <ConsentCheckbox
+          id="contact-privacy"
+          required
+          checked={privacyConsent}
+          onChange={setPrivacyConsent}
+        >
+          <Trans
+            i18nKey="contact.privacyConsent"
+            components={{
+              privacy: <Link to="/personvern" className="underline hover:text-ink" />,
+            }}
+          />
+        </ConsentCheckbox>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={status === 'sending' || !privacyConsent}
+        >
           {t('contact.send')}
         </Button>
         {status === 'ok' && (
           <p className="text-sm font-medium text-ink">{t('contact.success')}</p>
+        )}
+        {status === 'consent' && (
+          <p className="text-sm font-medium text-warm">{t('contact.errorConsent')}</p>
         )}
         {status === 'err' && (
           <p className="text-sm font-medium text-ink-muted">{t('contact.error')}</p>

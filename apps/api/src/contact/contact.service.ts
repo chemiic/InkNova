@@ -22,6 +22,7 @@ export class ContactService {
       text: [
         `Navn: ${name}`,
         `E-post: ${dto.email}`,
+        'Personvernsamtykke: ja',
         '',
         'Melding:',
         dto.message,
@@ -29,6 +30,7 @@ export class ContactService {
       html: `
         <p><strong>Navn:</strong> ${escapeHtml(name)}</p>
         <p><strong>E-post:</strong> ${escapeHtml(dto.email)}</p>
+        <p><strong>Personvernsamtykke:</strong> ja</p>
         <p><strong>Melding:</strong></p>
         <p>${escapeHtml(dto.message).replace(/\n/g, '<br/>')}</p>
       `,

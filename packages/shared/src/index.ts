@@ -291,6 +291,9 @@ export interface CreateOrderPayload {
   customer: CheckoutCustomer;
   paymentMethod: PaymentMethod;
   items: CheckoutLineItemInput[];
+  acceptedTerms: true;
+  acknowledgedNoWithdrawal: true;
+  marketingConsent?: boolean;
 }
 
 export type OrderStatus =
