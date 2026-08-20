@@ -419,7 +419,7 @@ export function AdminProductEditPage() {
             </Button>
           </div>
           <div className="space-y-3">
-            <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 text-xs font-medium text-ink-muted">
+            <div className="hidden gap-2 text-xs font-medium text-ink-muted sm:grid sm:grid-cols-[1fr_1fr_1fr_auto]">
               <span>{t('admin.products.sizeId')}</span>
               <span>{t('admin.products.sizeLabel')}</span>
               <span>{t('admin.products.sizePrice')}</span>
@@ -428,39 +428,54 @@ export function AdminProductEditPage() {
             {form.sizes.map((size, index) => (
               <div
                 key={index}
-                className="grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-2"
+                className="space-y-2 rounded-lg border border-line p-3 sm:grid sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-center sm:gap-2 sm:border-0 sm:p-0"
               >
-                <Input
-                  placeholder="a4"
-                  value={size.id}
-                  onChange={(e) => updateSize(index, 'id', e.target.value)}
-                  required
-                  title={t('admin.products.sizeIdHint')}
-                  aria-label={t('admin.products.sizeId')}
-                />
-                <Input
-                  placeholder="A4"
-                  value={size.label}
-                  onChange={(e) => updateSize(index, 'label', e.target.value)}
-                  required
-                  title={t('admin.products.sizeLabelHint')}
-                  aria-label={t('admin.products.sizeLabel')}
-                />
-                <Input
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={size.price}
-                  onChange={(e) => updateSize(index, 'price', e.target.value)}
-                  required
-                  title={t('admin.products.sizePriceHint')}
-                  aria-label={t('admin.products.sizePrice')}
-                />
+                <div>
+                  <Label className="mb-1 text-xs text-ink-muted sm:sr-only">
+                    {t('admin.products.sizeId')}
+                  </Label>
+                  <Input
+                    placeholder="a4"
+                    value={size.id}
+                    onChange={(e) => updateSize(index, 'id', e.target.value)}
+                    required
+                    title={t('admin.products.sizeIdHint')}
+                    aria-label={t('admin.products.sizeId')}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 text-xs text-ink-muted sm:sr-only">
+                    {t('admin.products.sizeLabel')}
+                  </Label>
+                  <Input
+                    placeholder="A4"
+                    value={size.label}
+                    onChange={(e) => updateSize(index, 'label', e.target.value)}
+                    required
+                    title={t('admin.products.sizeLabelHint')}
+                    aria-label={t('admin.products.sizeLabel')}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 text-xs text-ink-muted sm:sr-only">
+                    {t('admin.products.sizePrice')}
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    value={size.price}
+                    onChange={(e) => updateSize(index, 'price', e.target.value)}
+                    required
+                    title={t('admin.products.sizePriceHint')}
+                    aria-label={t('admin.products.sizePrice')}
+                  />
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-11 shrink-0"
+                  className="h-11 w-full shrink-0 sm:w-auto"
                   disabled={form.sizes.length <= 1}
                   onClick={() =>
                     setForm((f) => ({

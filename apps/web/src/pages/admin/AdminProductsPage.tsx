@@ -75,7 +75,8 @@ export function AdminProductsPage() {
       {error && <p className="mt-8 text-sm text-red-700">{error}</p>}
 
       {!loading && !error && (
-        <div className="mt-8 overflow-x-auto">
+        <>
+        <div className="-mx-4 mt-8 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <table className="w-full min-w-[640px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line text-ink-muted">
@@ -145,6 +146,10 @@ export function AdminProductsPage() {
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-ink-muted md:hidden">
+          {t('admin.swipeHint')}
+        </p>
+        </>
       )}
     </div>
   )

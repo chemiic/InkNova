@@ -149,7 +149,7 @@ export function AdminOrderDetailPage() {
         <h2 className="text-sm font-medium text-ink-muted">
           {t('admin.orders.items')}
         </h2>
-        <div className="mt-3 overflow-x-auto">
+        <div className="-mx-4 mt-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <table className="w-full min-w-[640px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line text-ink-muted">
@@ -206,6 +206,9 @@ export function AdminOrderDetailPage() {
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-ink-muted md:hidden">
+          {t('admin.swipeHint')}
+        </p>
       </section>
 
       <section className="mt-8 max-w-sm space-y-2 text-sm">

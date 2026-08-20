@@ -45,6 +45,15 @@ export function AdminDashboardPage() {
             {t('admin.dashboard.deliveryHint')}
           </span>
         </li>
+        <li>
+          <Link className="underline hover:text-accent" to="/admin/homepage">
+            {t('admin.nav.homepage')}
+          </Link>
+          <span className="text-ink-muted">
+            {' '}
+            {t('admin.dashboard.homepageHint')}
+          </span>
+        </li>
       </ul>
     </div>
   )

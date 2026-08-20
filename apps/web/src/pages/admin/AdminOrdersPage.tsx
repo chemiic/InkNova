@@ -64,7 +64,8 @@ export function AdminOrdersPage() {
       )}
 
       {!loading && !error && orders.length > 0 && (
-        <div className="mt-8 overflow-x-auto">
+        <>
+        <div className="-mx-4 mt-8 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line text-ink-muted">
@@ -132,6 +133,10 @@ export function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-ink-muted md:hidden">
+          {t('admin.swipeHint')}
+        </p>
+        </>
       )}
     </div>
   )

@@ -3,6 +3,7 @@ import type {
   AdminOrderSummary,
   Article,
   DeliverySettings,
+  HomepageSettings,
   Product,
 } from '@inknova/shared'
 
@@ -137,6 +138,23 @@ export function adminUpdateDelivery(body: DeliverySettings) {
     method: 'PUT',
     body: JSON.stringify(body),
   })
+}
+
+export function adminGetHomepage() {
+  return adminRequest<HomepageSettings>('/api/admin/homepage')
+}
+
+export function adminUpdateHomepage(body: HomepageSettings) {
+  return adminRequest<HomepageSettings>('/api/admin/homepage', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
+export function adminMailPreview(kind: 'contact' | 'order') {
+  return adminRequest<{ kind: string; html: string }>(
+    `/api/admin/mail-preview/${kind}`,
+  )
 }
 
 export function adminListOrders() {
