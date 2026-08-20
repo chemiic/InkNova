@@ -12,17 +12,21 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { Product, SizeOption } from '@inknova/shared'
 import type Konva from 'konva'
+import { Eye, ShoppingCart } from 'lucide-react'
 import { DesignPreviewModal } from '@/components/DesignPreviewModal'
 import { Button } from '@/components/ui/button'
 import { DesignCanvas } from '@/editor/DesignCanvas'
 import { exportPrintPdf } from '@/editor/exportPdf'
 import { EditorSidebar } from '@/editor/EditorSidebar'
+import { EditorMobileToolbar } from '@/editor/EditorMobileToolbar'
 import {
   applyProductPageStructure,
   getTemplate,
   templatesForProduct,
 } from '@/editor/templates'
-import type { DesignDoc, DesignElement, DesignPageSide } from '@/editor/types'
+import type { DesignDoc, DesignElement, DesignPageSide, ImageElement, TextElement } from '@/editor/types'
+import { uid } from '@/editor/types'
+import { DEFAULT_FONT } from '@/editor/fonts'
 import type { TemplateCopy } from '@/editor/types'
 import { fetchProduct } from '@/lib/api'
 import { catalogCopy } from '@/lib/catalogI18n'
@@ -70,6 +74,8 @@ export function DesignPage() {
   const [doc, setDoc] = useState<DesignDoc | null>(null)
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [textEditId, setTextEditId] = useState<string | null>(null)
   const stageRef = useRef<Konva.Stage | null>(null)
 
   const minQty = effectiveMinQuantity(product?.minQuantity)
@@ -245,7 +251,9 @@ export function DesignPage() {
   }
 
   function patchPage(
-    patch: Partial<Pick<DesignPageSide, 'background' | 'backgroundImage'>>,
+    patch: Partial<
+      Pick<DesignPageSide, 'background' | 'backgroundGradient' | 'backgroundImage'>
+    >,
   ) {
     updateActivePage((p) => ({ ...p, ...patch }))
   }
@@ -269,6 +277,7 @@ export function DesignPage() {
       elements: p.elements.filter((e) => e.id !== id),
     }))
     setSelectedId(null)
+    if (textEditId === id) setTextEditId(null)
   }
 
   /** orderedIdsBackToFront: first id = bottom of stack (drawn first) */
@@ -281,6 +290,46 @@ export function DesignPage() {
       return { ...p, elements: next }
     })
   }
+
+  function addTextElement() {
+    if (!doc) return
+    const el: TextElement = {
+      id: uid('txt'),
+      type: 'text',
+      x: Math.round(doc.width * 0.1),
+      y: Math.round(doc.height * 0.1),
+      width: Math.round(doc.width * 0.6),
+      text: t('design.newText'),
+      fontSize: Math.max(16, Math.round(doc.width * 0.05)),
+      fontFamily: DEFAULT_FONT,
+      fill: '#1a1a1a',
+      align: 'left',
+    }
+    addElement(el)
+    setSelectedId(el.id)
+  }
+
+  function addImageElement() {
+    if (!doc) return
+    const el: ImageElement = {
+      id: uid('img'),
+      type: 'image',
+      x: Math.round(doc.width * 0.15),
+      y: Math.round(doc.height * 0.2),
+      width: Math.round(doc.width * 0.4),
+      height: Math.round(doc.height * 0.3),
+      src: null,
+      slotLabel: t('design.imageSlot'),
+    }
+    addElement(el)
+    setSelectedId(el.id)
+  }
+
+  useEffect(() => {
+    if (textEditId && selectedId !== textEditId) {
+      setTextEditId(null)
+    }
+  }, [selectedId, textEditId])
 
   async function handleOpenPreview(intent: 'view' | 'add') {
     if (!product || !selectedSize || !doc) return
@@ -387,6 +436,8 @@ export function DesignPage() {
   }
 
   const activePage = doc?.pages[pageIndex] ?? null
+  const selectedElement =
+    activePage?.elements.find((e) => e.id === selectedId) ?? null
   const previewFileName =
     previewFileNameState ??
     (product && selectedSize ? `${product.slug}-${selectedSize.id}.pdf` : null)
@@ -419,6 +470,31 @@ export function DesignPage() {
   }
 
   const copy = catalogCopy(product, t)
+
+  const lineTotalLabel = t('product.lineTotal', {
+    count: qty,
+    total: formatNok(
+      lineTotalFromPack(selectedSize.price, qty, product.minQuantity),
+    ),
+  })
+
+  const sidebarProps = {
+    productSlug: product.slug,
+    doc: doc!,
+    activePage: activePage!,
+    pageIndex,
+    selectedId,
+    templateId,
+    onSelectTemplate: applyTemplate,
+    onOwnFile: applyOwnFile,
+    onSelectPage: selectPage,
+    onPatchPage: patchPage,
+    onChangeElement: changeElement,
+    onAddElement: addElement,
+    onRemoveElement: removeElement,
+    onReorderElements: reorderElements,
+    onSelect: setSelectedId,
+  }
 
   const modeSwitcher = (
     <div className="flex shrink-0 gap-1 rounded-lg border border-line bg-paper-card p-1">
@@ -502,31 +578,27 @@ export function DesignPage() {
   if (mode === 'upload') {
     return (
       <div className="flex h-full min-h-0 flex-col overflow-hidden">
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2.5">
-          {headerMeta}
-          <div className="flex flex-wrap items-center gap-3">
-            {modeSwitcher}
-            <p className="text-sm font-medium">
-              {t('product.lineTotal', {
-                count: qty,
-                total: formatNok(
-                  lineTotalFromPack(
-                    selectedSize.price,
-                    qty,
-                    product.minQuantity,
-                  ),
-                ),
-              })}
-            </p>
+        <div className="flex shrink-0 flex-col gap-2 border-b border-line px-4 py-2 lg:hidden">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">{headerMeta}</div>
+            <p className="shrink-0 text-sm font-medium">{lineTotalLabel}</p>
           </div>
+          <div className="flex items-center gap-2">{modeSwitcher}</div>
+        </div>
+        <div className="hidden shrink-0 items-center justify-between gap-3 border-b border-line px-4 py-2.5 lg:flex">
+          <div className="min-w-0 flex-1">{headerMeta}</div>
+          <p className="shrink-0 text-sm font-medium">{lineTotalLabel}</p>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-10">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8 lg:pb-10">
           <div className="w-full max-w-lg text-center">
-            <h1 className="font-display text-3xl text-ink md:text-4xl">
+            <h1 className="font-display text-2xl text-ink sm:text-3xl md:text-4xl">
               {t('design.uploadTitle')}
             </h1>
-            <p className="mt-3 text-ink-muted">{t('design.uploadSub')}</p>
+            <p className="mt-3 text-sm text-ink-muted sm:text-base">
+              {t('design.uploadSub')}
+            </p>
+            <p className="mt-2 text-sm font-medium lg:hidden">{lineTotalLabel}</p>
           </div>
 
           <input
@@ -585,18 +657,12 @@ export function DesignPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+      {/* Desktop toolbar */}
+      <div className="hidden shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-2.5 lg:flex">
         {headerMeta}
         <div className="flex flex-wrap items-center gap-3">
           {modeSwitcher}
-          <p className="text-sm font-medium">
-            {t('product.lineTotal', {
-              count: qty,
-              total: formatNok(
-                lineTotalFromPack(selectedSize.price, qty, product.minQuantity),
-              ),
-            })}
-          </p>
+          <p className="text-sm font-medium">{lineTotalLabel}</p>
           <Button
             size="lg"
             variant="outline"
@@ -619,45 +685,93 @@ export function DesignPage() {
         </div>
       </div>
 
+      {/* Mobile top bar */}
+      <div className="flex shrink-0 flex-col gap-2 border-b border-line px-4 py-2 lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">{headerMeta}</div>
+          <p className="shrink-0 text-sm font-medium">{lineTotalLabel}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {modeSwitcher}
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2.5"
+              disabled={exporting || confirming}
+              onClick={() => void handleOpenPreview('view')}
+              aria-label={t('design.preview')}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="px-2.5"
+              disabled={exporting || confirming}
+              onClick={() => void handleOpenPreview('add')}
+              aria-label={t('design.addToCart')}
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {exportError && !previewOpen && (
         <div className="mx-4 mt-2 shrink-0 rounded-lg border border-warm/40 bg-warm/10 px-4 py-2 text-sm text-warm">
           {exportError}
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="scrollbar-editor max-h-[40vh] min-w-0 shrink-0 overflow-x-hidden overflow-y-auto lg:max-h-none lg:h-full lg:w-72">
-          <EditorSidebar
-            productSlug={product.slug}
-            doc={doc!}
-            activePage={activePage!}
-            pageIndex={pageIndex}
-            selectedId={selectedId}
-            templateId={templateId}
-            onSelectTemplate={applyTemplate}
-            onOwnFile={applyOwnFile}
-            onSelectPage={selectPage}
-            onPatchPage={patchPage}
-            onChangeElement={changeElement}
-            onAddElement={addElement}
-            onRemoveElement={removeElement}
-            onReorderElements={reorderElements}
-            onSelect={setSelectedId}
-          />
+      <div className="flex min-h-0 flex-1 flex-col pb-above-sticky-bar lg:flex-row lg:pb-0">
+        {/* Desktop sidebar */}
+        <div className="scrollbar-editor hidden min-w-0 shrink-0 overflow-x-hidden overflow-y-auto lg:block lg:h-full lg:w-72">
+          <EditorSidebar {...sidebarProps} />
         </div>
+
+        {/* Mobile sidebar drawer */}
+        {sidebarOpen && (
+          <>
+            <button
+              type="button"
+              className="fixed inset-0 z-[45] bg-ink/40 animate-mobile-nav-backdrop-in lg:hidden"
+              aria-label={t('common.close')}
+              onClick={() => setSidebarOpen(false)}
+            />
+            <div className="fixed inset-0 z-[50] flex h-dvh flex-col overflow-hidden bg-paper-card animate-mobile-nav-in lg:hidden">
+              <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4">
+                <h2 className="font-display text-lg text-ink">{t('design.tools')}</h2>
+                <button
+                  type="button"
+                  className="rounded-md px-2 py-1 text-sm text-ink-muted hover:bg-paper hover:text-ink"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {t('common.close')}
+                </button>
+              </div>
+              <div className="scrollbar-editor min-h-0 flex-1 overflow-y-auto pb-above-sticky-bar">
+                <EditorSidebar {...sidebarProps} />
+              </div>
+            </div>
+          </>
+        )}
+
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {doc!.pages.length > 1 && (
-            <div className="flex shrink-0 gap-2 border-b border-line px-4 py-2">
+            <div className="scrollbar-editor flex shrink-0 gap-2 overflow-x-auto border-b border-line px-4 py-2">
               {doc!.pages.map((p, i) => (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => selectPage(i)}
-                  className={`rounded-md px-3 py-1.5 text-sm transition ${
+                  className={cn(
+                    'shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition',
                     pageIndex === i
                       ? 'bg-ink text-paper'
-                      : 'bg-paper-card text-ink-muted hover:text-ink'
-                  }`}
+                      : 'bg-paper-card text-ink-muted hover:text-ink',
+                  )}
                 >
                   {doc!.pages.length > 1 && p.labelKey === 'page'
                     ? t('design.pageLabels.pageN', { n: i + 1 })
@@ -670,7 +784,7 @@ export function DesignPage() {
               ))}
             </div>
           )}
-          <div className="relative min-h-0 flex-1">
+          <div className="relative min-h-0 flex-1 pb-16 lg:pb-0">
             <div className="absolute inset-0">
               <DesignCanvas
                 width={doc!.width}
@@ -680,6 +794,9 @@ export function DesignPage() {
                 heightMm={dims.heightMm}
                 page={activePage!}
                 selectedId={selectedId}
+                editingTextId={textEditId}
+                onRequestTextEdit={setTextEditId}
+                onEndTextEdit={() => setTextEditId(null)}
                 onSelect={setSelectedId}
                 onChangeElement={changeElement}
                 stageRef={stageRef}
@@ -688,6 +805,23 @@ export function DesignPage() {
           </div>
         </div>
       </div>
+
+      <EditorMobileToolbar
+        selected={selectedElement}
+        sidebarOpen={sidebarOpen}
+        textEditActive={textEditId != null && selectedElement?.type === 'text'}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
+        onToggleTextEdit={() => {
+          if (!selectedElement || selectedElement.type !== 'text') return
+          setTextEditId((id) =>
+            id === selectedElement.id ? null : selectedElement.id,
+          )
+        }}
+        onChangeElement={changeElement}
+        onRemoveElement={removeElement}
+        onAddText={addTextElement}
+        onAddImage={addImageElement}
+      />
 
       {previewModal}
     </div>

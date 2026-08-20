@@ -63,7 +63,7 @@ export function DesignPreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4 sm:p-6"
       role="presentation"
     >
       <button
@@ -77,7 +77,7 @@ export function DesignPreviewModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 flex max-h-[min(92vh,900px)] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-line bg-paper shadow-lg"
+        className="relative z-10 flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-none border-0 bg-paper shadow-lg sm:max-h-[min(92dvh,900px)] sm:max-w-4xl sm:rounded-lg sm:border sm:border-line"
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
           <div className="min-w-0">
@@ -113,7 +113,7 @@ export function DesignPreviewModal({
             <iframe
               title={title ?? t('design.previewTitle')}
               src={url}
-              className="h-[min(62vh,640px)] w-full border-0 bg-white"
+              className="h-[min(55dvh,640px)] w-full border-0 bg-white landscape:h-[min(75dvh,640px)] sm:h-[min(62dvh,640px)]"
             />
           )}
         </div>

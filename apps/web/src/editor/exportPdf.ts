@@ -3,6 +3,7 @@ import { jsPDF } from 'jspdf'
 import Konva from 'konva'
 import type { DesignDoc, DesignPageSide } from './types'
 import { coverFit } from './types'
+import { konvaGradientProps, normalizeGradient } from './backgroundGradient'
 
 const EXPORT_DPI = 150
 const PIXEL_RATIO = EXPORT_DPI / 72
@@ -111,7 +112,14 @@ async function renderPageDataUrl(
       y: 0,
       width: pageW,
       height: pageH,
-      fill: page.background,
+      ...(page.backgroundGradient
+        ? konvaGradientProps(
+            normalizeGradient(page.backgroundGradient, page.background)!,
+            pageW,
+            pageH,
+            page.background,
+          )
+        : { fill: page.background }),
     }),
   )
 

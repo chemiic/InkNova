@@ -6,7 +6,16 @@ import { Label } from '@/components/ui/label'
 import { EDITOR_FONTS, DEFAULT_FONT } from './fonts'
 import { LayersPanel } from './LayersPanel'
 import { templatesForProduct } from './templates'
+import {
+  addGradientStop,
+  defaultGradient,
+  normalizeGradient,
+  patchGradientStop,
+  removeGradientStop,
+  MAX_GRADIENT_STOPS,
+} from './backgroundGradient'
 import type {
+  BackgroundGradient,
   DesignDoc,
   DesignElement,
   DesignPageSide,
@@ -27,7 +36,9 @@ type Props = {
   onOwnFile: (dataUrl: string) => void
   onSelectPage: (index: number) => void
   onPatchPage: (
-    patch: Partial<Pick<DesignPageSide, 'background' | 'backgroundImage'>>,
+    patch: Partial<
+      Pick<DesignPageSide, 'background' | 'backgroundGradient' | 'backgroundImage'>
+    >,
   ) => void
   onChangeElement: (id: string, patch: Partial<DesignElement>) => void
   onAddElement: (el: DesignElement) => void
@@ -59,6 +70,39 @@ export function EditorSidebar({
   const ownFileRef = useRef<HTMLInputElement>(null)
   const templates = templatesForProduct(productSlug)
   const selected = activePage.elements.find((e) => e.id === selectedId) ?? null
+  const bgMode = activePage.backgroundGradient ? 'gradient' : 'solid'
+
+  function setBgMode(mode: 'solid' | 'gradient') {
+    if (mode === 'solid') {
+      onPatchPage({ backgroundGradient: null })
+      return
+    }
+    if (!activePage.backgroundGradient) {
+      onPatchPage({
+        backgroundGradient: defaultGradient(activePage.background),
+      })
+    }
+  }
+
+  function patchGradient(patch: Partial<BackgroundGradient>) {
+    const current =
+      normalizeGradient(activePage.backgroundGradient, activePage.background) ??
+      defaultGradient(activePage.background)
+    onPatchPage({
+      backgroundGradient: normalizeGradient(
+        { ...current, ...patch },
+        activePage.background,
+      ),
+    })
+  }
+
+  function patchGradientStops(stops: BackgroundGradient['stops']) {
+    patchGradient({ stops })
+  }
+
+  const gradient =
+    normalizeGradient(activePage.backgroundGradient, activePage.background) ??
+    defaultGradient(activePage.background)
 
   function addText() {
     const el: TextElement = {
@@ -211,18 +255,216 @@ export function EditorSidebar({
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
           {t('design.background')}
         </p>
-        <div>
-          <Label htmlFor="page-bg-color" className="text-ink-muted">
-            {t('design.backgroundColor')}
-          </Label>
-          <Input
-            id="page-bg-color"
-            type="color"
-            value={activePage.background}
-            onChange={(e) => onPatchPage({ background: e.target.value })}
-            className="mt-1 h-10 w-full max-w-full cursor-pointer p-1"
-          />
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => setBgMode('solid')}
+            className={`flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition ${
+              bgMode === 'solid'
+                ? 'border-accent bg-accent/10'
+                : 'border-line hover:border-ink/30'
+            }`}
+          >
+            {t('design.backgroundSolid')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setBgMode('gradient')}
+            className={`flex-1 rounded-md border px-2 py-1.5 text-xs font-medium transition ${
+              bgMode === 'gradient'
+                ? 'border-accent bg-accent/10'
+                : 'border-line hover:border-ink/30'
+            }`}
+          >
+            {t('design.backgroundGradient')}
+          </button>
         </div>
+
+        {bgMode === 'solid' ? (
+          <div>
+            <Label htmlFor="page-bg-color" className="text-ink-muted">
+              {t('design.backgroundColor')}
+            </Label>
+            <Input
+              id="page-bg-color"
+              type="color"
+              value={activePage.background}
+              onChange={(e) => onPatchPage({ background: e.target.value })}
+              className="mt-1 h-10 w-full max-w-full cursor-pointer p-1"
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div>
+              <Label htmlFor="grad-type" className="text-ink-muted">
+                {t('design.gradientType')}
+              </Label>
+              <select
+                id="grad-type"
+                className="mt-1 h-10 w-full rounded-md border border-line bg-paper px-2 text-sm"
+                value={gradient.type}
+                onChange={(e) =>
+                  patchGradient({
+                    type: e.target.value as BackgroundGradient['type'],
+                  })
+                }
+              >
+                <option value="linear">{t('design.gradientLinear')}</option>
+                <option value="radial">{t('design.gradientRadial')}</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-ink-muted">{t('design.gradientStops')}</Label>
+                {gradient.stops.length < MAX_GRADIENT_STOPS && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    onClick={() =>
+                      patchGradientStops(addGradientStop(gradient.stops))
+                    }
+                  >
+                    {t('design.gradientAddStop')}
+                  </Button>
+                )}
+              </div>
+              {gradient.stops.map((stop, index) => (
+                <div
+                  key={`${index}-${stop.position}`}
+                  className="rounded-md border border-line p-2"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-ink-muted">
+                      {t('design.gradientStopN', { n: index + 1 })}
+                    </span>
+                    {gradient.stops.length > 2 && (
+                      <button
+                        type="button"
+                        className="text-xs text-warm underline"
+                        onClick={() =>
+                          patchGradientStops(
+                            removeGradientStop(gradient.stops, index),
+                          )
+                        }
+                      >
+                        {t('design.gradientRemoveStop')}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <div>
+                      <Label
+                        htmlFor={`grad-stop-color-${index}`}
+                        className="text-xs text-ink-muted"
+                      >
+                        {t('design.color')}
+                      </Label>
+                      <Input
+                        id={`grad-stop-color-${index}`}
+                        type="color"
+                        value={stop.color}
+                        onChange={(e) =>
+                          patchGradientStops(
+                            patchGradientStop(gradient.stops, index, {
+                              color: e.target.value,
+                            }),
+                          )
+                        }
+                        className="mt-1 h-9 w-full cursor-pointer p-1"
+                      />
+                    </div>
+                    <div className="min-w-[5rem]">
+                      <Label
+                        htmlFor={`grad-stop-pos-${index}`}
+                        className="text-xs text-ink-muted"
+                      >
+                        {t('design.gradientPosition', { pos: stop.position })}
+                      </Label>
+                      <Input
+                        id={`grad-stop-pos-${index}`}
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={stop.position}
+                        onChange={(e) =>
+                          patchGradientStops(
+                            patchGradientStop(gradient.stops, index, {
+                              position: Number(e.target.value),
+                            }),
+                          )
+                        }
+                        className="mt-2 w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {gradient.type === 'linear' && (
+              <div>
+                <Label htmlFor="grad-angle" className="text-ink-muted">
+                  {t('design.gradientAngle', {
+                    angle: gradient.angle ?? 180,
+                  })}
+                </Label>
+                <Input
+                  id="grad-angle"
+                  type="range"
+                  min={0}
+                  max={360}
+                  value={gradient.angle ?? 180}
+                  onChange={(e) =>
+                    patchGradient({ angle: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full"
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="grad-center-x" className="text-ink-muted">
+                  {t('design.gradientCenterX', {
+                    pos: gradient.centerX ?? 50,
+                  })}
+                </Label>
+                <Input
+                  id="grad-center-x"
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={gradient.centerX ?? 50}
+                  onChange={(e) =>
+                    patchGradient({ centerX: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="grad-center-y" className="text-ink-muted">
+                  {t('design.gradientCenterY', {
+                    pos: gradient.centerY ?? 50,
+                  })}
+                </Label>
+                <Input
+                  id="grad-center-y"
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={gradient.centerY ?? 50}
+                  onChange={(e) =>
+                    patchGradient({ centerY: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full"
+                />
+              </div>
+            </div>
+          </div>
+        )}
         <input
           ref={bgFileRef}
           type="file"
@@ -259,10 +501,22 @@ export function EditorSidebar({
       </div>
 
       <div className="flex min-w-0 flex-wrap gap-2">
-        <Button type="button" size="sm" variant="outline" onClick={addText}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="touch-target min-h-10 flex-1 sm:flex-none"
+          onClick={addText}
+        >
           {t('design.addText')}
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={addImageSlot}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="touch-target min-h-10 flex-1 sm:flex-none"
+          onClick={addImageSlot}
+        >
           {t('design.addImage')}
         </Button>
       </div>
@@ -355,7 +609,7 @@ export function EditorSidebar({
             type="button"
             size="sm"
             variant="outline"
-            className="text-warm"
+            className="hidden text-warm lg:inline-flex"
             onClick={() => onRemoveElement(selected.id)}
           >
             {t('design.delete')}
@@ -402,7 +656,7 @@ export function EditorSidebar({
               type="button"
               size="sm"
               variant="outline"
-              className="w-full text-warm"
+              className="hidden w-full text-warm lg:flex"
               onClick={() => onRemoveElement(selected.id)}
             >
               {t('design.delete')}

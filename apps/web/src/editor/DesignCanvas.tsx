@@ -12,7 +12,9 @@ import {
 } from 'react-konva'
 import type Konva from 'konva'
 import { snapResize, snapTranslate, type SnapGuide } from './snap'
+import { gradientToCss, konvaGradientProps, normalizeGradient } from './backgroundGradient'
 import type { DesignElement, DesignPageSide, ImageElement, TextElement } from './types'
+import { TextEditOverlay } from './TextEditOverlay'
 
 type Props = {
   width: number
@@ -23,6 +25,9 @@ type Props = {
   heightMm: number
   page: DesignPageSide
   selectedId: string | null
+  editingTextId?: string | null
+  onRequestTextEdit?: (id: string) => void
+  onEndTextEdit?: () => void
   onSelect: (id: string | null) => void
   onChangeElement: (id: string, patch: Partial<DesignElement>) => void
   stageRef: React.RefObject<Konva.Stage | null>
@@ -62,13 +67,17 @@ type SnapCtx = {
 function TextNode({
   el,
   selected,
+  editing,
   onSelect,
+  onRequestEdit,
   onChange,
   snap,
 }: {
   el: TextElement
   selected: boolean
+  editing: boolean
   onSelect: () => void
+  onRequestEdit: () => void
   onChange: (patch: Partial<TextElement>) => void
   snap: SnapCtx
 }) {
@@ -95,9 +104,12 @@ function TextNode({
         fontFamily={el.fontFamily}
         fill={el.fill}
         align={el.align}
-        draggable
+        opacity={editing ? 0 : 1}
+        draggable={!editing}
         onClick={onSelect}
         onTap={onSelect}
+        onDblClick={onRequestEdit}
+        onDblTap={onRequestEdit}
         onDragMove={(e) => {
           const node = e.target
           const h = node.height()
@@ -158,7 +170,7 @@ function TextNode({
           })
         }}
       />
-      {selected && (
+      {selected && !editing && (
         <Transformer
           ref={trRef}
           rotateEnabled={false}
@@ -325,6 +337,9 @@ export function DesignCanvas({
   heightMm,
   page,
   selectedId,
+  editingTextId = null,
+  onRequestTextEdit,
+  onEndTextEdit,
   onSelect,
   onChangeElement,
   stageRef,
@@ -375,6 +390,44 @@ export function DesignCanvas({
   const frameH = boardH + bleedScreen * 2
   const stroke = Math.max(1, 1 / scale)
 
+  const bleedBgStyle: React.CSSProperties = page.backgroundGradient
+    ? {
+        background: gradientToCss(
+          normalizeGradient(page.backgroundGradient, page.background)!,
+          page.background,
+        ),
+        backgroundImage: page.backgroundImage
+          ? `url(${page.backgroundImage})`
+          : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : {
+        backgroundColor: page.background,
+        backgroundImage: page.backgroundImage
+          ? `url(${page.backgroundImage})`
+          : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+
+  const pageFillProps =
+    !page.backgroundImage && page.backgroundGradient
+      ? konvaGradientProps(
+          normalizeGradient(page.backgroundGradient, page.background)!,
+          width,
+          height,
+          page.background,
+        )
+      : { fill: page.background }
+
+  const editingText =
+    editingTextId != null
+      ? (page.elements.find(
+          (e): e is TextElement => e.id === editingTextId && e.type === 'text',
+        ) ?? null)
+      : null
+
   return (
     <div
       ref={wrapRef}
@@ -394,14 +447,7 @@ export function DesignCanvas({
         {/* Bleed sheet — colour + optional full-bleed photo (cover) */}
         <div
           className="absolute inset-0 shadow-[0_8px_28px_rgba(0,0,0,0.18)] ring-1 ring-black/10"
-          style={{
-            backgroundColor: page.background,
-            backgroundImage: page.backgroundImage
-              ? `url(${page.backgroundImage})`
-              : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+          style={bleedBgStyle}
           aria-hidden
         />
 
@@ -442,8 +488,8 @@ export function DesignCanvas({
                   y={0}
                   width={width}
                   height={height}
-                  fill={page.background}
                   listening={false}
+                  {...pageFillProps}
                 />
               )}
               {page.elements.map((el) =>
@@ -452,7 +498,9 @@ export function DesignCanvas({
                     key={el.id}
                     el={el}
                     selected={selectedId === el.id}
+                    editing={editingTextId === el.id}
                     onSelect={() => onSelect(el.id)}
+                    onRequestEdit={() => onRequestTextEdit?.(el.id)}
                     onChange={(patch) => onChangeElement(el.id, patch)}
                     snap={snap}
                   />
@@ -490,6 +538,14 @@ export function DesignCanvas({
               )}
             </Layer>
           </Stage>
+          {editingText && onEndTextEdit && (
+            <TextEditOverlay
+              el={editingText}
+              scale={scale}
+              onChange={(patch) => onChangeElement(editingText.id, patch)}
+              onClose={onEndTextEdit}
+            />
+          )}
         </div>
 
         {/* Crop marks at trim corners (same idea as print PDF) */}

@@ -29,13 +29,38 @@ export type ImageElement = {
 
 export type DesignElement = TextElement | ImageElement
 
+export type GradientStop = {
+  color: string
+  /** 0–100 along the gradient axis */
+  position: number
+}
+
+export const MAX_GRADIENT_STOPS = 5
+
+export type BackgroundGradient = {
+  type: 'linear' | 'radial'
+  stops: GradientStop[]
+  /** Degrees for linear gradients (CSS convention, default 180 = top→bottom). */
+  angle?: number
+  /** Center X in % of canvas width (0–100). Default 50. */
+  centerX?: number
+  /** Center Y in % of canvas height (0–100). Default 50. */
+  centerY?: number
+  /** @deprecated Legacy two-stop fields — migrated on load */
+  colorFrom?: string
+  /** @deprecated Legacy two-stop fields — migrated on load */
+  colorTo?: string
+}
+
 /** One printable side (e.g. business-card front/back) */
 export type DesignPageSide = {
   id: string
   /** i18n key under design.pageLabels.<key> */
   labelKey: string
-  /** Solid colour under everything */
+  /** Solid colour under everything (also gradient fallback) */
   background: string
+  /** Optional gradient fill; takes precedence over solid colour when set */
+  backgroundGradient?: BackgroundGradient | null
   /** Optional full-bleed photo (cover-fit); null = colour only */
   backgroundImage?: string | null
   elements: DesignElement[]
@@ -108,6 +133,7 @@ export function makePage(
     id: uid('page'),
     labelKey,
     background,
+    backgroundGradient: null,
     backgroundImage: null,
     elements,
   }
