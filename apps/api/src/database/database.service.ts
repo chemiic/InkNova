@@ -8,6 +8,7 @@ import {
   type CheckoutCustomer,
   type CustomSizeConfig,
   type DeliverySettings,
+  type HomepageSettings,
   type OrderStatus,
   type PaymentMethod,
   type Product,
@@ -370,6 +371,33 @@ export class DatabaseService implements OnModuleInit {
       )
       .run('delivery', JSON.stringify(settings));
     return this.getDeliverySettings();
+  }
+
+  getHomepageSettings(): HomepageSettings {
+    const row = this.db
+      .prepare('SELECT value_json FROM settings WHERE key = ?')
+      .get('homepage') as { value_json: string } | undefined;
+    if (!row) {
+      return { featuredProductIds: [] };
+    }
+    const parsed = JSON.parse(row.value_json) as Partial<HomepageSettings>;
+    return {
+      featuredProductIds: Array.isArray(parsed.featuredProductIds)
+        ? parsed.featuredProductIds.filter(
+            (id): id is string => typeof id === 'string' && id.length > 0,
+          )
+        : [],
+    };
+  }
+
+  setHomepageSettings(settings: HomepageSettings): HomepageSettings {
+    this.db
+      .prepare(
+        `INSERT INTO settings (key, value_json) VALUES (?, ?)
+         ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json`,
+      )
+      .run('homepage', JSON.stringify(settings));
+    return this.getHomepageSettings();
   }
 
   insertOrder(order: PersistOrderInput): void {

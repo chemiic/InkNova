@@ -10,6 +10,11 @@ export class CatalogController {
     return this.catalog.list();
   }
 
+  @Get('featured')
+  listFeatured() {
+    return this.catalog.listFeatured();
+  }
+
   @Get(':slug')
   get(@Param('slug') slug: string) {
     return this.catalog.getBySlug(slug);

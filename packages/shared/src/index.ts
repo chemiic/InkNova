@@ -127,6 +127,14 @@ export interface DeliverySettings {
   defaultFee: MoneyNOK | null;
 }
 
+/** Homepage content (admin-editable). */
+export interface HomepageSettings {
+  /** Product IDs shown in "Popular products", in order (max 6). */
+  featuredProductIds: string[];
+}
+
+export const MAX_FEATURED_PRODUCTS = 6;
+
 export interface Product {
   id: string;
   slug: string;

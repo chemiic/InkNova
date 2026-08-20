@@ -177,3 +177,9 @@ export class DeliverySettingsDto {
   @IsNumber()
   defaultFee!: number | null;
 }
+
+export class HomepageSettingsDto {
+  @IsArray()
+  @IsString({ each: true })
+  featuredProductIds!: string[];
+}

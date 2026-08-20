@@ -20,6 +20,7 @@ import { validateOrReject } from 'class-validator';
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
+import { orderEmailHtml } from '../mail/templates';
 import { VippsService } from '../payments/vipps.service';
 import { OrderStore, type StoredLineItem, type StoredOrder } from './order.store';
 import { CreateOrderDto } from './orders.dto';
@@ -388,34 +389,26 @@ export class OrdersService {
       `Betaling: ${order.paymentMethod}`,
     ].filter((l) => l !== undefined);
 
+    const siteUrl = this.config.get<string>(
+      'WEB_ORIGIN',
+      'https://inknova.no',
+    );
+
     try {
       await this.mail.send({
         to,
         replyTo: order.customer.email,
         subject,
         text: lines.join('\n'),
-        html: `
-          <p><strong>Ordre:</strong> ${escapeHtml(order.reference)}</p>
-          <p><strong>Navn:</strong> ${escapeHtml(order.customer.name)}<br/>
-          <strong>E-post:</strong> ${escapeHtml(order.customer.email)}<br/>
-          <strong>Telefon:</strong> ${escapeHtml(order.customer.phone)}</p>
-          <p><strong>Leveringsadresse:</strong><br/>
-          ${escapeHtml(order.customer.addressLine1)}<br/>
-          ${order.customer.addressLine2 ? `${escapeHtml(order.customer.addressLine2)}<br/>` : ''}
-          ${escapeHtml(order.customer.postalCode)} ${escapeHtml(order.customer.city)}</p>
-          <p><strong>Produkter:</strong></p>
-          <ul>
-            ${order.items
-              .map(
-                (i) =>
-                  `<li>${escapeHtml(i.productName)} (${escapeHtml(i.sizeLabel)}) × ${i.qty} — ${i.lineTotal} NOK — ${escapeHtml(i.designFileName)}</li>`,
-              )
-              .join('')}
-          </ul>
-          <p><strong>Frakt:</strong> ${order.deliveryFee} NOK<br/>
-          <strong>Sum:</strong> ${order.totalNok} NOK<br/>
-          <strong>Betaling:</strong> ${escapeHtml(order.paymentMethod)}</p>
-        `,
+        html: orderEmailHtml({
+          reference: order.reference,
+          customer: order.customer,
+          items: order.items,
+          deliveryFee: order.deliveryFee,
+          totalNok: order.totalNok,
+          paymentMethod: order.paymentMethod,
+          siteUrl,
+        }),
         attachments: order.items
           .filter((i) => i.pdf.length > 0)
           .map((i) => ({
@@ -453,14 +446,6 @@ function sanitizeFileName(name: string): string {
 function orderSummarySubject(order: StoredOrder): string {
   const names = [...new Set(order.items.map((i) => i.productName))].join(', ');
   return `${names} (${order.items.length})`;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function readPdf(filesRoot: string, pdfPath: string | null): Buffer {

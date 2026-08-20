@@ -17,21 +17,29 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import type { Article, Product } from '@inknova/shared';
+import { MAX_FEATURED_PRODUCTS } from '@inknova/shared';
 import { memoryStorage } from 'multer';
 import { randomBytes } from 'node:crypto';
 import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
+import { UploadCleanupService } from '../uploads/upload-cleanup.service';
+import { productImageUrls, isManagedUploadUrl } from '../uploads/uploads.util';
 import {
   DeliverySettingsDto,
   HiddenDto,
+  HomepageSettingsDto,
   LoginDto,
   UpsertArticleDto,
   UpsertProductDto,
 } from './admin.dto';
 import { AdminAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import {
+  previewContactEmailHtml,
+  previewOrderEmailHtml,
+} from '../mail/templates';
 
 @Controller('admin')
 export class AdminController {
@@ -40,6 +48,7 @@ export class AdminController {
     private readonly catalog: CatalogService,
     private readonly db: DatabaseService,
     private readonly config: ConfigService,
+    private readonly uploadCleanup: UploadCleanupService,
   ) {}
 
   @Post('login')
@@ -89,7 +98,12 @@ export class AdminController {
         throw new BadRequestException(`Slug already exists: ${body.slug}`);
       }
     }
-    return this.catalog.save(dtoToProduct(body, id));
+    const next = dtoToProduct(body, id);
+    const saved = await this.catalog.save(next);
+    const kept = new Set(productImageUrls(saved));
+    const removed = productImageUrls(existing).filter((url) => !kept.has(url));
+    await this.uploadCleanup.pruneUploads(removed);
+    return saved;
   }
 
   @Patch('products/:id/hidden')
@@ -109,8 +123,12 @@ export class AdminController {
   @Delete('products/:id')
   @UseGuards(AdminAuthGuard)
   async deleteProduct(@Param('id') id: string) {
+    const existing = await this.catalog.getById(id);
+    if (!existing) throw new NotFoundException('Product not found');
+    const urls = productImageUrls(existing);
     const ok = await this.catalog.remove(id);
     if (!ok) throw new NotFoundException('Product not found');
+    await this.uploadCleanup.pruneUploads(urls);
     return { ok: true };
   }
 
@@ -145,7 +163,7 @@ export class AdminController {
 
   @Put('articles/:id')
   @UseGuards(AdminAuthGuard)
-  updateArticle(@Param('id') id: string, @Body() body: UpsertArticleDto) {
+  async updateArticle(@Param('id') id: string, @Body() body: UpsertArticleDto) {
     const existing = this.db.findArticleById(id);
     if (!existing) throw new NotFoundException('Article not found');
     if (body.slug !== existing.slug) {
@@ -154,9 +172,16 @@ export class AdminController {
         throw new BadRequestException(`Slug already exists: ${body.slug}`);
       }
     }
-    return this.db.upsertArticle(
+    const saved = this.db.upsertArticle(
       dtoToArticle(body, id, existing.createdAt, new Date().toISOString()),
     );
+    if (
+      isManagedUploadUrl(existing.imageUrl) &&
+      existing.imageUrl !== saved.imageUrl
+    ) {
+      await this.uploadCleanup.pruneUploads([existing.imageUrl]);
+    }
+    return saved;
   }
 
   @Patch('articles/:id/hidden')
@@ -176,9 +201,15 @@ export class AdminController {
 
   @Delete('articles/:id')
   @UseGuards(AdminAuthGuard)
-  deleteArticle(@Param('id') id: string) {
+  async deleteArticle(@Param('id') id: string) {
+    const existing = this.db.findArticleById(id);
+    if (!existing) throw new NotFoundException('Article not found');
+    const url = existing.imageUrl;
     const ok = this.db.deleteArticle(id);
     if (!ok) throw new NotFoundException('Article not found');
+    if (isManagedUploadUrl(url)) {
+      await this.uploadCleanup.pruneUploads([url]);
+    }
     return { ok: true };
   }
 
@@ -195,6 +226,41 @@ export class AdminController {
       defaultLabel: body.defaultLabel,
       defaultFee: body.defaultFee ?? null,
     });
+  }
+
+  @Get('homepage')
+  @UseGuards(AdminAuthGuard)
+  getHomepage() {
+    return this.db.getHomepageSettings();
+  }
+
+  @Put('homepage')
+  @UseGuards(AdminAuthGuard)
+  async updateHomepage(@Body() body: HomepageSettingsDto) {
+    const ids = body.featuredProductIds.slice(0, MAX_FEATURED_PRODUCTS);
+    for (const id of ids) {
+      const product = await this.catalog.getById(id);
+      if (!product) {
+        throw new BadRequestException(`Unknown product id: ${id}`);
+      }
+    }
+    return this.db.setHomepageSettings({ featuredProductIds: ids });
+  }
+
+  @Get('mail-preview/:kind')
+  @UseGuards(AdminAuthGuard)
+  previewMail(@Param('kind') kind: string) {
+    const siteUrl = this.config.get<string>(
+      'WEB_ORIGIN',
+      'https://inknova.no',
+    );
+    if (kind === 'contact') {
+      return { kind, html: previewContactEmailHtml(siteUrl) };
+    }
+    if (kind === 'order') {
+      return { kind, html: previewOrderEmailHtml(siteUrl) };
+    }
+    throw new BadRequestException('Unknown preview kind');
   }
 
   @Get('orders')
