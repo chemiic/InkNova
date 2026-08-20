@@ -9,8 +9,9 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { ConsentCheckbox } from '@/components/ConsentCheckbox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,6 +48,9 @@ export function CheckoutPage() {
   const { items, total, clearCart } = useCart()
   const [form, setForm] = useState<CheckoutFormState>(emptyForm)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [acknowledgedNoWithdrawal, setAcknowledgedNoWithdrawal] = useState(false)
+  const [marketingConsent, setMarketingConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({})
@@ -146,6 +150,10 @@ export function CheckoutPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (!items.length || submitting) return
+    if (!acceptedTerms || !acknowledgedNoWithdrawal) {
+      setError(t('checkout.errorConsent'))
+      return
+    }
 
     const localErrors = validateCheckoutForm(form, t)
     if (Object.keys(localErrors).length > 0) {
@@ -161,6 +169,7 @@ export function CheckoutPage() {
       setError(t('checkout.errorFields'))
       return
     }
+
 
     setSubmitting(true)
     setError(null)
@@ -187,6 +196,9 @@ export function CheckoutPage() {
             city: form.city.trim(),
           },
           paymentMethod,
+          acceptedTerms: true,
+          acknowledgedNoWithdrawal: true,
+          marketingConsent,
           items: items.map((item) => ({
             productId: item.productId,
             productSlug: item.productSlug,
@@ -453,6 +465,60 @@ export function CheckoutPage() {
             <p className="text-sm text-ink-muted">{t('checkout.paymentHint')}</p>
           </section>
 
+          <section className="space-y-4 rounded-lg border border-line bg-paper-card p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+              {t('checkout.consentSection')}
+            </h2>
+            <p className="text-sm leading-relaxed text-ink-muted">
+              <Trans
+                i18nKey="checkout.privacyNote"
+                components={{
+                  privacy: (
+                    <Link to="/personvern" className="underline hover:text-ink" />
+                  ),
+                }}
+              />
+            </p>
+            <ConsentCheckbox
+              id="checkout-terms"
+              required
+              checked={acceptedTerms}
+              onChange={setAcceptedTerms}
+            >
+              <Trans
+                i18nKey="checkout.acceptTerms"
+                components={{
+                  terms: <Link to="/vilkar" className="underline hover:text-ink" />,
+                  privacy: (
+                    <Link to="/personvern" className="underline hover:text-ink" />
+                  ),
+                }}
+              />
+            </ConsentCheckbox>
+            <ConsentCheckbox
+              id="checkout-withdrawal"
+              required
+              checked={acknowledgedNoWithdrawal}
+              onChange={setAcknowledgedNoWithdrawal}
+            >
+              <Trans
+                i18nKey="checkout.acceptWithdrawal"
+                components={{
+                  terms: (
+                    <Link to="/angrerett" className="underline hover:text-ink" />
+                  ),
+                }}
+              />
+            </ConsentCheckbox>
+            <ConsentCheckbox
+              id="checkout-marketing"
+              checked={marketingConsent}
+              onChange={setMarketingConsent}
+            >
+              {t('checkout.marketing')}
+            </ConsentCheckbox>
+          </section>
+
           {error && (
             <p
               role="alert"
@@ -463,7 +529,11 @@ export function CheckoutPage() {
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button type="submit" size="lg" disabled={submitting}>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={submitting || !acceptedTerms || !acknowledgedNoWithdrawal}
+            >
               {submitting ? t('checkout.submitting') : t('checkout.pay')}
             </Button>
             <Button asChild size="lg" variant="outline">

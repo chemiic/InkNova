@@ -27,6 +27,7 @@ export class ContactService {
       text: [
         `Navn: ${name}`,
         `E-post: ${dto.email}`,
+        'Personvernsamtykke: ja',
         '',
         'Melding:',
         dto.message,

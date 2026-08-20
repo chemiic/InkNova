@@ -1,5 +1,7 @@
 import {
+  Equals,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsInt,
@@ -77,6 +79,18 @@ export class CreateOrderDto {
 
   @IsIn(['vipps', 'card'])
   paymentMethod!: 'vipps' | 'card';
+
+  @IsBoolean()
+  @Equals(true)
+  acceptedTerms!: true;
+
+  @IsBoolean()
+  @Equals(true)
+  acknowledgedNoWithdrawal!: true;
+
+  @IsOptional()
+  @IsBoolean()
+  marketingConsent?: boolean;
 
   @IsArray()
   @ValidateNested({ each: true })

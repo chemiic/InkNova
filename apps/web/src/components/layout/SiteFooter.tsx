@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
+import { openCookieSettings } from '@/lib/cookieConsent'
 
 const socials = [
   { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
@@ -22,7 +23,13 @@ const footerLinks = [
   { to: '/om-oss', key: 'about' },
   { to: '/kontakt', key: 'contact' },
   { to: '/artikler', key: 'articles' },
+] as const
+
+const legalLinks = [
+  { to: '/vilkar', key: 'salesTerms' },
   { to: '/angrerett', key: 'terms' },
+  { to: '/personvern', key: 'privacy' },
+  { to: '/informasjonskapsler', key: 'cookies' },
 ] as const
 
 export function SiteFooter() {
@@ -73,6 +80,24 @@ export function SiteFooter() {
                 <Icon className="h-4 w-4" />
               </a>
             ))}
+          </div>
+          <div className="flex flex-col gap-2 pt-6 text-sm">
+            {legalLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-ink hover:underline"
+              >
+                {t(`nav.${link.key}`)}
+              </Link>
+            ))}
+            <button
+              type="button"
+              className="text-left text-ink hover:underline"
+              onClick={openCookieSettings}
+            >
+              {t('nav.cookieSettings')}
+            </button>
           </div>
           <p className="pt-6 text-xs">
             © {new Date().getFullYear()} InkNova. {t('footer.rights')}

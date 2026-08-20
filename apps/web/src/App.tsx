@@ -13,6 +13,9 @@ import { HomePage } from '@/pages/HomePage'
 import { OrderConfirmPage } from '@/pages/OrderConfirmPage'
 import { ProductPage } from '@/pages/ProductPage'
 import { ProductsPage } from '@/pages/ProductsPage'
+import { CookiesPage } from '@/pages/CookiesPage'
+import { PrivacyPage } from '@/pages/PrivacyPage'
+import { SalesTermsPage } from '@/pages/SalesTermsPage'
 import { TermsPage } from '@/pages/TermsPage'
 import {
   AdminLayout,
@@ -65,6 +68,9 @@ export default function App() {
           <Route path="artikler" element={<ArticlesPage />} />
           <Route path="artikler/:slug" element={<ArticleDetailPage />} />
           <Route path="angrerett" element={<TermsPage />} />
+          <Route path="vilkar" element={<SalesTermsPage />} />
+          <Route path="personvern" element={<PrivacyPage />} />
+          <Route path="informasjonskapsler" element={<CookiesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -9,7 +9,10 @@
     "cart": "Handlekurv",
     "menu": "Meny",
     "terms": "Angrerett og reklamasjon",
-    "privacy": "Personvern"
+    "privacy": "Personvern",
+    "salesTerms": "Kjøpsvilkår",
+    "cookies": "Informasjonskapsler",
+    "cookieSettings": "Innstillinger for informasjonskapsler"
   },
   "announcement": "Velkommen til InkNova – kvalitetstrykk levert i hele Norge",
   "home": {
@@ -135,7 +138,13 @@
     "city": "Sted",
     "payVipps": "Vipps",
     "payCard": "Kort",
-    "paymentHint": "Vipps og kort går via Vipps MobilePay. Med payment dry-run lokalt fullføres ordren med en gang og sendes til trykkeriet på e-post.",
+    "paymentHint": "Vipps og kort går via Vipps MobilePay. Betalingsopplysninger behandles av Vipps etter deres personvernregler. Vi leverer i Norge. Priser er i NOK og inkluderer MVA.",
+    "consentSection": "Avtaler og personvern",
+    "privacyNote": "Vi behandler navn, kontaktinfo, leveringsadresse og trykkfiler for å gjennomføre kjøpet og sende ordren til produksjon. Les mer i <privacy>personvernerklæringen</privacy>.",
+    "acceptTerms": "Jeg har lest og godtar <terms>kjøpsvilkårene</terms> og <privacy>personvernerklæringen</privacy>.",
+    "acceptWithdrawal": "Jeg forstår at angreretten ikke gjelder for spesialtilpassede trykksaker, jf. angrerettloven § 22 bokstav e. Se <terms>angrerett og reklamasjon</terms>.",
+    "marketing": "Jeg ønsker å motta tilbud og nyheter fra InkNova på e-post (valgfritt).",
+    "errorConsent": "Du må godta vilkårene og bekrefte at angreretten ikke gjelder før du kan bestille.",
     "pay": "Betal og bestill",
     "submitting": "Sender ordre…",
     "backToCart": "Tilbake til handlekurv",
@@ -278,8 +287,10 @@
     "send": "Send",
     "success": "Takk! Vi tar kontakt så snart vi kan.",
     "error": "Noe gikk galt. Prøv igjen senere.",
+    "errorConsent": "Du må godta personvernerklæringen for å sende skjemaet.",
     "org": "Org. nr.",
-    "info": "Spørsmål om produkter, filer eller levering? Send oss en melding."
+    "info": "Spørsmål om produkter, filer eller levering? Send oss en melding.",
+    "privacyConsent": "Jeg godtar at InkNova behandler kontaktopplysningene mine for å svare på henvendelsen. Se <privacy>personvernerklæringen</privacy>."
   },
   "about": {
     "title": "Om InkNova",
@@ -301,7 +312,7 @@
       },
       {
         "q": "Kan jeg betale med Vipps?",
-        "a": "Ja – Vipps og kort kommer i checkout. Inntil videre kan du kontakte oss for bestilling."
+        "a": "Ja. I kassen kan du betale med Vipps eller kort via Vipps MobilePay."
       },
       {
         "q": "Hvor lang er leveringstiden?",
@@ -309,7 +320,11 @@
       },
       {
         "q": "Gjelder angreretten?",
-        "a": "Produktene er spesialtilpasset, så angreretten gjelder ikke etter angrerettloven § 22 bokstav e. Se siden Angrerett og reklamasjon."
+        "a": "Produktene er spesialtilpasset, så angreretten gjelder ikke etter angrerettloven § 22 bokstav e. Du bekrefter dette med en avkrysning i kassen. Se siden Angrerett og reklamasjon."
+      },
+      {
+        "q": "Hvordan behandler dere personopplysninger?",
+        "a": "Vi samler inn opplysninger som trengs for å levere trykksaker: kontaktinfo, leveringsadresse, betaling via Vipps og trykkfiler. Les personvernerklæringen og informasjonskapsler for detaljer, formål og dine rettigheter etter GDPR."
       }
     ]
   },
@@ -392,6 +407,197 @@
       "title": "Viktig før bestilling",
       "p1": "Som kunde er du ansvarlig for at designet og innholdet du sender inn er korrekt. InkNova foretar ikke kontroll eller korrektur av tekst, layout, stavefeil eller bildekvalitet før produksjon – heller ikke ved bruk av våre maler eller ved opplasting av ferdige filer.",
       "p2": "Ved å sende inn bestillingen bekrefter du at designet er kontrollert og klart for produksjon."
+    }
+  },
+  "salesTerms": {
+    "title": "Kjøpsvilkår",
+    "intro": "Disse vilkårene gjelder for kjøp i nettbutikken til InkNova. Nettbutikken er rettet mot kunder i Norge.",
+    "updated": "Sist oppdatert: august 2026",
+    "seller": {
+      "title": "Selger",
+      "p1": "Avtalen inngås med InkNova.",
+      "list": [
+        "InkNova",
+        "Org.nr. 832028452",
+        "E-post: Kontakt@inknova.no",
+        "Norge"
+      ]
+    },
+    "products": {
+      "title": "Produkter",
+      "p1": "Vi selger trykksaker som produseres etter dine spesifikasjoner, for eksempel flyers, visittkort, plakater, klistremerker, roll-up og skilt.",
+      "p2": "Produksjonen starter kort tid etter at betalingen er bekreftet. Du er ansvarlig for at design, tekst, bilder og mål er korrekte før du fullfører kjøpet."
+    },
+    "prices": {
+      "title": "Priser",
+      "p1": "Alle priser vises i norske kroner (NOK) og inkluderer merverdiavgift med mindre noe annet er tydelig angitt. Frakt vises i kassen før du betaler. Vi forbeholder oss retten til å rette åpenbare prisfeil."
+    },
+    "order": {
+      "title": "Bestilling",
+      "p1": "Bestillingen er bindende når du har fylt ut kassen, godtatt vilkårene og fullført betalingen. Du får en ordrebekreftelse med ordrenummer.",
+      "p2": "Vi videresender trykkfilene og ordreopplysningene til vårt produksjonssamarbeid for utskrift og sending."
+    },
+    "payment": {
+      "title": "Betaling",
+      "p1": "Du kan betale med Vipps eller kort. Betalingen behandles av Vipps MobilePay. Vi belaster beløpet når ordren godkjennes. Vi lagrer ikke kortnummer."
+    },
+    "delivery": {
+      "title": "Levering",
+      "p1": "Vi leverer i Norge. Leveringstid vises på produktsiden og kan variere etter produkt og ukedag. Frakt beregnes i kassen. Risikoen for varen går over til deg når den er levert på oppgitt adresse, med mindre noe annet følger av loven."
+    },
+    "withdrawal": {
+      "title": "Angrerett",
+      "p1": "Produktene er spesialtilpasset og kan ikke selges videre. Angreretten gjelder derfor ikke, jf. angrerettloven § 22 bokstav e. Full informasjon finner du under <terms>angrerett og reklamasjon</terms>. I kassen må du bekrefte at du er kjent med dette."
+    },
+    "complaints": {
+      "title": "Reklamasjon",
+      "p1": "Du har reklamasjonsrett etter forbrukerkjøpsloven ved produksjonsfeil eller avvik fra det som er avtalt. Slik du reklamerer, og hva som ikke dekkes (for eksempel feil i eget design), står i <terms>angrerett og reklamasjon</terms>."
+    },
+    "design": {
+      "title": "Ansvar for design",
+      "p1": "Du er ansvarlig for at innholdet du designer, laster opp eller plasserer i malene er korrekt, og at du har rett til å bruke logoer, bilder og tekst.",
+      "p2": "InkNova gjør ikke korrektur av tekst, layout, stavefeil eller bildekvalitet før produksjon. Ved å bestille bekrefter du at designet er kontrollert og klart for trykk."
+    },
+    "privacy": {
+      "title": "Personvern",
+      "p1": "Vi behandler personopplysninger for å gjennomføre kjøpet. Les <privacy>personvernerklæringen</privacy> for formål, mottakere og dine rettigheter."
+    },
+    "law": {
+      "title": "Lovvalg",
+      "p1": "Kjøpet reguleres av norsk rett. Forbrukere har ufravikelige rettigheter etter norsk forbrukerlovgivning. Tvister kan bringes inn for Forbrukertilsynet / Forbrukerrådet og norske domstoler."
+    }
+  },
+  "privacy": {
+    "title": "Personvernerklæring",
+    "intro": "Denne erklæringen forklarer hvordan InkNova behandler personopplysninger når du bruker nettbutikken, bestiller trykk eller kontakter oss. Vi følger personvernforordningen (GDPR) og norsk personopplysningslov.",
+    "updated": "Sist oppdatert: august 2026",
+    "controller": {
+      "title": "Behandlingsansvarlig",
+      "p1": "InkNova er behandlingsansvarlig for personopplysningene vi samler inn via nettstedet.",
+      "list": [
+        "InkNova",
+        "Org.nr. 832028452",
+        "E-post: Kontakt@inknova.no",
+        "Norge"
+      ]
+    },
+    "data": {
+      "title": "Hvilke opplysninger vi samler inn",
+      "p1": "Vi samler inn opplysninger du gir oss, og tekniske data som trengs for at butikken skal virke:",
+      "list": [
+        "Identitet og kontakt: navn, e-post, telefon",
+        "Levering: gateadresse, postnummer og sted i Norge",
+        "Ordre: produkter, størrelse, antall, pris og trykkfiler (PDF)",
+        "Betaling: betalingsmetode og status via Vipps MobilePay. Vi lagrer ikke kortnummer",
+        "Kontaktskjema: navn, e-post og melding",
+        "Nødvendig lagring i nettleseren: handlekurv, designfiler og pågående ordre"
+      ]
+    },
+    "purpose": {
+      "title": "Formål og behandlingsgrunnlag",
+      "p1": "Vi behandler opplysningene bare når vi har et lovlig grunnlag:",
+      "list": [
+        "Avtale (GDPR art. 6 nr. 1 bokstav b): å motta og produsere bestillingen, ta betalt, levere varen og svare på henvendelser knyttet til kjøpet",
+        "Rettlig plikt (art. 6 nr. 1 bokstav c): bokføring og regnskap",
+        "Samtykke (art. 6 nr. 1 bokstav a): valgfri e-postmarkedsføring og eventuelle ikke-nødvendige informasjonskapsler",
+        "Berettiget interesse (art. 6 nr. 1 bokstav f): å sikre nettstedet, forebygge misbruk og forbedre tjenesten uten å gå på tvers av dine rettigheter"
+      ]
+    },
+    "recipients": {
+      "title": "Hvem får opplysningene",
+      "p1": "Vi deler opplysninger bare når det er nødvendig for å levere tjenesten:",
+      "list": [
+        "Produksjonspartner (Copycat Lillestrøm): navn, leveringsadresse, produkt, antall og trykkfiler",
+        "Vipps MobilePay: beløp, ordrehenvisning og nødvendig betalingsinformasjon",
+        "E-postleverandør: for ordrebekreftelse, produksjonsmail og kontaktskjema",
+        "Frakt/post: navn og leveringsadresse"
+      ],
+      "vipps": "Vipps MobilePay behandler betalingsdata etter sine egne vilkår. Se <vipps>Vipps’ personvernerklæring</vipps>."
+    },
+    "retention": {
+      "title": "Lagringstid",
+      "p1": "Vi lagrer opplysningene så lenge det er nødvendig for formålet, og deretter i tråd med lovkrav:",
+      "list": [
+        "Ordre- og betalingsopplysninger: i samsvar med bokføringsloven (normalt 5 år)",
+        "Trykkfiler: til produksjon og eventuell reklamasjon er ferdigbehandlet",
+        "Kontakthenvendelser: inntil saken er besvart, deretter slettes de innen rimelig tid (normalt innen 12 måneder)",
+        "Handlekurv og design i nettleseren: til du tømmer dem eller sletter nettleserdata",
+        "Markedsføringssamtykke: til du trekker samtykket tilbake"
+      ]
+    },
+    "rights": {
+      "title": "Dine rettigheter",
+      "p1": "Du kan kontakte oss på Kontakt@inknova.no for å bruke rettighetene dine etter GDPR:",
+      "list": [
+        "Innsyn i hvilke opplysninger vi har om deg",
+        "Retting av uriktige opplysninger",
+        "Sletting der loven tillater det",
+        "Begrensning og innsigelse mot visse behandlinger",
+        "Dataportabilitet for opplysninger du har gitt oss",
+        "Å trekke tilbake samtykke uten at det påvirker lovlig behandling før tilbaketrekkingen"
+      ],
+      "complaint": "Du kan klage til <datatilsynet>Datatilsynet</datatilsynet> dersom du mener vi behandler opplysninger i strid med regelverket."
+    },
+    "cookies": {
+      "title": "Informasjonskapsler og lokal lagring",
+      "p1": "Vi bruker nødvendig lagring for at handlekurv, design og kasse skal fungere. Du kan lese mer og endre valg på siden om <cookies>informasjonskapsler</cookies>."
+    },
+    "security": {
+      "title": "Sikkerhet",
+      "p1": "Vi bruker HTTPS og begrenser tilgangen til personopplysninger til det som trengs for å levere ordren. Trykkfiler sendes til produksjon over e-post med vedlegg. Ingen systemer er risikofri, men vi tar rimelige tiltak for å beskytte dataene."
+    },
+    "changes": {
+      "title": "Endringer",
+      "p1": "Vi kan oppdatere denne erklæringen når tjenesten eller regelverket endres. Datoen øverst viser når den sist ble oppdatert. Vesentlige endringer vil vises på nettstedet."
+    }
+  },
+  "cookies": {
+    "banner": {
+      "title": "Informasjonskapsler og personvern",
+      "body": "Vi bruker nødvendig lagring i nettleseren for handlekurv, design og bestilling. Analyse og markedsføring er valgfritt og brukes ikke uten ditt samtykke. Les mer i <privacy>personvernerklæringen</privacy> og om <cookies>informasjonskapsler</cookies>.",
+      "customize": "Tilpass",
+      "necessary": "Bare nødvendige",
+      "acceptAll": "Godta alle"
+    },
+    "settings": {
+      "title": "Dine valg",
+      "intro": "Nødvendig lagring kan ikke slås av fordi nettbutikken da ikke virker. Øvrige kategorier er valgfrie og krever samtykke.",
+      "alwaysOn": "Alltid på",
+      "save": "Lagre valg",
+      "close": "Lukk"
+    },
+    "categories": {
+      "necessary": {
+        "title": "Nødvendige",
+        "body": "Handlekurv, designfiler, pågående betaling og innstillinger som trengs for at nettstedet skal fungere. Dette er nødvendig lagring og krever ikke samtykke."
+      },
+      "analytics": {
+        "title": "Analyse",
+        "body": "Hjelper oss å forstå hvordan nettstedet brukes. Vi bruker ikke analyseverktøy før du har gitt samtykke, og kategorien er slått av som standard."
+      },
+      "marketing": {
+        "title": "Markedsføring",
+        "body": "Brukes til å vise eller måle relevant markedsføring. Vi setter ikke slike informasjonskapsler uten samtykke."
+      }
+    },
+    "page": {
+      "title": "Informasjonskapsler",
+      "intro": "Her forklarer vi hvilken lagring InkNova bruker i nettleseren din, og hvordan du kan styre valgene dine.",
+      "updated": "Sist oppdatert: august 2026",
+      "what": {
+        "title": "Hva er dette?",
+        "p1": "Informasjonskapsler og lignende teknologi (for eksempel localStorage og IndexedDB) er små data som lagres i nettleseren. Etter ekomloven og GDPR skal du få informasjon om dette, og samtykke når lagringen ikke er strengt nødvendig."
+      },
+      "necessaryList": [
+        "Handlekurv (localStorage)",
+        "Design-PDF før kassen (IndexedDB)",
+        "Pågående Vipps-betaling (sessionStorage)",
+        "Ditt samtykkevalg for informasjonskapsler"
+      ],
+      "manage": {
+        "title": "Slik endrer du valgene",
+        "p1": "Åpne <settings>innstillingene for informasjonskapsler</settings> når som helst, eller slett nettleserdata. Personopplysninger utover dette er beskrevet i <privacy>personvernerklæringen</privacy>."
+      }
     }
   },
   "footer": {

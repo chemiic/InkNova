@@ -30,6 +30,7 @@ export function contactEmailHtml(input: {
         'E-post',
         `<a href="mailto:${escapeHtml(input.email)}" style="color:#1a1a1a;">${escapeHtml(input.email)}</a>`,
       ],
+      ['Personvernsamtykke', 'ja'],
     ]),
     sectionTitle('Melding'),
     messageBox(nl2br(input.message)),

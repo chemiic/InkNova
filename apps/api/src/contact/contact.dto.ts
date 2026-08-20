@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class ContactDto {
   @IsEmail()
@@ -13,4 +13,8 @@ export class ContactDto {
   @IsString()
   @MaxLength(200)
   name?: string;
+
+  @IsBoolean()
+  @Equals(true)
+  privacyConsent!: true;
 }

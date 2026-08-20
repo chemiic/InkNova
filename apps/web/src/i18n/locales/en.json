@@ -9,7 +9,10 @@
     "cart": "Cart",
     "menu": "Menu",
     "terms": "Returns & complaints",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "salesTerms": "Terms of sale",
+    "cookies": "Cookies",
+    "cookieSettings": "Cookie settings"
   },
   "announcement": "Welcome to InkNova – quality print delivered across Norway",
   "home": {
@@ -135,7 +138,13 @@
     "city": "City",
     "payVipps": "Vipps",
     "payCard": "Card",
-    "paymentHint": "Vipps and card go through Vipps MobilePay. With payment dry-run enabled locally, the order is completed immediately and emailed to the print shop.",
+    "paymentHint": "Vipps and card go through Vipps MobilePay. Payment details are processed by Vipps under their privacy policy. We deliver in Norway. Prices are in NOK and include VAT.",
+    "consentSection": "Agreements and privacy",
+    "privacyNote": "We process your name, contact details, delivery address and print files to fulfil the purchase and send the order to production. Read more in the <privacy>privacy policy</privacy>.",
+    "acceptTerms": "I have read and accept the <terms>terms of sale</terms> and the <privacy>privacy policy</privacy>.",
+    "acceptWithdrawal": "I understand that the right of withdrawal does not apply to made-to-order print, cf. the Cancellation Act § 22 letter e. See <terms>withdrawal and complaints</terms>.",
+    "marketing": "I would like to receive offers and news from InkNova by email (optional).",
+    "errorConsent": "You must accept the terms and confirm that the right of withdrawal does not apply before placing the order.",
     "pay": "Pay and place order",
     "submitting": "Sending order…",
     "backToCart": "Back to cart",
@@ -278,8 +287,10 @@
     "send": "Send",
     "success": "Thanks! We'll get back to you soon.",
     "error": "Something went wrong. Please try again later.",
+    "errorConsent": "You must accept the privacy policy to send the form.",
     "org": "Org. no.",
-    "info": "Questions about products, files or delivery? Send us a message."
+    "info": "Questions about products, files or delivery? Send us a message.",
+    "privacyConsent": "I agree that InkNova processes my contact details to answer this enquiry. See the <privacy>privacy policy</privacy>."
   },
   "about": {
     "title": "About InkNova",
@@ -301,7 +312,7 @@
       },
       {
         "q": "Can I pay with Vipps?",
-        "a": "Yes – Vipps and card are coming in checkout. Until then, contact us to place an order."
+        "a": "Yes. At checkout you can pay with Vipps or card via Vipps MobilePay."
       },
       {
         "q": "How long is delivery?",
@@ -309,7 +320,11 @@
       },
       {
         "q": "Do I have a right of withdrawal?",
-        "a": "Products are made to order, so withdrawal rights under § 22 letter e do not apply. See Returns & complaints."
+        "a": "Products are made to order, so withdrawal rights under § 22 letter e do not apply. You confirm this with a checkbox at checkout. See Returns & complaints."
+      },
+      {
+        "q": "How do you process personal data?",
+        "a": "We collect the data needed to deliver print: contact details, delivery address, payment via Vipps and print files. See the privacy policy and cookie page for purposes, recipients and your GDPR rights."
       }
     ]
   },
@@ -392,6 +407,197 @@
       "title": "Important before ordering",
       "p1": "As a customer you are responsible for the design and content you submit being correct. InkNova does not check or proofread text, layout, spelling or image quality before production — including when using our templates or uploading finished files.",
       "p2": "By placing an order you confirm that the design has been checked and is ready for production."
+    }
+  },
+  "salesTerms": {
+    "title": "Terms of sale",
+    "intro": "These terms apply to purchases in the InkNova webshop. The shop is aimed at customers in Norway.",
+    "updated": "Last updated: August 2026",
+    "seller": {
+      "title": "Seller",
+      "p1": "The contract is with InkNova.",
+      "list": [
+        "InkNova",
+        "Org. no. 832028452",
+        "Email: Kontakt@inknova.no",
+        "Norway"
+      ]
+    },
+    "products": {
+      "title": "Products",
+      "p1": "We sell print products made to your specifications, such as flyers, business cards, posters, stickers, roll-ups and signs.",
+      "p2": "Production starts shortly after payment is confirmed. You are responsible for design, text, images and measurements being correct before you complete the purchase."
+    },
+    "prices": {
+      "title": "Prices",
+      "p1": "All prices are shown in Norwegian kroner (NOK) and include VAT unless clearly stated otherwise. Shipping is shown at checkout before you pay. We reserve the right to correct obvious pricing errors."
+    },
+    "order": {
+      "title": "Ordering",
+      "p1": "The order is binding when you have completed checkout, accepted the terms and finished payment. You receive an order confirmation with an order number.",
+      "p2": "We forward the print files and order details to our production partner for printing and shipping."
+    },
+    "payment": {
+      "title": "Payment",
+      "p1": "You can pay with Vipps or card. Payment is processed by Vipps MobilePay. We charge the amount when the order is approved. We do not store card numbers."
+    },
+    "delivery": {
+      "title": "Delivery",
+      "p1": "We deliver in Norway. Lead time is shown on the product page and may vary by product and weekday. Shipping is calculated at checkout. Risk in the goods passes to you when delivered to the stated address, unless the law provides otherwise."
+    },
+    "withdrawal": {
+      "title": "Right of withdrawal",
+      "p1": "Products are made to order and cannot be resold. The right of withdrawal therefore does not apply, cf. the Cancellation Act § 22 letter e. Full information is under <terms>withdrawal and complaints</terms>. At checkout you must confirm that you are aware of this."
+    },
+    "complaints": {
+      "title": "Complaints",
+      "p1": "You have a right to complain under the Consumer Purchases Act for production defects or deviation from what was agreed. How to complain, and what is not covered (for example errors in your own design), is set out in <terms>withdrawal and complaints</terms>."
+    },
+    "design": {
+      "title": "Responsibility for design",
+      "p1": "You are responsible for the content you design, upload or place in templates being correct, and that you have the right to use logos, images and text.",
+      "p2": "InkNova does not proofread text, layout, spelling or image quality before production. By ordering you confirm that the design has been checked and is ready for print."
+    },
+    "privacy": {
+      "title": "Privacy",
+      "p1": "We process personal data to fulfil the purchase. Read the <privacy>privacy policy</privacy> for purposes, recipients and your rights."
+    },
+    "law": {
+      "title": "Governing law",
+      "p1": "The purchase is governed by Norwegian law. Consumers have mandatory rights under Norwegian consumer legislation. Disputes may be brought before the Norwegian Consumer Authority / Consumer Council and Norwegian courts."
+    }
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "intro": "This policy explains how InkNova processes personal data when you use the webshop, order print or contact us. We follow the GDPR and the Norwegian Personal Data Act.",
+    "updated": "Last updated: August 2026",
+    "controller": {
+      "title": "Controller",
+      "p1": "InkNova is the controller for personal data we collect via the website.",
+      "list": [
+        "InkNova",
+        "Org. no. 832028452",
+        "Email: Kontakt@inknova.no",
+        "Norway"
+      ]
+    },
+    "data": {
+      "title": "What data we collect",
+      "p1": "We collect information you give us, and technical data needed for the shop to work:",
+      "list": [
+        "Identity and contact: name, email, phone",
+        "Delivery: street address, postal code and city in Norway",
+        "Order: products, size, quantity, price and print files (PDF)",
+        "Payment: payment method and status via Vipps MobilePay. We do not store card numbers",
+        "Contact form: name, email and message",
+        "Necessary browser storage: cart, design files and pending order"
+      ]
+    },
+    "purpose": {
+      "title": "Purposes and legal bases",
+      "p1": "We process data only when we have a lawful basis:",
+      "list": [
+        "Contract (GDPR Art. 6(1)(b)): receiving and producing the order, taking payment, delivering the goods and answering purchase-related enquiries",
+        "Legal obligation (Art. 6(1)(c)): bookkeeping and accounting",
+        "Consent (Art. 6(1)(a)): optional email marketing and any non-essential cookies",
+        "Legitimate interest (Art. 6(1)(f)): securing the site, preventing abuse and improving the service without overriding your rights"
+      ]
+    },
+    "recipients": {
+      "title": "Who receives the data",
+      "p1": "We share data only when needed to deliver the service:",
+      "list": [
+        "Production partner (Copycat Lillestrøm): name, delivery address, product, quantity and print files",
+        "Vipps MobilePay: amount, order reference and necessary payment information",
+        "Email provider: for order confirmation, production mail and the contact form",
+        "Postal/shipping: name and delivery address"
+      ],
+      "vipps": "Vipps MobilePay processes payment data under its own terms. See the <vipps>Vipps privacy policy</vipps>."
+    },
+    "retention": {
+      "title": "Retention",
+      "p1": "We keep data only as long as needed for the purpose, and then as required by law:",
+      "list": [
+        "Order and payment data: in line with the Bookkeeping Act (normally 5 years)",
+        "Print files: until production and any complaint are completed",
+        "Contact enquiries: until answered, then deleted within a reasonable time (normally within 12 months)",
+        "Cart and design in the browser: until you clear them or delete browser data",
+        "Marketing consent: until you withdraw consent"
+      ]
+    },
+    "rights": {
+      "title": "Your rights",
+      "p1": "You can contact us at Kontakt@inknova.no to exercise your GDPR rights:",
+      "list": [
+        "Access to the data we hold about you",
+        "Rectification of inaccurate data",
+        "Erasure where the law allows",
+        "Restriction and objection to certain processing",
+        "Data portability for data you have provided",
+        "Withdrawing consent without affecting lawful processing before withdrawal"
+      ],
+      "complaint": "You may lodge a complaint with the <datatilsynet>Norwegian Data Protection Authority (Datatilsynet)</datatilsynet> if you believe we process data unlawfully."
+    },
+    "cookies": {
+      "title": "Cookies and local storage",
+      "p1": "We use necessary storage for cart, design and checkout to work. You can read more and change choices on the <cookies>cookies</cookies> page."
+    },
+    "security": {
+      "title": "Security",
+      "p1": "We use HTTPS and limit access to personal data to what is needed to fulfil the order. Print files are sent to production by email with attachments. No system is risk-free, but we take reasonable measures to protect the data."
+    },
+    "changes": {
+      "title": "Changes",
+      "p1": "We may update this policy when the service or the law changes. The date at the top shows when it was last updated. Material changes will be shown on the website."
+    }
+  },
+  "cookies": {
+    "banner": {
+      "title": "Cookies and privacy",
+      "body": "We use necessary browser storage for cart, design and checkout. Analytics and marketing are optional and are not used without your consent. Read more in the <privacy>privacy policy</privacy> and about <cookies>cookies</cookies>.",
+      "customize": "Customize",
+      "necessary": "Necessary only",
+      "acceptAll": "Accept all"
+    },
+    "settings": {
+      "title": "Your choices",
+      "intro": "Necessary storage cannot be turned off because the shop would not work. Other categories are optional and require consent.",
+      "alwaysOn": "Always on",
+      "save": "Save choices",
+      "close": "Close"
+    },
+    "categories": {
+      "necessary": {
+        "title": "Necessary",
+        "body": "Cart, design files, pending payment and settings needed for the site to work. This is necessary storage and does not require consent."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "body": "Helps us understand how the site is used. We do not use analytics tools until you have consented, and this category is off by default."
+      },
+      "marketing": {
+        "title": "Marketing",
+        "body": "Used to show or measure relevant marketing. We do not set such cookies without consent."
+      }
+    },
+    "page": {
+      "title": "Cookies",
+      "intro": "This page explains what storage InkNova uses in your browser, and how you can manage your choices.",
+      "updated": "Last updated: August 2026",
+      "what": {
+        "title": "What is this?",
+        "p1": "Cookies and similar technology (for example localStorage and IndexedDB) are small data stored in the browser. Under the Electronic Communications Act and the GDPR you must be informed, and consent is required when the storage is not strictly necessary."
+      },
+      "necessaryList": [
+        "Shopping cart (localStorage)",
+        "Design PDF before checkout (IndexedDB)",
+        "Pending Vipps payment (sessionStorage)",
+        "Your cookie consent choice"
+      ],
+      "manage": {
+        "title": "How to change your choices",
+        "p1": "Open <settings>cookie settings</settings> at any time, or delete browser data. Personal data beyond this is described in the <privacy>privacy policy</privacy>."
+      }
     }
   },
   "footer": {

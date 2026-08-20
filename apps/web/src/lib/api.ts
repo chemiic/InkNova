@@ -54,6 +54,7 @@ export function submitContact(payload: {
   email: string
   message: string
   name?: string
+  privacyConsent: true
 }) {
   return request<{ ok: true }>('/api/contact', {
     method: 'POST',
