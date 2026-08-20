@@ -30,16 +30,16 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-auto border-t border-line bg-paper">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2">
-        <div>
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:py-12 md:grid-cols-2 md:gap-10">
+        <div className="text-left">
           <Logo color="#0a0a0a" className="h-14" />
           <p className="mt-3 text-ink-muted">{t('footer.tagline')}</p>
-          <ul className="mt-8 space-y-3">
+          <ul className="mt-6 space-y-1.5">
             {footerLinks.map((link) => (
               <li key={link.to}>
                 <Link
                   to={link.to}
-                  className="text-lg font-semibold text-ink hover:opacity-70"
+                  className="text-sm font-medium text-ink hover:opacity-70"
                 >
                   {t(`nav.${link.key}`)}
                 </Link>
@@ -48,7 +48,7 @@ export function SiteFooter() {
           </ul>
         </div>
 
-        <div className="space-y-3 text-sm text-ink-muted">
+        <div className="space-y-3 text-sm text-ink-muted sm:text-left">
           <p>
             <a
               className="text-ink hover:underline"
@@ -60,7 +60,7 @@ export function SiteFooter() {
           <p>
             {t('contact.org')}: 832028452
           </p>
-          <div className="flex flex-wrap gap-3 pt-4">
+          <div className="flex flex-wrap justify-center gap-3 pt-4 sm:justify-start">
             {socials.map(({ href, label, Icon }) => (
               <a
                 key={label}

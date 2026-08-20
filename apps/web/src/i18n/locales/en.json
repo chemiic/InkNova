@@ -183,6 +183,7 @@
     "bleedHint": "Cut line · {{bleed}} mm bleed",
     "addToCart": "Add to cart",
     "preview": "Preview",
+    "tools": "Tools",
     "previewTitle": "Design preview",
     "previewClose": "Close",
     "previewEditMore": "Keep editing",
@@ -206,7 +207,22 @@
     "layersEmpty": "No elements yet.",
     "layersHint": "Drag to reorder. Top = back, bottom = front.",
     "background": "Background",
+    "backgroundSolid": "Solid",
+    "backgroundGradient": "Gradient",
     "backgroundColor": "Color",
+    "gradientType": "Type",
+    "gradientLinear": "Linear",
+    "gradientRadial": "Radial",
+    "gradientFrom": "From",
+    "gradientTo": "To",
+    "gradientStops": "Color stops",
+    "gradientStopN": "Stop {{n}}",
+    "gradientAddStop": "+ Add stop",
+    "gradientRemoveStop": "Remove",
+    "gradientPosition": "Position ({{pos}}%)",
+    "gradientCenterX": "Center X ({{pos}}%)",
+    "gradientCenterY": "Center Y ({{pos}}%)",
+    "gradientAngle": "Angle ({{angle}}°)",
     "uploadBackgroundImage": "Upload background image",
     "replaceBackgroundImage": "Replace background image",
     "clearBackgroundImage": "Remove background image",
@@ -220,6 +236,9 @@
     "text": "Content",
     "font": "Font",
     "fontSize": "Size",
+    "decreaseFontSize": "Decrease size",
+    "increaseFontSize": "Increase size",
+    "editText": "Edit text",
     "color": "Color",
     "align": "Align",
     "alignLeft": "Left",
@@ -383,16 +402,20 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "back": "Back",
+    "close": "Close",
     "language": "Language"
   },
   "admin": {
     "brand": "Admin",
+    "swipeHint": "Swipe horizontally to see more columns",
     "nav": {
       "dashboard": "Overview",
       "orders": "Orders",
       "products": "Products",
       "articles": "Articles",
       "delivery": "Shipping",
+      "homepage": "Homepage",
+      "mail": "Emails",
       "logout": "Log out"
     },
     "login": {
@@ -402,7 +425,10 @@
       "password": "Password",
       "submit": "Sign in",
       "submitting": "Signing in…",
-      "error": "Wrong username or password"
+      "error": "Wrong username or password",
+      "serverError": "Cannot reach the server. Make sure the API is running (pnpm dev).",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     },
     "dashboard": {
       "title": "Overview",
@@ -410,7 +436,9 @@
       "ordersHint": "— see what customers ordered, addresses and print files",
       "productsHint": "— add, edit, hide, images and sizes",
       "articlesHint": "— add, edit, hide or delete",
-      "deliveryHint": "— default flat fee (per-product on the product form)"
+      "deliveryHint": "— default flat fee (per-product on the product form)",
+      "homepageHint": "— choose which products appear as popular on the homepage",
+      "mailHint": "— preview the emails sent to the shop"
     },
     "common": {
       "loading": "Loading…",
@@ -545,6 +573,24 @@
       "defaultLabel": "Default label",
       "defaultFee": "Default fee (NOK)",
       "loadError": "Could not load shipping"
+    },
+    "homepage": {
+      "title": "Homepage",
+      "intro": "Pick which products are shown in the \"Popular products\" section on the front page.",
+      "featuredTitle": "Popular products (max {{max}})",
+      "empty": "No products selected — the first six visible products from the catalog are shown.",
+      "addProduct": "Add product",
+      "selectProduct": "Choose a product…",
+      "add": "Add",
+      "fallbackHint": "Hidden products are skipped on the site. If the list is empty, the store falls back to the first six visible products (alphabetical).",
+      "loadError": "Could not load homepage settings"
+    },
+    "mail": {
+      "title": "Emails",
+      "intro": "Preview of the templates sent to the shop inbox. New emails should reuse the same layout in the API mail helpers.",
+      "order": "New order",
+      "contact": "Contact form",
+      "loadError": "Could not load email preview"
     }
   }
 }

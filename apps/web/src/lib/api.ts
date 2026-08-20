@@ -30,6 +30,10 @@ export function fetchProducts() {
   return request<Product[]>('/api/products')
 }
 
+export function fetchFeaturedProducts() {
+  return request<Product[]>('/api/products/featured')
+}
+
 export function fetchProduct(slug: string) {
   return request<Product>(`/api/products/${slug}`)
 }

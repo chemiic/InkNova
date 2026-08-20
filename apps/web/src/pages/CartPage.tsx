@@ -104,7 +104,7 @@ export function CartPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-center">
-        <h1 className="font-display text-4xl text-ink">{t('cart.title')}</h1>
+        <h1 className="page-heading">{t('cart.title')}</h1>
         <p className="mt-4 text-ink-muted">{t('cart.empty')}</p>
         <Button asChild className="mt-8">
           <Link to="/produkter">{t('cart.continue')}</Link>
@@ -114,112 +114,118 @@ export function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-display text-4xl text-ink">{t('cart.title')}</h1>
+    <div className="mx-auto max-w-3xl px-4 py-12 md:grid md:max-w-6xl md:grid-cols-[1fr_18rem] md:items-start md:gap-10">
+      <div>
+        <h1 className="page-heading">{t('cart.title')}</h1>
 
-      <ul className="mt-10 divide-y divide-line">
-        {items.map((item) => {
-          const minQty = effectiveMinQuantity(item.minQuantity)
-          return (
-            <li
-              key={item.id}
-              className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <Link
-                  to={`/produkter/${item.productSlug}`}
-                  className="font-semibold text-ink hover:text-accent"
-                >
-                  {catalogName(item.productId, item.productName, t)}
-                </Link>
-                <p className="text-sm text-ink-muted">{item.sizeLabel}</p>
-                <p className="mt-1 text-xs font-medium text-accent">
-                  {t('cart.designReady')}
-                  {item.designFileName ? ` · ${item.designFileName}` : ''}
-                </p>
-                <button
-                  type="button"
-                  className="mt-1 text-sm text-ink underline-offset-2 hover:underline"
-                  onClick={() =>
-                    void openDesignPreview(
-                      item.designPdfKey,
-                      item.designFileName,
-                    )
-                  }
-                >
-                  {t('cart.previewDesign')}
-                </button>
-                <p className="mt-1 text-sm font-medium">
-                  {formatNok(Math.round(item.unitPrice * item.qty))}
-                </p>
-              </div>
-              <div className="flex flex-col items-start gap-1 sm:items-end">
-                <div className="flex items-center gap-3">
-                  <label className="sr-only" htmlFor={`qty-${item.id}`}>
-                    {t('cart.qty')}
-                  </label>
-                  <input
-                    id={`qty-${item.id}`}
-                    type="number"
-                    min={minQty}
-                    max={9999}
-                    step={1}
-                    value={draftQty[item.id] ?? String(item.qty)}
-                    onChange={(e) =>
-                      setDraftQty((prev) => ({
-                        ...prev,
-                        [item.id]: e.target.value,
-                      }))
-                    }
-                    onBlur={(e) => commitQty(item.id, minQty, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur()
-                      }
-                    }}
-                    className="h-10 w-16 rounded-md border border-line bg-paper-card px-2 text-center text-sm"
-                  />
+        <ul className="mt-10 divide-y divide-line">
+          {items.map((item) => {
+            const minQty = effectiveMinQuantity(item.minQuantity)
+            return (
+              <li
+                key={item.id}
+                className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <Link
+                    to={`/produkter/${item.productSlug}`}
+                    className="font-semibold text-ink hover:text-accent"
+                  >
+                    {catalogName(item.productId, item.productName, t)}
+                  </Link>
+                  <p className="text-sm text-ink-muted">{item.sizeLabel}</p>
+                  <p className="mt-1 text-xs font-medium text-accent">
+                    {t('cart.designReady')}
+                    {item.designFileName ? ` · ${item.designFileName}` : ''}
+                  </p>
                   <button
                     type="button"
-                    className="text-sm text-warm hover:underline"
-                    onClick={() => void removeFromCart(item.id)}
+                    className="mt-1 text-sm text-ink underline-offset-2 hover:underline"
+                    onClick={() =>
+                      void openDesignPreview(
+                        item.designPdfKey,
+                        item.designFileName,
+                      )
+                    }
                   >
-                    {t('cart.remove')}
+                    {t('cart.previewDesign')}
                   </button>
-                </div>
-                {minQty > 1 && (
-                  <p className="text-xs text-ink-muted">
-                    {t('product.minOrder', { count: minQty })}
+                  <p className="mt-1 text-sm font-medium">
+                    {formatNok(Math.round(item.unitPrice * item.qty))}
                   </p>
-                )}
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-
-      <div className="mt-8 space-y-2 border-t border-line pt-6">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-ink-muted">{t('cart.subtotal')}</span>
-          <span>{formatNok(total)}</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-ink-muted">{t('cart.shipping')}</span>
-          <span>{formatNok(deliveryFee)}</span>
-        </div>
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-lg font-semibold">{t('cart.total')}</span>
-          <span className="text-2xl font-bold">{formatNok(grandTotal)}</span>
-        </div>
+                </div>
+                <div className="flex flex-col items-start gap-1 sm:items-end">
+                  <div className="flex items-center gap-3">
+                    <label className="sr-only" htmlFor={`qty-${item.id}`}>
+                      {t('cart.qty')}
+                    </label>
+                    <input
+                      id={`qty-${item.id}`}
+                      type="number"
+                      min={minQty}
+                      max={9999}
+                      step={1}
+                      value={draftQty[item.id] ?? String(item.qty)}
+                      onChange={(e) =>
+                        setDraftQty((prev) => ({
+                          ...prev,
+                          [item.id]: e.target.value,
+                        }))
+                      }
+                      onBlur={(e) => commitQty(item.id, minQty, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.currentTarget.blur()
+                        }
+                      }}
+                      className="h-10 w-16 rounded-md border border-line bg-paper-card px-2 text-center text-sm"
+                    />
+                    <button
+                      type="button"
+                      className="text-sm text-warm hover:underline"
+                      onClick={() => void removeFromCart(item.id)}
+                    >
+                      {t('cart.remove')}
+                    </button>
+                  </div>
+                  {minQty > 1 && (
+                    <p className="text-xs text-ink-muted">
+                      {t('product.minOrder', { count: minQty })}
+                    </p>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Button asChild size="lg">
-          <Link to="/kasse">{t('cart.checkout')}</Link>
-        </Button>
-        <Button asChild size="lg" variant="outline">
-          <Link to="/produkter">{t('cart.continue')}</Link>
-        </Button>
+      <div className="mt-8 md:sticky md:top-24 md:mt-0">
+        <div className="rounded-lg border border-line bg-paper-card p-5">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-muted">{t('cart.subtotal')}</span>
+              <span>{formatNok(total)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-muted">{t('cart.shipping')}</span>
+              <span>{formatNok(deliveryFee)}</span>
+            </div>
+            <div className="flex items-center justify-between border-t border-line pt-4">
+              <span className="text-lg font-semibold">{t('cart.total')}</span>
+              <span className="text-2xl font-bold">{formatNok(grandTotal)}</span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link to="/kasse">{t('cart.checkout')}</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link to="/produkter">{t('cart.continue')}</Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
       <DesignPreviewModal

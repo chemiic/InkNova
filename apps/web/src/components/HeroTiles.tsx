@@ -9,6 +9,13 @@ const GAP = 3
 const STEP = TILE + GAP
 /** Extra coverage so 3D tilt never reveals the board edge */
 const OVERFLOW = 1.55
+/** Narrow viewports need more bleed — perspective + rotateX/Y expose edges sooner */
+function overflowForViewport(width: number) {
+  if (width < 480) return 2.1
+  if (width < 768) return 1.85
+  if (width < 1024) return 1.65
+  return OVERFLOW
+}
 const LERP = 0.1
 
 /**
@@ -21,6 +28,7 @@ export function HeroTiles({ trackRef }: Props) {
   const smooth = useRef({ nx: 0, ny: 0, bx: 0, by: 0, active: 0 })
   const raf = useRef(0)
   const [grid, setGrid] = useState({ cols: 36, rows: 20 })
+  const [viewport, setViewport] = useState({ w: 0, h: 0 })
 
   useEffect(() => {
     const trackEl = trackRef.current
@@ -29,8 +37,10 @@ export function HeroTiles({ trackRef }: Props) {
     function measure() {
       const el = trackRef.current
       if (!el) return
-      const cols = Math.ceil((el.clientWidth * OVERFLOW) / STEP)
-      const rows = Math.ceil((el.clientHeight * OVERFLOW) / STEP)
+      const overflow = overflowForViewport(el.clientWidth)
+      const cols = Math.ceil((el.clientWidth * overflow) / STEP)
+      const rows = Math.ceil((el.clientHeight * overflow) / STEP)
+      setViewport({ w: el.clientWidth, h: el.clientHeight })
       setGrid((prev) =>
         prev.cols === cols && prev.rows === rows ? prev : { cols, rows },
       )
@@ -54,6 +64,14 @@ export function HeroTiles({ trackRef }: Props) {
 
   const width = grid.cols * TILE + (grid.cols - 1) * GAP
   const height = grid.rows * TILE + (grid.rows - 1) * GAP
+
+  /** Scale board up slightly when 3D rotation would still expose edges */
+  const boardScale = useMemo(() => {
+    if (!viewport.w) return 1
+    const minW = viewport.w * 1.12
+    const minH = viewport.h * 1.08
+    return Math.max(1, minW / width, minH / height)
+  }, [viewport.w, viewport.h, width, height])
 
   useEffect(() => {
     const trackEl = trackRef.current
@@ -101,7 +119,7 @@ export function HeroTiles({ trackRef }: Props) {
 
       const rotY = s.nx * 9
       const rotX = 12 - s.ny * 7
-      board.style.transform = `translate(-50%, -50%) rotateX(${rotX}deg) rotateY(${rotY}deg)`
+      board.style.transform = `translate(-50%, -50%) scale(${boardScale}) rotateX(${rotX}deg) rotateY(${rotY}deg)`
 
       for (const el of tileNodes) {
         const col = Number(el.dataset.col)
@@ -137,7 +155,7 @@ export function HeroTiles({ trackRef }: Props) {
       surface.removeEventListener('pointermove', onMove)
       surface.removeEventListener('pointerleave', onLeave)
     }
-  }, [trackRef, width, height, tiles])
+  }, [trackRef, width, height, tiles, boardScale])
 
   return (
     <div
@@ -160,7 +178,7 @@ export function HeroTiles({ trackRef }: Props) {
           gridTemplateColumns: `repeat(${grid.cols}, ${TILE}px)`,
           gridTemplateRows: `repeat(${grid.rows}, ${TILE}px)`,
           gap: GAP,
-          transform: 'translate(-50%, -50%) rotateX(12deg)',
+          transform: `translate(-50%, -50%) scale(${boardScale}) rotateX(12deg)`,
           transformStyle: 'preserve-3d',
         }}
       >

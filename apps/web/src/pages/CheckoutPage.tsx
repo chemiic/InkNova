@@ -237,7 +237,7 @@ export function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="font-display text-4xl text-ink">{t('checkout.title')}</h1>
+        <h1 className="font-display text-3xl text-ink sm:text-4xl">{t('checkout.title')}</h1>
         <p className="mt-4 text-ink-muted">{t('checkout.empty')}</p>
         <Button asChild className="mt-8">
           <Link to="/produkter">{t('cart.continue')}</Link>
@@ -248,10 +248,38 @@ export function CheckoutPage() {
 
   return (
     <div className="mx-auto grid max-w-5xl gap-10 px-4 py-12 lg:grid-cols-[1fr_20rem]">
-      <div>
-        <h1 className="font-display text-4xl text-ink md:text-5xl">
-          {t('checkout.title')}
-        </h1>
+      <aside className="order-first h-fit rounded-lg border border-line bg-paper-card p-5 lg:order-last lg:sticky lg:top-24">
+        <h2 className="font-semibold text-ink">{t('checkout.summary')}</h2>
+        <ul className="mt-4 space-y-3 text-sm">
+          {lineSummary.map((line) => (
+            <li key={line.id} className="flex justify-between gap-3">
+              <span className="text-ink-muted">
+                {line.name} · {line.sizeLabel} × {line.qty}
+              </span>
+              <span className="shrink-0 font-medium">
+                {formatNok(line.lineTotal)}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+          <div className="flex justify-between">
+            <span className="text-ink-muted">{t('cart.subtotal')}</span>
+            <span>{formatNok(total)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-ink-muted">{t('cart.shipping')}</span>
+            <span>{formatNok(deliveryFee)}</span>
+          </div>
+          <div className="flex justify-between pt-1">
+            <span className="font-semibold">{t('cart.total')}</span>
+            <span className="text-lg font-bold">{formatNok(grandTotal)}</span>
+          </div>
+        </div>
+      </aside>
+
+      <div className="order-last lg:order-first">
+        <h1 className="page-heading">{t('checkout.title')}</h1>
         <p className="mt-3 text-ink-muted">{t('checkout.sub')}</p>
 
         <form
@@ -444,36 +472,6 @@ export function CheckoutPage() {
           </div>
         </form>
       </div>
-
-      <aside className="h-fit rounded-lg border border-line bg-paper-card p-5 lg:sticky lg:top-24">
-        <h2 className="font-semibold text-ink">{t('checkout.summary')}</h2>
-        <ul className="mt-4 space-y-3 text-sm">
-          {lineSummary.map((line) => (
-            <li key={line.id} className="flex justify-between gap-3">
-              <span className="text-ink-muted">
-                {line.name} · {line.sizeLabel} × {line.qty}
-              </span>
-              <span className="shrink-0 font-medium">
-                {formatNok(line.lineTotal)}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
-          <div className="flex justify-between">
-            <span className="text-ink-muted">{t('cart.subtotal')}</span>
-            <span>{formatNok(total)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-ink-muted">{t('cart.shipping')}</span>
-            <span>{formatNok(deliveryFee)}</span>
-          </div>
-          <div className="flex justify-between pt-1">
-            <span className="font-semibold">{t('cart.total')}</span>
-            <span className="text-lg font-bold">{formatNok(grandTotal)}</span>
-          </div>
-        </div>
-      </aside>
     </div>
   )
 }

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant landscape (@media (orientation: landscape));
+@custom-variant portrait (@media (orientation: portrait));
+
 @theme {
   --font-sans: "DM Sans", "Segoe UI", sans-serif;
   --font-display: "Outfit", "DM Sans", sans-serif;
@@ -18,16 +21,17 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-paper text-ink font-sans antialiased;
     margin: 0;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   #root {
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   button:not(:disabled),
@@ -51,8 +55,88 @@
   animation: toast-in 0.2s ease-out;
 }
 
+@keyframes mobile-nav-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes mobile-nav-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@utility animate-mobile-nav-in {
+  animation: mobile-nav-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@utility animate-mobile-nav-backdrop-in {
+  animation: mobile-nav-backdrop-in 0.25s ease-out forwards;
+}
+
+@keyframes mobile-nav-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes mobile-nav-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@utility animate-mobile-nav-out {
+  animation: mobile-nav-out 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@utility animate-mobile-nav-backdrop-out {
+  animation: mobile-nav-backdrop-out 0.25s ease-out forwards;
+}
+
 @utility font-display {
   font-family: var(--font-display);
+}
+
+@utility page-container {
+  @apply mx-auto max-w-6xl px-4 sm:px-6;
+}
+
+@utility page-heading {
+  @apply font-display text-3xl text-ink sm:text-4xl md:text-5xl;
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility sticky-bar-padding {
+  padding-top: 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility pb-above-sticky-bar {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility touch-target {
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
 }
 
 /* Thin custom scrollbar for editor sidebar */

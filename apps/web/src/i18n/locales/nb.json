@@ -183,6 +183,7 @@
     "bleedHint": "Skjærelinje · {{bleed}} mm utfallende (bleed)",
     "addToCart": "Legg i handlekurv",
     "preview": "Forhåndsvis",
+    "tools": "Verktøy",
     "previewTitle": "Forhåndsvisning av design",
     "previewClose": "Lukk",
     "previewEditMore": "Rediger mer",
@@ -206,7 +207,22 @@
     "layersEmpty": "Ingen elementer ennå.",
     "layersHint": "Dra for å endre rekkefølge. Øverst = bak, nederst = foran.",
     "background": "Bakgrunn",
+    "backgroundSolid": "Ensfarget",
+    "backgroundGradient": "Gradient",
     "backgroundColor": "Farge",
+    "gradientType": "Type",
+    "gradientLinear": "Lineær",
+    "gradientRadial": "Radial",
+    "gradientFrom": "Fra",
+    "gradientTo": "Til",
+    "gradientStops": "Fargestopp",
+    "gradientStopN": "Stopp {{n}}",
+    "gradientAddStop": "+ Legg til stopp",
+    "gradientRemoveStop": "Fjern",
+    "gradientPosition": "Posisjon ({{pos}}%)",
+    "gradientCenterX": "Senter X ({{pos}}%)",
+    "gradientCenterY": "Senter Y ({{pos}}%)",
+    "gradientAngle": "Vinkel ({{angle}}°)",
     "uploadBackgroundImage": "Last opp bakgrunnsbilde",
     "replaceBackgroundImage": "Bytt bakgrunnsbilde",
     "clearBackgroundImage": "Fjern bakgrunnsbilde",
@@ -220,6 +236,9 @@
     "text": "Innhold",
     "font": "Skrift",
     "fontSize": "Størrelse",
+    "decreaseFontSize": "Mindre skrift",
+    "increaseFontSize": "Større skrift",
+    "editText": "Rediger tekst",
     "color": "Farge",
     "align": "Justering",
     "alignLeft": "Venstre",
@@ -383,16 +402,20 @@
     "loading": "Laster...",
     "error": "Noe gikk galt",
     "back": "Tilbake",
+    "close": "Lukk",
     "language": "Språk"
   },
   "admin": {
     "brand": "Admin",
+    "swipeHint": "Sveip horisontalt for å se flere kolonner",
     "nav": {
       "dashboard": "Oversikt",
       "orders": "Ordrer",
       "products": "Produkter",
       "articles": "Artikler",
       "delivery": "Frakt",
+      "homepage": "Forside",
+      "mail": "E-post",
       "logout": "Logg ut"
     },
     "login": {
@@ -402,7 +425,10 @@
       "password": "Passord",
       "submit": "Logg inn",
       "submitting": "Logger inn…",
-      "error": "Feil brukernavn eller passord"
+      "error": "Feil brukernavn eller passord",
+      "serverError": "Får ikke kontakt med serveren. Sjekk at API kjører (pnpm dev).",
+      "showPassword": "Vis passord",
+      "hidePassword": "Skjul passord"
     },
     "dashboard": {
       "title": "Oversikt",
@@ -410,7 +436,9 @@
       "ordersHint": "— se hva kundene har bestilt, adresser og trykkfiler",
       "productsHint": "— legg til, rediger, skjul, bilder og størrelser",
       "articlesHint": "— legg til, rediger, skjul eller slett",
-      "deliveryHint": "— standard flat fee (per-produkt på produktskjema)"
+      "deliveryHint": "— standard flat fee (per-produkt på produktskjema)",
+      "homepageHint": "— velg hvilke produkter som vises som populære på forsiden",
+      "mailHint": "— forhåndsvis e-postene som sendes til trykkeriet"
     },
     "common": {
       "loading": "Laster…",
@@ -545,6 +573,24 @@
       "defaultLabel": "Standard etikett",
       "defaultFee": "Standard gebyr (NOK)",
       "loadError": "Kunne ikke hente frakt"
+    },
+    "homepage": {
+      "title": "Forside",
+      "intro": "Velg hvilke produkter som vises i «Populære produkter»-seksjonen på forsiden.",
+      "featuredTitle": "Populære produkter (maks {{max}})",
+      "empty": "Ingen produkter valgt — de seks første synlige produktene fra katalogen vises.",
+      "addProduct": "Legg til produkt",
+      "selectProduct": "Velg produkt…",
+      "add": "Legg til",
+      "fallbackHint": "Skjulte produkter hoppes over på nettsiden. Hvis listen er tom, vises de seks første synlige produktene (alfabetisk).",
+      "loadError": "Kunne ikke hente innstillinger for forsiden"
+    },
+    "mail": {
+      "title": "E-post",
+      "intro": "Forhåndsvisning av malene som sendes til innboksen. Nye e-poster bør bruke samme layout i API-et.",
+      "order": "Ny ordre",
+      "contact": "Kontaktskjema",
+      "loadError": "Kunne ikke hente e-postforhåndsvisning"
     }
   }
 }

@@ -11,10 +11,10 @@ export function RootLayout() {
     <div
       className={cn(
         'flex flex-col',
-        isDesign ? 'h-dvh overflow-hidden' : 'min-h-screen',
+        isDesign ? 'h-dvh overflow-hidden' : 'min-h-dvh',
       )}
     >
-      <SiteHeader />
+      <SiteHeader compact={isDesign} />
       <main className={cn('flex-1', isDesign && 'min-h-0 overflow-hidden')}>
         <Outlet />
       </main>

@@ -6,7 +6,7 @@ import { HeroTiles } from '@/components/HeroTiles'
 import { Logo } from '@/components/Logo'
 import { ProductCard } from '@/components/ProductCard'
 import { Button } from '@/components/ui/button'
-import { fetchProducts } from '@/lib/api'
+import { fetchFeaturedProducts } from '@/lib/api'
 
 export function HomePage() {
   const { t } = useTranslation()
@@ -16,9 +16,9 @@ export function HomePage() {
 
   useEffect(() => {
     let cancelled = false
-    void fetchProducts()
+    void fetchFeaturedProducts()
       .then((data) => {
-        if (!cancelled) setProducts(data.slice(0, 6))
+        if (!cancelled) setProducts(data)
       })
       .catch(() => {
         if (!cancelled) setProducts([])
@@ -38,7 +38,7 @@ export function HomePage() {
         className="relative overflow-hidden bg-[#0a0a0a] text-white"
       >
         <HeroTiles trackRef={heroRef} />
-        <div className="relative z-10 mx-auto flex min-h-[70vh] max-w-6xl flex-col items-center justify-center gap-8 px-4 py-20 text-center md:min-h-[75vh]">
+        <div className="relative z-10 mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-center justify-center gap-6 px-4 py-16 text-center sm:min-h-[70dvh] sm:gap-8 sm:py-20 md:min-h-[75dvh]">
           <Logo color="#fff" layout="stack" className="mx-auto" />
           <h1 className="max-w-2xl text-2xl font-medium leading-snug text-white/90 md:text-3xl">
             {t('home.headline')}
@@ -65,7 +65,7 @@ export function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="mb-8 flex items-end justify-between gap-4">
+        <div className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <h2 className="font-display text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             {t('home.featured')}
           </h2>

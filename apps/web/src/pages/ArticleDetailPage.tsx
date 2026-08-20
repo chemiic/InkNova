@@ -77,7 +77,7 @@ export function ArticleDetailPage() {
           />
         </div>
       )}
-      <h1 className="mt-6 font-display text-4xl text-ink md:text-5xl">
+      <h1 className="page-heading mt-6">
         {copy.title}
       </h1>
       <div

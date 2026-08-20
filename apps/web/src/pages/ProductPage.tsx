@@ -165,13 +165,14 @@ export function ProductPage() {
     : null
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
+    <div className="relative pb-above-sticky-bar lg:pb-12">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
       <div>
-        <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-10">
+        <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-6 sm:p-10">
           <img
             src={assetUrl(mainImage)}
             alt=""
-            className="max-h-80 w-full object-contain"
+            className="max-h-64 w-full object-contain sm:max-h-80"
           />
         </div>
         {gallery.length > 1 && (
@@ -201,9 +202,7 @@ export function ProductPage() {
 
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-display text-4xl text-ink md:text-5xl">
-            {copy.name}
-          </h1>
+          <h1 className="page-heading">{copy.name}</h1>
           <p className="mt-3 text-ink-muted">{copy.description}</p>
           {selectedSize && (
             <div className="mt-4">
@@ -399,7 +398,7 @@ export function ProductPage() {
           </div>
         </dl>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="hidden flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex">
           <Button
             size="lg"
             disabled={!canContinue}
@@ -416,7 +415,34 @@ export function ProductPage() {
             {t('product.uploadOwnFile')}
           </Button>
         </div>
-        <p className="text-sm text-ink-muted">{t('product.uploadOwnFileHint')}</p>
+        <p className="hidden text-sm text-ink-muted lg:block">
+          {t('product.uploadOwnFileHint')}
+        </p>
+      </div>
+    </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-paper-card px-4 sticky-bar-padding lg:hidden">
+        <div className="min-w-0 flex-1">
+          {estimatedTotal != null ? (
+            <p className="truncate text-sm font-semibold text-ink">
+              {t('product.lineTotal', {
+                count: qty,
+                total: formatNok(estimatedTotal),
+              })}
+            </p>
+          ) : selectedSize ? (
+            <p className="truncate text-sm font-semibold text-ink">
+              {formatNok(selectedSize.price)}
+            </p>
+          ) : null}
+        </div>
+        <Button
+          size="default"
+          disabled={!canContinue}
+          onClick={() => handleContinue()}
+        >
+          {t('product.continueDesign')}
+        </Button>
       </div>
     </div>
   )

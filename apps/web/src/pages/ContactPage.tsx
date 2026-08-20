@@ -33,7 +33,7 @@ export function ContactPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="font-display text-4xl text-ink md:text-5xl">
+      <h1 className="page-heading">
         {t('contact.title')}
       </h1>
       <p className="mt-4 text-ink-muted">{t('contact.info')}</p>

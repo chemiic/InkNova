@@ -5,7 +5,7 @@ export function TermsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-display text-4xl text-ink md:text-5xl">
+      <h1 className="page-heading">
         {t('terms.title')}
       </h1>
       <p className="mt-4 text-ink-muted">{t('terms.intro')}</p>

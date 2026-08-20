@@ -68,7 +68,7 @@ export function OrderConfirmPage() {
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
       {state === 'loading' && (
         <>
-          <h1 className="font-display text-4xl text-ink">
+          <h1 className="page-heading">
             {t('checkout.confirmLoading')}
           </h1>
           <p className="mt-4 text-ink-muted">{t('common.loading')}</p>
@@ -77,7 +77,7 @@ export function OrderConfirmPage() {
 
       {state === 'ok' && (
         <>
-          <h1 className="font-display text-4xl text-ink md:text-5xl">
+          <h1 className="page-heading">
             {t('checkout.confirmTitle')}
           </h1>
           <p className="mt-4 text-ink-muted">{t('checkout.confirmSub')}</p>
@@ -95,15 +95,15 @@ export function OrderConfirmPage() {
 
       {state === 'err' && (
         <>
-          <h1 className="font-display text-4xl text-ink">
+          <h1 className="page-heading">
             {t('checkout.confirmErrorTitle')}
           </h1>
           <p className="mt-4 text-ink-muted">{t('checkout.confirmErrorSub')}</p>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link to="/handlekurv">{t('checkout.backToCart')}</Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
               <Link to="/kontakt">{t('nav.contact')}</Link>
             </Button>
           </div>

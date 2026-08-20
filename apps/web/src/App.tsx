@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { RootLayout } from '@/components/layout/RootLayout'
+import { ToastHost } from '@/components/ui/toast'
 import { AboutPage } from '@/pages/AboutPage'
 import { ArticleDetailPage } from '@/pages/ArticleDetailPage'
 import { ArticlesPage } from '@/pages/ArticlesPage'
@@ -24,12 +25,14 @@ import { AdminProductEditPage } from '@/pages/admin/AdminProductEditPage'
 import { AdminArticlesPage } from '@/pages/admin/AdminArticlesPage'
 import { AdminArticleEditPage } from '@/pages/admin/AdminArticleEditPage'
 import { AdminDeliveryPage } from '@/pages/admin/AdminDeliveryPage'
+import { AdminHomepagePage } from '@/pages/admin/AdminHomepagePage'
 import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage'
 import { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastHost />
       <Routes>
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminRequireAuth />}>
@@ -44,6 +47,7 @@ export default function App() {
             <Route path="articles/new" element={<AdminArticleEditPage />} />
             <Route path="articles/:id" element={<AdminArticleEditPage />} />
             <Route path="delivery" element={<AdminDeliveryPage />} />
+            <Route path="homepage" element={<AdminHomepagePage />} />
           </Route>
         </Route>
 

@@ -222,7 +222,7 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'inline-flex h-8 w-8 items-center justify-center rounded text-ink-muted transition hover:bg-paper hover:text-ink disabled:pointer-events-none disabled:opacity-40',
+        'inline-flex h-8 w-8 touch-target items-center justify-center rounded text-ink-muted transition hover:bg-paper hover:text-ink disabled:pointer-events-none disabled:opacity-40 sm:h-8 sm:w-8',
         active && 'bg-paper text-ink',
       )}
     >

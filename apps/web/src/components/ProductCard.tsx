@@ -22,16 +22,16 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg bg-paper-card shadow-sm ring-1 ring-line">
-      <Link to={`/produkter/${product.slug}`} className="block bg-[#eceae6] p-6">
+      <Link to={`/produkter/${product.slug}`} className="block bg-[#eceae6] p-4 sm:p-6">
         <img
           src={assetUrl(cover)}
           alt=""
-          className="mx-auto h-40 w-full object-contain"
+          className="mx-auto h-40 w-full object-contain sm:h-44"
         />
       </Link>
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
         <div>
-          <h3 className="text-lg font-bold text-ink">{copy.name}</h3>
+          <h3 className="truncate text-lg font-bold text-ink">{copy.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-ink-muted">
             {copy.description}
           </p>
