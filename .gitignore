@@ -7,7 +7,7 @@ build
 .DS_Store
 coverage
 .turbo
-uploads
+/uploads
 *.tsbuildinfo
 apps/api/uploads
 apps/api/data
