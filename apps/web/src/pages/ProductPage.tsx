@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
+  clampQuantity,
   customSizeMinCm,
   effectiveMinQuantity,
-  lineTotalFromPack,
+  quoteLine,
   productGallery,
   type Product,
   type SizeOption,
 } from '@inknova/shared'
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -29,6 +30,7 @@ export function ProductPage() {
   const [customWidthCm, setCustomWidthCm] = useState('')
   const [customHeightCm, setCustomHeightCm] = useState('')
   const [qty, setQty] = useState(1)
+  const [doubleSided, setDoubleSided] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export function ProductPage() {
         setProduct(data)
         setSizeId(data.sizes[0]?.id ?? (data.customSize ? 'custom' : null))
         setQty(effectiveMinQuantity(data.minQuantity))
+        setDoubleSided(false)
         setActiveImage(0)
         if (data.customSize) {
           setCustomWidthCm(String(data.customSize.maxWidthCm))
@@ -90,13 +93,32 @@ export function ProductPage() {
             })
           : t('product.customSize'),
         price: product.customSize.basePrice,
+        tiers: product.customSize.tiers,
       }
     }
     return product.sizes.find((s) => s.id === sizeId) ?? null
   }, [product, sizeId, customDims, t])
 
+  const quote = useMemo(() => {
+    if (!product || !selectedSize) return null
+    if (selectedSize.id === 'custom' && !customDims) return null
+    try {
+      return quoteLine(product, {
+        sizeId: selectedSize.id,
+        qty,
+        widthCm: customDims?.width,
+        heightCm: customDims?.height,
+        doubleSided,
+      })
+    } catch {
+      return null
+    }
+  }, [product, selectedSize, qty, customDims, doubleSided])
+
   const canContinue =
-    selectedSize != null && (sizeId !== 'custom' || customDims != null)
+    selectedSize != null &&
+    quote != null &&
+    (sizeId !== 'custom' || customDims != null)
 
   function clampCustomDim(
     raw: string,
@@ -120,15 +142,28 @@ export function ProductPage() {
     setter(raw)
   }
 
+  function setQtySafe(raw: number) {
+    if (!product) return
+    setQty(
+      clampQuantity(product.minQuantity, raw, {
+        maxQuantity: product.maxQuantity,
+        quantityStep: product.quantityStep,
+      }),
+    )
+  }
+
   function handleContinue(mode?: 'upload') {
-    if (!product || !selectedSize || !canContinue) return
+    if (!product || !selectedSize || !canContinue || !quote) return
     const params = new URLSearchParams({
       sizeId: selectedSize.id,
-      qty: String(qty),
+      qty: String(quote.qty),
     })
     if (sizeId === 'custom' && customDims) {
       params.set('widthCm', String(customDims.width))
       params.set('heightCm', String(customDims.height))
+    }
+    if (product.doubleSidedOption) {
+      params.set('sides', doubleSided ? '2' : '1')
     }
     if (mode === 'upload') params.set('mode', 'upload')
     navigate(`/produkter/${product.slug}/design?${params}`)
@@ -157,12 +192,27 @@ export function ProductPage() {
   const gallery = productGallery(product)
   const mainImage = gallery[activeImage] ?? gallery[0] ?? product.imageUrl
   const minQty = effectiveMinQuantity(product.minQuantity)
-  const packPrice = selectedSize?.price ?? null
-  const estimatedTotal =
-    packPrice != null ? lineTotalFromPack(packPrice, qty, minQty) : null
+  const maxQty = product.maxQuantity ?? 9999
+  const step = product.quantityStep && product.quantityStep > 1 ? product.quantityStep : 1
+  const packTiers =
+    product.pricingMode === 'pack'
+      ? (product.tiers ?? selectedSize?.tiers ?? [])
+      : []
   const customMins = product.customSize
     ? customSizeMinCm(product.customSize)
     : null
+
+  function sizeTileTotal(size: SizeOption) {
+    try {
+      return quoteLine(product!, {
+        sizeId: size.id,
+        qty,
+        doubleSided,
+      }).lineTotal
+    } catch {
+      return size.price
+    }
+  }
 
   return (
     <div className="relative pb-above-sticky-bar lg:pb-12">
@@ -204,16 +254,18 @@ export function ProductPage() {
         <div>
           <h1 className="page-heading">{copy.name}</h1>
           <p className="mt-3 text-ink-muted">{copy.description}</p>
-          {selectedSize && (
+          {quote && (
             <div className="mt-4">
               <p className="text-2xl font-bold text-ink">
-                {minQty > 1
-                  ? t('product.priceForQty', {
-                      price: formatNok(selectedSize.price),
-                      count: minQty,
-                    })
-                  : formatNok(selectedSize.price)}
+                {formatNok(quote.lineTotal)}
               </p>
+              {product.setupFee != null && product.setupFee > 0 && (
+                <p className="mt-1 text-sm text-ink-muted">
+                  {t('product.setupIncluded', {
+                    fee: formatNok(product.setupFee),
+                  })}
+                </p>
+              )}
               {minQty > 1 && (
                 <p className="mt-1 text-sm text-ink-muted">
                   {t('product.minOrder', { count: minQty })}
@@ -242,12 +294,7 @@ export function ProductPage() {
               >
                 <span className="block text-sm font-semibold">{size.label}</span>
                 <span className="mt-1 block text-sm text-ink-muted">
-                  {minQty > 1
-                    ? t('product.priceForQty', {
-                        price: formatNok(size.price),
-                        count: minQty,
-                      })
-                    : formatNok(size.price)}
+                  {formatNok(sizeTileTotal(size))}
                 </span>
               </button>
             ))}
@@ -271,14 +318,19 @@ export function ProductPage() {
                     height: product.customSize.maxHeightCm,
                   })}
                 </span>
-                <span className="mt-1 block text-sm text-ink-muted">
-                  {minQty > 1
-                    ? t('product.priceForQty', {
-                        price: formatNok(product.customSize.basePrice),
-                        count: minQty,
-                      })
-                    : formatNok(product.customSize.basePrice)}
-                </span>
+                {customDims && (
+                  <span className="mt-1 block text-sm text-ink-muted">
+                    {formatNok(
+                      quoteLine(product, {
+                        sizeId: 'custom',
+                        qty,
+                        widthCm: customDims.width,
+                        heightCm: customDims.height,
+                        doubleSided,
+                      }).lineTotal,
+                    )}
+                  </span>
+                )}
               </button>
             )}
           </div>
@@ -336,6 +388,11 @@ export function ProductPage() {
                   maxHeight: product.customSize.maxHeightCm,
                 })}
               </p>
+              {product.customSize.pricePerSqm && (
+                <p className="col-span-2 text-sm text-ink-muted">
+                  {t('product.pricePerSqm')}
+                </p>
+              )}
               {customDims == null && (
                 <p className="col-span-2 text-sm text-red-700">
                   {t('product.customSizeInvalid')}
@@ -345,35 +402,94 @@ export function ProductPage() {
           )}
         </div>
 
+        {product.doubleSidedOption && (
+          <div>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+              {t('product.printSides')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setDoubleSided(false)}
+                className={cn(
+                  'rounded-lg border-2 bg-paper-card px-4 py-2 text-sm font-medium transition',
+                  !doubleSided
+                    ? 'border-accent shadow-sm'
+                    : 'border-line hover:border-ink/30',
+                )}
+              >
+                {t('product.singleSided')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDoubleSided(true)}
+                className={cn(
+                  'rounded-lg border-2 bg-paper-card px-4 py-2 text-sm font-medium transition',
+                  doubleSided
+                    ? 'border-accent shadow-sm'
+                    : 'border-line hover:border-ink/30',
+                )}
+              >
+                {t('product.doubleSided')}
+              </button>
+            </div>
+            <p className="mt-2 text-sm text-ink-muted">
+              {t('product.doubleSidedHint')}
+            </p>
+          </div>
+        )}
+
         <div className="max-w-xs">
           <Label htmlFor="qty">{t('product.quantity')}</Label>
-          <Input
-            id="qty"
-            type="number"
-            min={minQty}
-            max={9999}
-            step={1}
-            value={qty}
-            onChange={(e) => {
-              const n = Number(e.target.value)
-              setQty(
-                Number.isFinite(n) && n >= minQty
-                  ? Math.floor(n)
-                  : minQty,
-              )
-            }}
-            className="mt-2 max-w-[12rem]"
-          />
+          {packTiers.length > 0 ? (
+            <select
+              id="qty"
+              className="mt-2 flex h-11 w-full max-w-[16rem] rounded-md border border-transparent bg-[#ededed] px-3 text-sm"
+              value={qty}
+              onChange={(e) => setQtySafe(Number(e.target.value))}
+            >
+              {packTiers.map((tier) => {
+                const total = quoteLine(product, {
+                  sizeId: selectedSize?.id ?? product.sizes[0]!.id,
+                  qty: tier.minQty,
+                  widthCm: customDims?.width,
+                  heightCm: customDims?.height,
+                  doubleSided,
+                }).lineTotal
+                return (
+                  <option key={tier.minQty} value={tier.minQty}>
+                    {tier.minQty} — {formatNok(total)}
+                  </option>
+                )
+              })}
+            </select>
+          ) : (
+            <Input
+              id="qty"
+              type="number"
+              min={minQty}
+              max={maxQty}
+              step={step}
+              value={qty}
+              onChange={(e) => setQtySafe(Number(e.target.value))}
+              className="mt-2 max-w-[12rem]"
+            />
+          )}
           {minQty > 1 && (
             <p className="mt-2 text-sm text-ink-muted">
               {t('product.minOrder', { count: minQty })}
             </p>
           )}
-          {estimatedTotal != null && (minQty > 1 || qty > 1) && (
+          {product.maxQuantity != null && (
+            <p className="mt-1 text-sm text-ink-muted">
+              {t('product.maxOrder', { count: product.maxQuantity })}
+            </p>
+          )}
+          {quote && (
             <p className="mt-2 text-sm font-medium text-ink">
               {t('product.lineTotal', {
-                count: qty,
-                total: formatNok(estimatedTotal),
+                count: quote.qty,
+                total: formatNok(quote.lineTotal),
               })}
             </p>
           )}
@@ -423,16 +539,12 @@ export function ProductPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-paper-card px-4 sticky-bar-padding lg:hidden">
         <div className="min-w-0 flex-1">
-          {estimatedTotal != null ? (
+          {quote ? (
             <p className="truncate text-sm font-semibold text-ink">
               {t('product.lineTotal', {
-                count: qty,
-                total: formatNok(estimatedTotal),
+                count: quote.qty,
+                total: formatNok(quote.lineTotal),
               })}
-            </p>
-          ) : selectedSize ? (
-            <p className="truncate text-sm font-semibold text-ink">
-              {formatNok(selectedSize.price)}
             </p>
           ) : null}
         </div>

@@ -10,12 +10,20 @@ export const FIXED_PAGE_COUNT: Record<string, number> = {
   '4-sider': 4,
 }
 
-export function isDoubleSidedProduct(productSlug: string): boolean {
+export function isDoubleSidedProduct(
+  productSlug: string,
+  override?: boolean,
+): boolean {
+  if (override === true) return true
+  if (override === false) return false
   return DOUBLE_SIDED_SLUGS.has(productSlug)
 }
 
-export function productPageCount(productSlug: string): number {
-  if (isDoubleSidedProduct(productSlug)) return 2
+export function productPageCount(
+  productSlug: string,
+  options?: { doubleSided?: boolean },
+): number {
+  if (isDoubleSidedProduct(productSlug, options?.doubleSided)) return 2
   return FIXED_PAGE_COUNT[productSlug] ?? 1
 }
 
@@ -26,8 +34,10 @@ export function productPageCount(productSlug: string): number {
 export function applyProductPageStructure(
   doc: DesignDoc,
   productSlug: string,
+  options?: { doubleSided?: boolean },
 ): DesignDoc {
-  const targetCount = productPageCount(productSlug)
+  const double = isDoubleSidedProduct(productSlug, options?.doubleSided)
+  const targetCount = productPageCount(productSlug, options)
 
   if (targetCount === 1) {
     return {
@@ -44,7 +54,7 @@ export function applyProductPageStructure(
   const bg = pages[0]?.background ?? '#ffffff'
   while (pages.length < targetCount) {
     const i = pages.length
-    const labelKey = isDoubleSidedProduct(productSlug)
+    const labelKey = double
       ? i === 0
         ? 'front'
         : 'back'
@@ -56,7 +66,7 @@ export function applyProductPageStructure(
     ...doc,
     pages: pages.slice(0, targetCount).map((p, i) => ({
       ...p,
-      labelKey: isDoubleSidedProduct(productSlug)
+      labelKey: double
         ? i === 0
           ? 'front'
           : 'back'

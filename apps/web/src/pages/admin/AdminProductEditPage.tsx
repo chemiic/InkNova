@@ -1,7 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import type { Product, ProductCategory, SizeOption } from '@inknova/shared'
+import type {
+  PricingMode,
+  Product,
+  ProductCategory,
+  QtyPriceTier,
+  SizeOption,
+} from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,6 +46,14 @@ type FormState = {
   deliveryFee: string
   leadTime: string
   minQuantity: string
+  maxQuantity: string
+  quantityStep: string
+  pricingMode: PricingMode | ''
+  setupFee: string
+  doubleSidedOption: boolean
+  pricePerSqm: boolean
+  productTiers: QtyPriceTier[]
+  customTiers: QtyPriceTier[]
   hidden: boolean
 }
 
@@ -62,6 +76,14 @@ function emptyForm(): FormState {
     deliveryFee: '99',
     leadTime: '3–5 virkedager',
     minQuantity: '',
+    maxQuantity: '',
+    quantityStep: '',
+    pricingMode: '',
+    setupFee: '',
+    doubleSidedOption: false,
+    pricePerSqm: false,
+    productTiers: [],
+    customTiers: [],
     hidden: false,
   }
 }
@@ -80,7 +102,7 @@ function fromProduct(p: Product): FormState {
           ? [p.imageUrl]
           : [],
     sizes: p.sizes.length
-      ? p.sizes.map((s) => ({ ...s }))
+      ? p.sizes.map((s) => ({ ...s, tiers: s.tiers ? [...s.tiers] : undefined }))
       : [{ id: 'a4', label: 'A4', price: 0 }],
     useCustomSize: Boolean(p.customSize),
     minWidthCm: String(p.customSize?.minWidthCm ?? 5),
@@ -92,6 +114,16 @@ function fromProduct(p: Product): FormState {
     deliveryFee: p.delivery.fee == null ? '' : String(p.delivery.fee),
     leadTime: p.leadTime,
     minQuantity: p.minQuantity != null ? String(p.minQuantity) : '',
+    maxQuantity: p.maxQuantity != null ? String(p.maxQuantity) : '',
+    quantityStep: p.quantityStep != null ? String(p.quantityStep) : '',
+    pricingMode: p.pricingMode ?? '',
+    setupFee: p.setupFee != null ? String(p.setupFee) : '',
+    doubleSidedOption: p.doubleSidedOption === true,
+    pricePerSqm: p.customSize?.pricePerSqm === true,
+    productTiers: p.tiers ? p.tiers.map((t) => ({ ...t })) : [],
+    customTiers: p.customSize?.tiers
+      ? p.customSize.tiers.map((t) => ({ ...t }))
+      : [],
     hidden: p.hidden === true,
   }
 }
@@ -115,6 +147,7 @@ function toPayload(form: FormState, id?: string) {
       id: s.id.trim(),
       label: s.label.trim(),
       price: Number(s.price),
+      tiers: s.tiers && s.tiers.length > 0 ? s.tiers : undefined,
     })),
     customSize: form.useCustomSize
       ? {
@@ -123,6 +156,8 @@ function toPayload(form: FormState, id?: string) {
           maxWidthCm: Number(form.maxWidthCm),
           maxHeightCm: Number(form.maxHeightCm),
           basePrice: Number(form.basePrice),
+          pricePerSqm: form.pricePerSqm || undefined,
+          tiers: form.customTiers.length > 0 ? form.customTiers : undefined,
         }
       : null,
     delivery: {
@@ -131,6 +166,14 @@ function toPayload(form: FormState, id?: string) {
     },
     leadTime: form.leadTime,
     minQuantity: form.minQuantity.trim() ? Number(form.minQuantity) : null,
+    maxQuantity: form.maxQuantity.trim() ? Number(form.maxQuantity) : null,
+    quantityStep: form.quantityStep.trim()
+      ? Number(form.quantityStep)
+      : null,
+    pricingMode: form.pricingMode || null,
+    setupFee: form.setupFee.trim() ? Number(form.setupFee) : null,
+    doubleSidedOption: form.doubleSidedOption,
+    tiers: form.productTiers.length > 0 ? form.productTiers : undefined,
     hidden: form.hidden,
   }
 }
@@ -301,7 +344,78 @@ export function AdminProductEditPage() {
                 placeholder="1"
               />
             </div>
+            <div>
+              <Label htmlFor="maxQuantity">
+                {t('admin.products.maxQuantity')}
+              </Label>
+              <Input
+                id="maxQuantity"
+                className="mt-1"
+                type="number"
+                min={1}
+                value={form.maxQuantity}
+                onChange={(e) => patch('maxQuantity', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="quantityStep">
+                {t('admin.products.quantityStep')}
+              </Label>
+              <Input
+                id="quantityStep"
+                className="mt-1"
+                type="number"
+                min={1}
+                value={form.quantityStep}
+                onChange={(e) => patch('quantityStep', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="setupFee">{t('admin.products.setupFee')}</Label>
+              <Input
+                id="setupFee"
+                className="mt-1"
+                type="number"
+                min={0}
+                value={form.setupFee}
+                onChange={(e) => patch('setupFee', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="pricingMode">
+                {t('admin.products.pricingMode')}
+              </Label>
+              <select
+                id="pricingMode"
+                className="mt-1 flex h-11 w-full rounded-md border border-transparent bg-[#ededed] px-3 text-sm"
+                value={form.pricingMode}
+                onChange={(e) =>
+                  patch(
+                    'pricingMode',
+                    e.target.value as PricingMode | '',
+                  )
+                }
+              >
+                <option value="">{t('admin.products.pricingModeDefault')}</option>
+                <option value="pack">pack</option>
+                <option value="perPiece">perPiece</option>
+              </select>
+            </div>
           </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.doubleSidedOption}
+              onChange={(e) => patch('doubleSidedOption', e.target.checked)}
+            />
+            {t('admin.products.doubleSidedOption')}
+          </label>
+          {(form.productTiers.length > 0 ||
+            form.sizes.some((s) => s.tiers && s.tiers.length > 0)) && (
+            <p className="text-sm text-ink-muted">
+              {t('admin.products.tiersHint')}
+            </p>
+          )}
           <div>
             <Label htmlFor="description">
               {t('admin.products.description')}
@@ -574,6 +688,14 @@ export function AdminProductEditPage() {
                   </p>
                 </div>
               </div>
+              <label className="mt-3 flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.pricePerSqm}
+                  onChange={(e) => patch('pricePerSqm', e.target.checked)}
+                />
+                {t('admin.products.pricePerSqm')}
+              </label>
             </div>
           )}
         </section>

@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Professional high-quality flyers – perfect for campaigns and events.",
+      "description": "Professional flyers on 150 g matte or silk paper. Setup and cutting 600 NOK. Double-sided costs twice per piece.",
       "leadTime": "3–5 business days"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Posters",
-      "description": "Large-format posters – from A3 to A0 and popular sizes.",
+      "description": "Posters on satin or matte paper – from A3 to A0 and popular sizes. Setup and cutting 600 NOK.",
       "leadTime": "4–6 business days"
     },
     "klistremerker": {
@@ -59,8 +59,13 @@
       "leadTime": "3–5 business days"
     },
     "arbeidstegninger": {
-      "name": "Technical drawings",
-      "description": "Technical drawings and plans in large format.",
+      "name": "Technical drawings (B&W)",
+      "description": "Technical drawings and plans in black and white, large format.",
+      "leadTime": "2–4 business days"
+    },
+    "arbeidstegninger-farge": {
+      "name": "Technical drawings (colour)",
+      "description": "Technical drawings and plans in colour, large format.",
       "leadTime": "2–4 business days"
     },
     "rollup": {
@@ -102,7 +107,14 @@
     "priceForQty": "{{price}} for {{count}}",
     "lineTotal": "Total for {{count}}: {{total}}",
     "moreSizes": "+{{count}}",
-    "minOrder": "Minimum order: {{count}}"
+    "minOrder": "Minimum order: {{count}}",
+    "maxOrder": "Max {{count}}",
+    "setupIncluded": "Incl. setup and cutting {{fee}}",
+    "printSides": "Sides",
+    "singleSided": "Single-sided",
+    "doubleSided": "Double-sided",
+    "doubleSidedHint": "Double-sided print costs twice per piece (setup fee stays the same).",
+    "pricePerSqm": "Price is calculated per m²."
   },
 
   "cart": {
@@ -122,11 +134,12 @@
   },
   "checkout": {
     "title": "Checkout",
-    "sub": "Enter delivery details and choose Vipps or card.",
+    "sub": "Enter delivery details. An invoice for payment will be sent to your email.",
     "empty": "Add products to your cart before checking out.",
     "contactSection": "Contact",
     "addressSection": "Delivery address",
     "paymentSection": "Payment",
+    "invoiceSection": "Payment",
     "summary": "Order summary",
     "name": "Full name",
     "email": "Email",
@@ -139,6 +152,7 @@
     "payVipps": "Vipps",
     "payCard": "Card",
     "paymentHint": "Vipps and card go through Vipps MobilePay. Payment details are processed by Vipps under their privacy policy. We deliver in Norway. Prices are in NOK and include VAT.",
+    "invoiceHint": "You do not pay here now. After we receive your order, we will email an invoice to the address you provide. Prices are in NOK and include VAT. We deliver in Norway.",
     "consentSection": "Agreements and privacy",
     "privacyNote": "We process your name, contact details, delivery address and print files to fulfil the purchase and send the order to production. Read more in the <privacy>privacy policy</privacy>.",
     "acceptTerms": "I have read and accept the <terms>terms of sale</terms> and the <privacy>privacy policy</privacy>.",
@@ -146,6 +160,7 @@
     "marketing": "I would like to receive offers and news from InkNova by email (optional).",
     "errorConsent": "You must accept the terms and confirm that the right of withdrawal does not apply before placing the order.",
     "pay": "Pay and place order",
+    "submit": "Send order",
     "submitting": "Sending order…",
     "backToCart": "Back to cart",
     "errorSubmit": "Could not place the order. Please try again.",
@@ -168,10 +183,14 @@
       "invalid": "Invalid value."
     },
     "confirmLoading": "Confirming payment…",
+    "confirmLoadingInvoice": "Sending order…",
     "confirmTitle": "Thank you for your order",
     "confirmSub": "We have received your order and sent the print files to production.",
+    "confirmSubInvoice": "We have received your order. An invoice for payment will be sent to your email.",
     "confirmErrorTitle": "Payment could not be confirmed",
     "confirmErrorSub": "If you were charged, contact us with your order reference. Otherwise try checkout again.",
+    "confirmErrorTitleInvoice": "Could not send the order",
+    "confirmErrorSubInvoice": "Try checkout again, or contact us if the problem continues.",
     "orderRef": "Order reference: {{ref}}"
   },
   "design": {
@@ -304,15 +323,15 @@
     "items": [
       {
         "q": "How do I order?",
-        "a": "Choose product and size, design in the editor, add to cart and pay. We'll send it by post."
+        "a": "Choose product and size, design in the editor, add to cart and send the order. You will receive an invoice by email, and we send the goods by post."
       },
       {
         "q": "Which file formats do you accept?",
         "a": "In the editor you upload PNG/JPEG into image slots. We export a print-ready PDF with 3 mm bleed and crop marks."
       },
       {
-        "q": "Can I pay with Vipps?",
-        "a": "Yes. At checkout you can pay with Vipps or card via Vipps MobilePay."
+        "q": "How do I pay?",
+        "a": "Right now you do not pay at checkout. After you send the order, we email an invoice to your address. Vipps and card are coming soon."
       },
       {
         "q": "How long is delivery?",
@@ -426,20 +445,20 @@
     "products": {
       "title": "Products",
       "p1": "We sell print products made to your specifications, such as flyers, business cards, posters, stickers, roll-ups and signs.",
-      "p2": "Production starts shortly after payment is confirmed. You are responsible for design, text, images and measurements being correct before you complete the purchase."
+      "p2": "Production starts after the order is received and payment is settled. You are responsible for design, text, images and measurements being correct before you complete the purchase."
     },
     "prices": {
       "title": "Prices",
-      "p1": "All prices are shown in Norwegian kroner (NOK) and include VAT unless clearly stated otherwise. Shipping is shown at checkout before you pay. We reserve the right to correct obvious pricing errors."
+      "p1": "All prices are shown in Norwegian kroner (NOK) and include VAT unless clearly stated otherwise. Shipping is shown at checkout before you send the order. We reserve the right to correct obvious pricing errors."
     },
     "order": {
       "title": "Ordering",
-      "p1": "The order is binding when you have completed checkout, accepted the terms and finished payment. You receive an order confirmation with an order number.",
+      "p1": "The order is binding when you have completed checkout, accepted the terms and sent the order. You receive an order confirmation with an order number. An invoice for payment is sent by email.",
       "p2": "We forward the print files and order details to our production partner for printing and shipping."
     },
     "payment": {
       "title": "Payment",
-      "p1": "You can pay with Vipps or card. Payment is processed by Vipps MobilePay. We charge the amount when the order is approved. We do not store card numbers."
+      "p1": "Right now you do not pay at checkout. After ordering we email an invoice to your address. Online payment with Vipps or card is coming soon. We do not store card numbers."
     },
     "delivery": {
       "title": "Delivery",
@@ -679,6 +698,14 @@
       "slug": "Slug",
       "category": "Category",
       "minQuantity": "Minimum quantity",
+      "maxQuantity": "Max quantity",
+      "quantityStep": "Quantity step",
+      "setupFee": "Setup / cutting (NOK)",
+      "pricingMode": "Pricing mode",
+      "pricingModeDefault": "Default (pack)",
+      "doubleSidedOption": "Offer double-sided (2× per piece)",
+      "tiersHint": "This product has quantity tiers from the catalog. Save to keep them.",
+      "pricePerSqm": "Price per m² (custom size)",
       "description": "Description",
       "leadTime": "Lead time",
       "hiddenInStore": "Hidden in store",

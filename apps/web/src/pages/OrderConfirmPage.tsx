@@ -4,6 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { confirmOrderPayment, fetchOrderStatus } from '@/lib/api'
 import { useCart } from '@/lib/cart'
+import { PAYMENT_ENABLED } from '@/lib/features'
 import { formatNok } from '@/lib/utils'
 
 type ViewState = 'loading' | 'ok' | 'err'
@@ -69,7 +70,11 @@ export function OrderConfirmPage() {
       {state === 'loading' && (
         <>
           <h1 className="page-heading">
-            {t('checkout.confirmLoading')}
+            {t(
+              PAYMENT_ENABLED
+                ? 'checkout.confirmLoading'
+                : 'checkout.confirmLoadingInvoice',
+            )}
           </h1>
           <p className="mt-4 text-ink-muted">{t('common.loading')}</p>
         </>
@@ -80,7 +85,13 @@ export function OrderConfirmPage() {
           <h1 className="page-heading">
             {t('checkout.confirmTitle')}
           </h1>
-          <p className="mt-4 text-ink-muted">{t('checkout.confirmSub')}</p>
+          <p className="mt-4 text-ink-muted">
+            {t(
+              PAYMENT_ENABLED
+                ? 'checkout.confirmSub'
+                : 'checkout.confirmSubInvoice',
+            )}
+          </p>
           <p className="mt-6 text-sm text-ink-muted">
             {t('checkout.orderRef', { ref: orderRef })}
           </p>
@@ -96,9 +107,19 @@ export function OrderConfirmPage() {
       {state === 'err' && (
         <>
           <h1 className="page-heading">
-            {t('checkout.confirmErrorTitle')}
+            {t(
+              PAYMENT_ENABLED
+                ? 'checkout.confirmErrorTitle'
+                : 'checkout.confirmErrorTitleInvoice',
+            )}
           </h1>
-          <p className="mt-4 text-ink-muted">{t('checkout.confirmErrorSub')}</p>
+          <p className="mt-4 text-ink-muted">
+            {t(
+              PAYMENT_ENABLED
+                ? 'checkout.confirmErrorSub'
+                : 'checkout.confirmErrorSubInvoice',
+            )}
+          </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link to="/handlekurv">{t('checkout.backToCart')}</Link>

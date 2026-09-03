@@ -11,8 +11,10 @@ import {
   type HomepageSettings,
   type OrderStatus,
   type PaymentMethod,
+  type PricingMode,
   type Product,
   type ProductCategory,
+  type QtyPriceTier,
   type SizeOption,
 } from '@inknova/shared';
 import { existsSync, mkdirSync } from 'node:fs';
@@ -34,7 +36,17 @@ type ProductRow = {
   delivery_fee: number | null;
   lead_time: string;
   min_quantity: number | null;
+  pricing_json: string | null;
   hidden: number;
+};
+
+type ProductPricingJson = {
+  mode?: PricingMode;
+  setupFee?: number;
+  maxQuantity?: number;
+  quantityStep?: number;
+  doubleSidedOption?: boolean;
+  tiers?: QtyPriceTier[];
 };
 
 type ArticleRow = {
@@ -207,6 +219,31 @@ export class DatabaseService implements OnModuleInit {
       CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
     `);
+    this.ensureColumn('products', 'pricing_json', 'TEXT');
+  }
+
+  private ensureColumn(table: string, column: string, type: string) {
+    const rows = this.db
+      .prepare(`PRAGMA table_info(${table})`)
+      .all() as Array<{ name: string }>;
+    if (rows.some((r) => r.name === column)) return;
+    this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
+
+  getSetting(key: string): string | null {
+    const row = this.db
+      .prepare('SELECT value_json FROM settings WHERE key = ?')
+      .get(key) as { value_json: string } | undefined;
+    return row?.value_json ?? null;
+  }
+
+  setSetting(key: string, value: string) {
+    this.db
+      .prepare(
+        `INSERT INTO settings (key, value_json) VALUES (?, ?)
+         ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json`,
+      )
+      .run(key, value);
   }
 
   countProducts(): number {
@@ -250,8 +287,8 @@ export class DatabaseService implements OnModuleInit {
         `INSERT INTO products (
           id, slug, category, name, description, image_url, images_json,
           sizes_json, custom_size_json, delivery_label, delivery_fee,
-          lead_time, min_quantity, hidden
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          lead_time, min_quantity, pricing_json, hidden
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           slug = excluded.slug,
           category = excluded.category,
@@ -265,6 +302,7 @@ export class DatabaseService implements OnModuleInit {
           delivery_fee = excluded.delivery_fee,
           lead_time = excluded.lead_time,
           min_quantity = excluded.min_quantity,
+          pricing_json = excluded.pricing_json,
           hidden = excluded.hidden`,
       )
       .run(
@@ -281,6 +319,7 @@ export class DatabaseService implements OnModuleInit {
         product.delivery.fee,
         product.leadTime,
         product.minQuantity ?? null,
+        pricingToJson(product),
         product.hidden ? 1 : 0,
       );
     return this.findProductById(product.id)!;
@@ -570,30 +609,67 @@ export class DatabaseService implements OnModuleInit {
   }
 }
 
+function pricingToJson(product: Product): string | null {
+  const payload: ProductPricingJson = {};
+  if (product.pricingMode) payload.mode = product.pricingMode;
+  if (product.setupFee != null) payload.setupFee = product.setupFee;
+  if (product.maxQuantity != null) payload.maxQuantity = product.maxQuantity;
+  if (product.quantityStep != null) payload.quantityStep = product.quantityStep;
+  if (product.doubleSidedOption != null) {
+    payload.doubleSidedOption = product.doubleSidedOption;
+  }
+  if (product.tiers && product.tiers.length > 0) payload.tiers = product.tiers;
+  return Object.keys(payload).length > 0 ? JSON.stringify(payload) : null;
+}
+
+function applyPricingJson(
+  product: Product,
+  raw: string | null | undefined,
+): Product {
+  if (!raw) return product;
+  try {
+    const parsed = JSON.parse(raw) as ProductPricingJson;
+    return {
+      ...product,
+      pricingMode: parsed.mode,
+      setupFee: parsed.setupFee,
+      maxQuantity: parsed.maxQuantity,
+      quantityStep: parsed.quantityStep,
+      doubleSidedOption: parsed.doubleSidedOption,
+      tiers: parsed.tiers,
+    };
+  } catch {
+    return product;
+  }
+}
+
 function rowToProduct(row: ProductRow): Product {
   const images = JSON.parse(row.images_json) as string[];
   const sizes = JSON.parse(row.sizes_json) as SizeOption[];
   const customSize = row.custom_size_json
     ? (JSON.parse(row.custom_size_json) as CustomSizeConfig)
     : undefined;
-  return {
-    id: row.id,
-    slug: row.slug,
-    category: row.category as ProductCategory,
-    name: row.name,
-    description: row.description,
-    imageUrl: row.image_url,
-    images: images.length > 0 ? images : undefined,
-    sizes,
-    customSize,
-    delivery: {
-      label: row.delivery_label,
-      fee: row.delivery_fee,
+  return applyPricingJson(
+    {
+      id: row.id,
+      slug: row.slug,
+      category: row.category as ProductCategory,
+      name: row.name,
+      description: row.description,
+      imageUrl: row.image_url,
+      images: images.length > 0 ? images : undefined,
+      sizes,
+      customSize,
+      delivery: {
+        label: row.delivery_label,
+        fee: row.delivery_fee,
+      },
+      leadTime: row.lead_time,
+      minQuantity: row.min_quantity ?? undefined,
+      hidden: row.hidden === 1,
     },
-    leadTime: row.lead_time,
-    minQuantity: row.min_quantity ?? undefined,
-    hidden: row.hidden === 1,
-  };
+    row.pricing_json,
+  );
 }
 
 function rowToArticle(row: ArticleRow): Article {

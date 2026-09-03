@@ -1,4 +1,9 @@
-import { effectiveMinQuantity, productGallery, type Product } from '@inknova/shared'
+import {
+  effectiveMinQuantity,
+  productGallery,
+  startingPrice,
+  type Product,
+} from '@inknova/shared'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -6,16 +11,9 @@ import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
 import { formatNok } from '@/lib/utils'
 
-function lowestPrice(product: Product) {
-  const prices = product.sizes.map((s) => s.price)
-  if (product.customSize) prices.push(product.customSize.basePrice)
-  if (!prices.length) return 0
-  return Math.min(...prices)
-}
-
 export function ProductCard({ product }: { product: Product }) {
   const { t } = useTranslation()
-  const price = lowestPrice(product)
+  const price = startingPrice(product)
   const copy = catalogCopy(product, t)
   const minQty = effectiveMinQuantity(product.minQuantity)
   const cover = productGallery(product)[0] ?? product.imageUrl

@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsIn,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -70,6 +71,20 @@ export class CheckoutLineItemDto {
   @IsString()
   @MaxLength(200)
   designFileName!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  doubleSided?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  widthCm?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  heightCm?: number;
 }
 
 export class CreateOrderDto {

@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  clampQuantity,
   effectiveMinQuantity,
-  lineTotalFromPack,
   resolveOrderDeliveryFee,
-  unitPriceFromPack,
+  tryQuoteLine,
   type CreateOrderResponse,
   type OrderStatusResponse,
   type Product,
@@ -104,24 +104,33 @@ export class OrdersService {
         throw new BadRequestException(`Unknown product: ${item.productSlug}`);
       }
       lineProducts.push(product);
-      const packPrice = resolvePackPrice(product, item.sizeId);
-      if (packPrice == null) {
-        throw new BadRequestException(
-          `Unknown size ${item.sizeId} for ${product.slug}`,
-        );
-      }
       const minQty = effectiveMinQuantity(product.minQuantity);
+      const qty = clampQuantity(product.minQuantity, item.qty, {
+        maxQuantity: product.maxQuantity,
+        quantityStep: product.quantityStep,
+      });
       if (item.qty < minQty) {
         throw new BadRequestException(
           `Minimum quantity for ${product.slug} is ${minQty}`,
         );
       }
-      const unitPrice = unitPriceFromPack(packPrice, product.minQuantity);
-      const lineTotal = lineTotalFromPack(
-        packPrice,
-        item.qty,
-        product.minQuantity,
-      );
+      if (product.maxQuantity != null && qty > product.maxQuantity) {
+        throw new BadRequestException(
+          `Maximum quantity for ${product.slug} is ${product.maxQuantity}`,
+        );
+      }
+      const quote = tryQuoteLine(product, {
+        sizeId: item.sizeId,
+        qty,
+        widthCm: item.widthCm,
+        heightCm: item.heightCm,
+        doubleSided: item.doubleSided,
+      });
+      if (!quote) {
+        throw new BadRequestException(
+          `Unknown size ${item.sizeId} for ${product.slug}`,
+        );
+      }
       const file = files[index]!;
       return {
         productId: product.id,
@@ -129,9 +138,9 @@ export class OrdersService {
         productName: product.name,
         sizeId: item.sizeId,
         sizeLabel: item.sizeLabel,
-        qty: item.qty,
-        unitPrice,
-        lineTotal,
+        qty: quote.qty,
+        unitPrice: quote.unitPrice,
+        lineTotal: quote.lineTotal,
         designFileName: sanitizeFileName(
           item.designFileName || file.originalname || `${product.slug}.pdf`,
         ),
@@ -386,13 +395,20 @@ export class OrdersService {
       '',
       `Frakt: ${order.deliveryFee} NOK`,
       `Sum: ${order.totalNok} NOK`,
-      `Betaling: ${order.paymentMethod}`,
+      `Betaling: ${
+        !this.vipps.isConfigured() || this.vipps.isDryRun()
+          ? 'Faktura (manuell)'
+          : order.paymentMethod
+      }`,
     ].filter((l) => l !== undefined);
 
     const siteUrl = this.config.get<string>(
       'WEB_ORIGIN',
       'https://inknova.no',
     );
+
+    const invoiceMode =
+      !this.vipps.isConfigured() || this.vipps.isDryRun();
 
     try {
       await this.mail.send({
@@ -407,6 +423,7 @@ export class OrdersService {
           deliveryFee: order.deliveryFee,
           totalNok: order.totalNok,
           paymentMethod: order.paymentMethod,
+          invoiceMode,
           siteUrl,
         }),
         attachments: order.items
@@ -425,14 +442,6 @@ export class OrdersService {
       throw e;
     }
   }
-}
-
-function resolvePackPrice(product: Product, sizeId: string): number | null {
-  if (sizeId === 'custom' && product.customSize) {
-    return product.customSize.basePrice;
-  }
-  const size = product.sizes.find((s) => s.id === sizeId);
-  return size?.price ?? null;
 }
 
 function makeReference(): string {

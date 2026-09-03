@@ -4,6 +4,28 @@ export type ProductCategory =
   | "storformat"
   | "messe";
 
+export type {
+  LinePricing,
+  LineQuoteInput,
+  PricingMode,
+  QtyPriceTier,
+  QuoteCustomSize,
+  QuoteProduct,
+  QuoteResult,
+  QuoteSize,
+} from "./pricing";
+export {
+  clampQuantity,
+  findTier,
+  linePricingFromProduct,
+  quoteFromPricing,
+  quoteLine,
+  startingPrice,
+  tryQuoteLine,
+  effectiveMinQuantity,
+} from "./pricing";
+import { effectiveMinQuantity } from "./pricing";
+
 export type MoneyNOK = number;
 
 /** Print bleed on each side (mm) */
@@ -59,21 +81,19 @@ export interface SizeOption {
   /**
    * Catalog price in NOK for one order at `Product.minQuantity`
    * (or 1 pcs when there is no minstebestilling).
-   * Cart line totals use {@link unitPriceFromPack}.
+   * Prefer {@link quoteLine} when tiers / setupFee are present.
    */
   price: MoneyNOK;
   /** Optional price delta vs base for UI hints */
   priceDelta?: MoneyNOK;
-}
-
-/** Resolve effective minstebestilling (default 1). */
-export function effectiveMinQuantity(minQuantity?: number): number {
-  return minQuantity && minQuantity > 1 ? minQuantity : 1;
+  /** Quantity bands; when set, overrides linear pack scaling. */
+  tiers?: import("./pricing").QtyPriceTier[];
 }
 
 /**
  * Per-piece price from a catalog pack price.
  * Catalog `price` is for `minQuantity` pieces (or 1 when unset).
+ * @deprecated Prefer {@link quoteLine} for tiered / setup-fee products.
  */
 export function unitPriceFromPack(
   packPrice: MoneyNOK,
@@ -99,8 +119,11 @@ export interface CustomSizeConfig {
   minHeightCm?: number;
   maxWidthCm: number;
   maxHeightCm: number;
-  /** Base price stub; real pricing later */
+  /** Base pack / per-piece / per-m² price depending on product pricing. */
   basePrice: MoneyNOK;
+  /** When true, basePrice and tiers are NOK per m². */
+  pricePerSqm?: boolean;
+  tiers?: import("./pricing").QtyPriceTier[];
 }
 
 export function customSizeMinCm(config: CustomSizeConfig): {
@@ -151,10 +174,25 @@ export interface Product {
   delivery: DeliveryInfo;
   leadTime: string;
   /**
-   * Minstebestilling (e.g. visittkort 50, flyers 40, magasin/program 20).
-   * Size prices are for this quantity, not per piece.
+   * Minstebestilling (e.g. visittkort 50, flyers 10, magasin/program 20).
+   * Size prices are for this quantity when there are no tiers.
    */
   minQuantity?: number;
+  /** Cap on order quantity (e.g. 500 from price list). */
+  maxQuantity?: number;
+  /** Discrete qty steps (e.g. 50 for visittkort packs). */
+  quantityStep?: number;
+  /**
+   * `pack` = size/tier price is a pack total.
+   * `perPiece` = tier price × qty (+ setupFee).
+   */
+  pricingMode?: import("./pricing").PricingMode;
+  /** Flat setup/cutting fee added once per line (e.g. 600). */
+  setupFee?: MoneyNOK;
+  /** Customer can choose double-sided (doubles per-piece price). */
+  doubleSidedOption?: boolean;
+  /** Shared quantity tiers when sizes omit their own. */
+  tiers?: import("./pricing").QtyPriceTier[];
   /**
    * When true, product is hidden from the public storefront.
    * Kept in catalog for admin / future reactivation. Default: visible.
@@ -247,13 +285,20 @@ export interface CartItem {
   sizeId: string;
   sizeLabel: string;
   qty: number;
-  /** Snapshot at add-to-cart time */
+  /** Snapshot at add-to-cart time (lineTotal / qty) */
   unitPrice: MoneyNOK;
   /**
    * Minstebestilling snapshot (catalog `minQuantity`).
    * Used to clamp qty in the cart UI.
    */
   minQuantity?: number;
+  maxQuantity?: number;
+  quantityStep?: number;
+  doubleSided?: boolean;
+  widthCm?: number;
+  heightCm?: number;
+  /** Offline re-quote when qty changes */
+  pricing?: import("./pricing").LinePricing;
   /**
    * Key for the print-ready PDF blob in browser IndexedDB.
    * Required from Phase C — never stored on the server.
@@ -293,6 +338,9 @@ export interface CheckoutLineItemInput {
   qty: number;
   /** Original filename for the print PDF attached to this line */
   designFileName: string;
+  doubleSided?: boolean;
+  widthCm?: number;
+  heightCm?: number;
 }
 
 export interface CreateOrderPayload {

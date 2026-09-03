@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import type { Product } from '@inknova/shared'
+import { startingPrice, type Product } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import {
   adminDeleteProduct,
@@ -11,10 +11,7 @@ import {
 import { formatNok } from '@/lib/utils'
 
 function lowestPrice(product: Product) {
-  const prices = product.sizes.map((s) => s.price)
-  if (product.customSize) prices.push(product.customSize.basePrice)
-  if (!prices.length) return 0
-  return Math.min(...prices)
+  return startingPrice(product)
 }
 
 export function AdminProductsPage() {

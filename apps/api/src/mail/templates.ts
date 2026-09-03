@@ -60,9 +60,12 @@ export function orderEmailHtml(input: {
   deliveryFee: number;
   totalNok: number;
   paymentMethod: PaymentMethod;
+  /** When true, order was placed without online payment (manual invoice). */
+  invoiceMode?: boolean;
   siteUrl?: string;
 }): string {
   const c = input.customer;
+  const invoiceMode = Boolean(input.invoiceMode);
   const address = [
     escapeHtml(c.addressLine1),
     c.addressLine2 ? escapeHtml(c.addressLine2) : '',
@@ -78,11 +81,15 @@ export function orderEmailHtml(input: {
     formatNok(item.lineTotal),
   ]);
 
+  const paymentLabel = invoiceMode
+    ? 'Faktura (manuell)'
+    : (PAYMENT_LABEL[input.paymentMethod] ?? input.paymentMethod);
+
   const bodyHtml = [
     sectionTitle('Ordre'),
     kvTable([
       ['Referanse', `<strong>${escapeHtml(input.reference)}</strong>`],
-      ['Betaling', escapeHtml(PAYMENT_LABEL[input.paymentMethod] ?? input.paymentMethod)],
+      ['Betaling', escapeHtml(paymentLabel)],
     ]),
     sectionTitle('Kunde'),
     kvTable([
@@ -109,8 +116,12 @@ export function orderEmailHtml(input: {
 
   return wrapEmail({
     kicker: 'Ny ordre',
-    title: 'Bestilling klar til produksjon',
-    intro: `${c.name} har betalt. Trykkfiler følger som vedlegg.`,
+    title: invoiceMode
+      ? 'Ny bestilling – send faktura'
+      : 'Bestilling klar til produksjon',
+    intro: invoiceMode
+      ? `${c.name} har bestilt. Send faktura til kunden. Trykkfiler følger som vedlegg.`
+      : `${c.name} har betalt. Trykkfiler følger som vedlegg.`,
     bodyHtml,
     siteUrl: input.siteUrl,
   });
@@ -156,6 +167,7 @@ export function previewOrderEmailHtml(siteUrl?: string): string {
     deliveryFee: 99,
     totalNok: 1488,
     paymentMethod: 'vipps',
+    invoiceMode: true,
     siteUrl,
   });
 }

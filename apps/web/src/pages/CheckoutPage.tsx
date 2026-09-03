@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchDeliverySettings, fetchProducts, submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
-import { useCart } from '@/lib/cart'
+import { cartLineTotal, useCart } from '@/lib/cart'
 import {
   applyNoPhoneInput,
   applyNoPostalInput,
@@ -30,6 +30,7 @@ import {
   type CheckoutFormState,
 } from '@/lib/checkoutFields'
 import { getDesignPdf } from '@/lib/designStore'
+import { PAYMENT_ENABLED } from '@/lib/features'
 import { cn, formatNok } from '@/lib/utils'
 
 const emptyForm: CheckoutFormState = {
@@ -47,6 +48,7 @@ export function CheckoutPage() {
   const navigate = useNavigate()
   const { items, total, clearCart } = useCart()
   const [form, setForm] = useState<CheckoutFormState>(emptyForm)
+  // Kept for API compatibility; live Vipps UI is gated by PAYMENT_ENABLED.
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [acknowledgedNoWithdrawal, setAcknowledgedNoWithdrawal] = useState(false)
@@ -106,7 +108,7 @@ export function CheckoutPage() {
         name: catalogName(item.productId, item.productName, t),
         sizeLabel: item.sizeLabel,
         qty: item.qty,
-        lineTotal: Math.round(item.unitPrice * item.qty),
+        lineTotal: cartLineTotal(item),
       })),
     [items, t],
   )
@@ -207,6 +209,9 @@ export function CheckoutPage() {
             qty: item.qty,
             designFileName:
               item.designFileName ?? `${item.productSlug}-${item.sizeId}.pdf`,
+            doubleSided: item.doubleSided,
+            widthCm: item.widthCm,
+            heightCm: item.heightCm,
           })),
         },
         pdfs,
@@ -436,34 +441,45 @@ export function CheckoutPage() {
             </div>
           </section>
 
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
-              {t('checkout.paymentSection')}
-            </h2>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              {(
-                [
-                  ['vipps', t('checkout.payVipps')],
-                  ['card', t('checkout.payCard')],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPaymentMethod(value)}
-                  className={cn(
-                    'rounded-lg border-2 px-4 py-3 text-left text-sm font-medium transition',
-                    paymentMethod === value
-                      ? 'border-accent bg-paper-card'
-                      : 'border-line hover:border-ink/30',
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <p className="text-sm text-ink-muted">{t('checkout.paymentHint')}</p>
-          </section>
+          {PAYMENT_ENABLED ? (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                {t('checkout.paymentSection')}
+              </h2>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {(
+                  [
+                    ['vipps', t('checkout.payVipps')],
+                    ['card', t('checkout.payCard')],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setPaymentMethod(value)}
+                    className={cn(
+                      'rounded-lg border-2 px-4 py-3 text-left text-sm font-medium transition',
+                      paymentMethod === value
+                        ? 'border-accent bg-paper-card'
+                        : 'border-line hover:border-ink/30',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm text-ink-muted">{t('checkout.paymentHint')}</p>
+            </section>
+          ) : (
+            <section className="space-y-2 rounded-lg border border-line bg-paper-card p-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                {t('checkout.invoiceSection')}
+              </h2>
+              <p className="text-sm leading-relaxed text-ink-muted">
+                {t('checkout.invoiceHint')}
+              </p>
+            </section>
+          )}
 
           <section className="space-y-4 rounded-lg border border-line bg-paper-card p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
@@ -534,7 +550,11 @@ export function CheckoutPage() {
               size="lg"
               disabled={submitting || !acceptedTerms || !acknowledgedNoWithdrawal}
             >
-              {submitting ? t('checkout.submitting') : t('checkout.pay')}
+              {submitting
+                ? t('checkout.submitting')
+                : PAYMENT_ENABLED
+                  ? t('checkout.pay')
+                  : t('checkout.submit')}
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link to="/handlekurv">{t('checkout.backToCart')}</Link>

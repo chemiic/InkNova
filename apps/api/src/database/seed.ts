@@ -6,6 +6,9 @@ import type { DatabaseService } from './database.service';
 
 const logger = new Logger('DatabaseSeed');
 
+/** Bump to re-apply catalog.json prices/images onto an existing DB. */
+export const CATALOG_PRICING_VERSION = 'priser-2026-09-03';
+
 const ARTICLE_SEED: Omit<Article, 'createdAt' | 'updatedAt'>[] = [
   {
     id: 'trykkklart-pdf',
@@ -74,23 +77,9 @@ interface CatalogFile {
 
 export function seedIfEmpty(db: DatabaseService) {
   if (db.countProducts() === 0) {
-    const catalogPath = resolveCatalogPath();
-    const raw = readFileSync(catalogPath, 'utf-8');
-    const data = JSON.parse(raw) as CatalogFile;
-
+    const data = loadCatalog();
     for (const product of data.products) {
-      const images =
-        product.images && product.images.length > 0
-          ? product.images
-          : product.imageUrl
-            ? [product.imageUrl]
-            : [];
-      db.upsertProduct({
-        ...product,
-        images,
-        imageUrl: images[0] ?? product.imageUrl,
-        hidden: product.hidden === true,
-      });
+      upsertCatalogProduct(db, product, null);
     }
 
     const defaults = data.deliveryDefaults;
@@ -111,12 +100,15 @@ export function seedIfEmpty(db: DatabaseService) {
     }
 
     logger.log(`Seeded ${data.products.length} products from catalog.json`);
+    db.setSetting('catalog_pricing_version', CATALOG_PRICING_VERSION);
   } else if (!hasDeliverySettings(db)) {
     db.setDeliverySettings({
       defaultLabel: '3–5 virkedager',
       defaultFee: 99,
     });
   }
+
+  syncCatalogPricing(db);
 
   if (db.countArticles() === 0) {
     const now = new Date().toISOString();
@@ -131,11 +123,76 @@ export function seedIfEmpty(db: DatabaseService) {
   }
 }
 
+/** Apply catalog.json prices/images when version bumps. */
+export function syncCatalogPricing(db: DatabaseService) {
+  const current = db.getSetting('catalog_pricing_version');
+  if (current === CATALOG_PRICING_VERSION) {
+    return;
+  }
+
+  const data = loadCatalog();
+  for (const product of data.products) {
+    const existing = db.findProductById(product.id);
+    upsertCatalogProduct(db, product, existing);
+  }
+  db.setSetting('catalog_pricing_version', CATALOG_PRICING_VERSION);
+  logger.log(
+    `Synced catalog pricing (${CATALOG_PRICING_VERSION}) for ${data.products.length} products`,
+  );
+}
+
+function upsertCatalogProduct(
+  db: DatabaseService,
+  product: Product,
+  existing: Product | null,
+) {
+  const images =
+    product.images && product.images.length > 0
+      ? product.images
+      : product.imageUrl
+        ? [product.imageUrl]
+        : [];
+
+  if (!existing) {
+    db.upsertProduct({
+      ...product,
+      images,
+      imageUrl: images[0] ?? product.imageUrl,
+      hidden: product.hidden === true,
+    });
+    return;
+  }
+
+  db.upsertProduct({
+    ...existing,
+    name: product.name,
+    description: product.description,
+    sizes: product.sizes,
+    customSize: product.customSize,
+    minQuantity: product.minQuantity,
+    maxQuantity: product.maxQuantity,
+    quantityStep: product.quantityStep,
+    pricingMode: product.pricingMode,
+    setupFee: product.setupFee,
+    doubleSidedOption: product.doubleSidedOption,
+    tiers: product.tiers,
+    leadTime: product.leadTime,
+    imageUrl: images[0] ?? product.imageUrl,
+    images,
+    // Preserve storefront visibility and per-product delivery overrides
+    hidden: existing.hidden,
+    delivery: existing.delivery,
+  });
+}
+
 function hasDeliverySettings(db: DatabaseService): boolean {
-  const row = db.raw
-    .prepare('SELECT value_json FROM settings WHERE key = ?')
-    .get('delivery') as { value_json: string } | undefined;
-  return Boolean(row);
+  return Boolean(db.getSetting('delivery'));
+}
+
+function loadCatalog(): CatalogFile {
+  const catalogPath = resolveCatalogPath();
+  const raw = readFileSync(catalogPath, 'utf-8');
+  return JSON.parse(raw) as CatalogFile;
 }
 
 function resolveCatalogPath(): string {

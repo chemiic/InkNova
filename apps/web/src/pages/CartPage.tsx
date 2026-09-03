@@ -1,4 +1,4 @@
-import { effectiveMinQuantity, resolveOrderDeliveryFee } from '@inknova/shared'
+import { resolveOrderDeliveryFee } from '@inknova/shared'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -6,13 +6,13 @@ import { DesignPreviewModal } from '@/components/DesignPreviewModal'
 import { Button } from '@/components/ui/button'
 import { fetchDeliverySettings, fetchProducts } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
-import { useCart } from '@/lib/cart'
+import { cartLineTotal, useCart } from '@/lib/cart'
 import { getDesignPdf } from '@/lib/designStore'
 import { formatNok } from '@/lib/utils'
 
 export function CartPage() {
   const { t } = useTranslation()
-  const { items, total, updateQty, syncMinQuantities, removeFromCart } =
+  const { items, total, updateQty, syncCartFromCatalog, removeFromCart } =
     useCart()
 
   const [draftQty, setDraftQty] = useState<Record<string, string>>({})
@@ -28,18 +28,12 @@ export function CartPage() {
     void Promise.all([fetchProducts(), fetchDeliverySettings()])
       .then(([products, delivery]) => {
         if (cancelled) return
-        const mins: Record<string, number> = {}
+        syncCartFromCatalog(products)
         const feesByKey = new Map<string, number | null>()
         for (const p of products) {
-          const min = effectiveMinQuantity(p.minQuantity)
-          if (min > 1) {
-            mins[p.id] = min
-            mins[p.slug] = min
-          }
           feesByKey.set(p.id, p.delivery.fee)
           feesByKey.set(p.slug, p.delivery.fee)
         }
-        syncMinQuantities(mins)
         const fees = items.map(
           (i) => feesByKey.get(i.productId) ?? feesByKey.get(i.productSlug),
         )
@@ -48,12 +42,12 @@ export function CartPage() {
         )
       })
       .catch(() => {
-        /* keep local cart mins if catalog unavailable */
+        /* keep local cart if catalog unavailable */
       })
     return () => {
       cancelled = true
     }
-  }, [syncMinQuantities, items])
+  }, [syncCartFromCatalog, items])
 
   const grandTotal = useMemo(() => total + deliveryFee, [total, deliveryFee])
 
@@ -120,7 +114,11 @@ export function CartPage() {
 
         <ul className="mt-10 divide-y divide-line">
           {items.map((item) => {
-            const minQty = effectiveMinQuantity(item.minQuantity)
+            const minQty =
+              item.minQuantity && item.minQuantity > 1 ? item.minQuantity : 1
+            const maxQty = item.maxQuantity ?? 9999
+            const step =
+              item.quantityStep && item.quantityStep > 1 ? item.quantityStep : 1
             return (
               <li
                 key={item.id}
@@ -151,7 +149,7 @@ export function CartPage() {
                     {t('cart.previewDesign')}
                   </button>
                   <p className="mt-1 text-sm font-medium">
-                    {formatNok(Math.round(item.unitPrice * item.qty))}
+                    {formatNok(cartLineTotal(item))}
                   </p>
                 </div>
                 <div className="flex flex-col items-start gap-1 sm:items-end">
@@ -163,8 +161,8 @@ export function CartPage() {
                       id={`qty-${item.id}`}
                       type="number"
                       min={minQty}
-                      max={9999}
-                      step={1}
+                      max={maxQty}
+                      step={step}
                       value={draftQty[item.id] ?? String(item.qty)}
                       onChange={(e) =>
                         setDraftQty((prev) => ({

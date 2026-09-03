@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Profesjonelle flyers i høy kvalitet – perfekt for kampanjer og arrangementer.",
+      "description": "Profesjonelle flyers i 150 g matt eller silkepapir. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
       "leadTime": "3–5 virkedager"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Plakater",
-      "description": "Plakater i stort format – fra A3 til A0 og populære mål.",
+      "description": "Plakater i satin eller matt papir – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
       "leadTime": "4–6 virkedager"
     },
     "klistremerker": {
@@ -59,8 +59,13 @@
       "leadTime": "3–5 virkedager"
     },
     "arbeidstegninger": {
-      "name": "Arbeidstegninger",
-      "description": "Tekniske tegninger og planer i stort format.",
+      "name": "Arbeidstegninger svart/hvitt",
+      "description": "Tekniske tegninger og planer i sort/hvitt, stort format.",
+      "leadTime": "2–4 virkedager"
+    },
+    "arbeidstegninger-farge": {
+      "name": "Arbeidstegninger farge",
+      "description": "Tekniske tegninger og planer i farge, stort format.",
       "leadTime": "2–4 virkedager"
     },
     "rollup": {
@@ -102,7 +107,14 @@
     "priceForQty": "{{price}} for {{count}} stk",
     "lineTotal": "Totalt for {{count}} stk: {{total}}",
     "moreSizes": "+{{count}}",
-    "minOrder": "Minstebestilling: {{count}} stk"
+    "minOrder": "Minstebestilling: {{count}} stk",
+    "maxOrder": "Maks {{count}} stk",
+    "setupIncluded": "Inkl. oppstart og skjæring {{fee}}",
+    "printSides": "Sider",
+    "singleSided": "Ensidig",
+    "doubleSided": "Tosidig",
+    "doubleSidedHint": "Tosidig trykk koster dobbelt per stykk (oppstart er den samme).",
+    "pricePerSqm": "Prisen beregnes per m²."
   },
 
   "cart": {
@@ -122,11 +134,12 @@
   },
   "checkout": {
     "title": "Kasse",
-    "sub": "Fyll inn leveringsdetaljer og velg Vipps eller kort.",
+    "sub": "Fyll inn leveringsdetaljer. Du får faktura for betaling på e-post.",
     "empty": "Legg produkter i handlekurven før du går til kassen.",
     "contactSection": "Kontakt",
     "addressSection": "Leveringsadresse",
     "paymentSection": "Betaling",
+    "invoiceSection": "Betaling",
     "summary": "Ordreoversikt",
     "name": "Fullt navn",
     "email": "E-post",
@@ -139,6 +152,7 @@
     "payVipps": "Vipps",
     "payCard": "Kort",
     "paymentHint": "Vipps og kort går via Vipps MobilePay. Betalingsopplysninger behandles av Vipps etter deres personvernregler. Vi leverer i Norge. Priser er i NOK og inkluderer MVA.",
+    "invoiceHint": "Du betaler ikke her nå. Når vi har mottatt bestillingen, sender vi faktura til e-postadressen din. Priser er i NOK og inkluderer MVA. Vi leverer i Norge.",
     "consentSection": "Avtaler og personvern",
     "privacyNote": "Vi behandler navn, kontaktinfo, leveringsadresse og trykkfiler for å gjennomføre kjøpet og sende ordren til produksjon. Les mer i <privacy>personvernerklæringen</privacy>.",
     "acceptTerms": "Jeg har lest og godtar <terms>kjøpsvilkårene</terms> og <privacy>personvernerklæringen</privacy>.",
@@ -146,6 +160,7 @@
     "marketing": "Jeg ønsker å motta tilbud og nyheter fra InkNova på e-post (valgfritt).",
     "errorConsent": "Du må godta vilkårene og bekrefte at angreretten ikke gjelder før du kan bestille.",
     "pay": "Betal og bestill",
+    "submit": "Send bestilling",
     "submitting": "Sender ordre…",
     "backToCart": "Tilbake til handlekurv",
     "errorSubmit": "Kunne ikke sende ordren. Prøv igjen.",
@@ -168,10 +183,14 @@
       "invalid": "Ugyldig verdi."
     },
     "confirmLoading": "Bekrefter betaling…",
+    "confirmLoadingInvoice": "Sender bestilling…",
     "confirmTitle": "Takk for bestillingen",
     "confirmSub": "Vi har mottatt ordren og sendt trykkfilene til produksjon.",
+    "confirmSubInvoice": "Vi har mottatt ordren. Faktura for betaling sendes til e-postadressen din.",
     "confirmErrorTitle": "Betalingen kunne ikke bekreftes",
     "confirmErrorSub": "Hvis du ble belastet, kontakt oss med ordrenummeret. Ellers kan du prøve kassen på nytt.",
+    "confirmErrorTitleInvoice": "Bestillingen kunne ikke sendes",
+    "confirmErrorSubInvoice": "Prøv kassen på nytt, eller kontakt oss hvis problemet vedvarer.",
     "orderRef": "Ordrenummer: {{ref}}"
   },
   "design": {
@@ -304,15 +323,15 @@
     "items": [
       {
         "q": "Hvordan bestiller jeg?",
-        "a": "Velg produkt og størrelse, design i editoren, legg i handlekurv og betal. Du får varen tilsendt i posten."
+        "a": "Velg produkt og størrelse, design i editoren, legg i handlekurv og send bestillingen. Du får faktura på e-post, og varen tilsendt i posten."
       },
       {
         "q": "Hvilke filformater godtar dere?",
         "a": "I editoren laster du opp PNG/JPEG til bildeplasser. Vi eksporterer trykkklart PDF med 3 mm bleed og skjæremerker."
       },
       {
-        "q": "Kan jeg betale med Vipps?",
-        "a": "Ja. I kassen kan du betale med Vipps eller kort via Vipps MobilePay."
+        "q": "Hvordan betaler jeg?",
+        "a": "Akkurat nå betaler du ikke i kassen. Etter at du har sendt bestillingen, sender vi faktura til e-postadressen din. Vipps og kort kommer snart."
       },
       {
         "q": "Hvor lang er leveringstiden?",
@@ -426,20 +445,20 @@
     "products": {
       "title": "Produkter",
       "p1": "Vi selger trykksaker som produseres etter dine spesifikasjoner, for eksempel flyers, visittkort, plakater, klistremerker, roll-up og skilt.",
-      "p2": "Produksjonen starter kort tid etter at betalingen er bekreftet. Du er ansvarlig for at design, tekst, bilder og mål er korrekte før du fullfører kjøpet."
+      "p2": "Produksjonen starter etter at bestillingen er mottatt og betalingen er avklart. Du er ansvarlig for at design, tekst, bilder og mål er korrekte før du fullfører kjøpet."
     },
     "prices": {
       "title": "Priser",
-      "p1": "Alle priser vises i norske kroner (NOK) og inkluderer merverdiavgift med mindre noe annet er tydelig angitt. Frakt vises i kassen før du betaler. Vi forbeholder oss retten til å rette åpenbare prisfeil."
+      "p1": "Alle priser vises i norske kroner (NOK) og inkluderer merverdiavgift med mindre noe annet er tydelig angitt. Frakt vises i kassen før du sender bestillingen. Vi forbeholder oss retten til å rette åpenbare prisfeil."
     },
     "order": {
       "title": "Bestilling",
-      "p1": "Bestillingen er bindende når du har fylt ut kassen, godtatt vilkårene og fullført betalingen. Du får en ordrebekreftelse med ordrenummer.",
+      "p1": "Bestillingen er bindende når du har fylt ut kassen, godtatt vilkårene og sendt bestillingen. Du får en ordrebekreftelse med ordrenummer. Faktura for betaling sendes på e-post.",
       "p2": "Vi videresender trykkfilene og ordreopplysningene til vårt produksjonssamarbeid for utskrift og sending."
     },
     "payment": {
       "title": "Betaling",
-      "p1": "Du kan betale med Vipps eller kort. Betalingen behandles av Vipps MobilePay. Vi belaster beløpet når ordren godkjennes. Vi lagrer ikke kortnummer."
+      "p1": "Akkurat nå betaler du ikke i kassen. Etter bestilling sender vi faktura til e-postadressen din. Online betaling med Vipps eller kort kommer snart. Vi lagrer ikke kortnummer."
     },
     "delivery": {
       "title": "Levering",
@@ -679,6 +698,14 @@
       "slug": "Slug",
       "category": "Kategori",
       "minQuantity": "Minstebestilling",
+      "maxQuantity": "Maks antall",
+      "quantityStep": "Antallssteg",
+      "setupFee": "Oppstart / skjæring (NOK)",
+      "pricingMode": "Prismodell",
+      "pricingModeDefault": "Standard (pakke)",
+      "doubleSidedOption": "Tilby tosidig (dobbel stykkpris)",
+      "tiersHint": "Produktet har mengdepriser fra katalog. Lagre for å beholde dem.",
+      "pricePerSqm": "Pris per m² (egendefinert)",
       "description": "Beskrivelse",
       "leadTime": "Leveringstid",
       "hiddenInStore": "Skjult i butikken",

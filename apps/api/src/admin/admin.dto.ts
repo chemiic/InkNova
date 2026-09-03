@@ -41,6 +41,27 @@ export class SizeOptionDto {
   @IsOptional()
   @IsNumber()
   priceDelta?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QtyPriceTierDto)
+  tiers?: QtyPriceTierDto[];
+}
+
+export class QtyPriceTierDto {
+  @IsNumber()
+  @Min(1)
+  minQty!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  maxQty?: number;
+
+  @IsNumber()
+  @Min(0)
+  price!: number;
 }
 
 export class CustomSizeDto {
@@ -65,6 +86,16 @@ export class CustomSizeDto {
   @IsNumber()
   @Min(0)
   basePrice!: number;
+
+  @IsOptional()
+  @IsBoolean()
+  pricePerSqm?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QtyPriceTierDto)
+  tiers?: QtyPriceTierDto[];
 }
 
 export class DeliveryInfoDto {
@@ -126,6 +157,35 @@ export class UpsertProductDto {
   @IsNumber()
   @Min(1)
   minQuantity?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  maxQuantity?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  quantityStep?: number | null;
+
+  @IsOptional()
+  @IsIn(['pack', 'perPiece'])
+  pricingMode?: 'pack' | 'perPiece' | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  setupFee?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  doubleSidedOption?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QtyPriceTierDto)
+  tiers?: QtyPriceTierDto[];
 
   @IsOptional()
   @IsBoolean()

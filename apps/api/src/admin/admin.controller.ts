@@ -341,14 +341,36 @@ function dtoToProduct(body: UpsertProductDto, id: string): Product {
     description: body.description,
     imageUrl: images[0] ?? body.imageUrl,
     images,
-    sizes: body.sizes,
-    customSize: body.customSize ?? undefined,
+    sizes: body.sizes.map((s) => ({
+      id: s.id,
+      label: s.label,
+      price: s.price,
+      priceDelta: s.priceDelta,
+      tiers: s.tiers,
+    })),
+    customSize: body.customSize
+      ? {
+          minWidthCm: body.customSize.minWidthCm,
+          minHeightCm: body.customSize.minHeightCm,
+          maxWidthCm: body.customSize.maxWidthCm,
+          maxHeightCm: body.customSize.maxHeightCm,
+          basePrice: body.customSize.basePrice,
+          pricePerSqm: body.customSize.pricePerSqm,
+          tiers: body.customSize.tiers,
+        }
+      : undefined,
     delivery: {
       label: body.delivery.label,
       fee: body.delivery.fee ?? null,
     },
     leadTime: body.leadTime,
     minQuantity: body.minQuantity ?? undefined,
+    maxQuantity: body.maxQuantity ?? undefined,
+    quantityStep: body.quantityStep ?? undefined,
+    pricingMode: body.pricingMode ?? undefined,
+    setupFee: body.setupFee ?? undefined,
+    doubleSidedOption: body.doubleSidedOption,
+    tiers: body.tiers,
     hidden: body.hidden === true,
   };
 }

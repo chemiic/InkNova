@@ -10,22 +10,169 @@
       "category": "trykk",
       "hidden": false,
       "name": "Flyers",
-      "description": "Profesjonelle flyers i høy kvalitet – perfekt for kampanjer og arrangementer.",
+      "description": "Profesjonelle flyers i 150 g matt eller silkepapir. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
       "imageUrl": "/products/flyers.svg",
       "leadTime": "3–5 virkedager",
-      "delivery": { "label": "3–5 virkedager", "fee": 99 },
-      "minQuantity": 40,
+      "delivery": {
+        "label": "3–5 virkedager",
+        "fee": 99
+      },
+      "pricingMode": "perPiece",
+      "setupFee": 600,
+      "minQuantity": 10,
+      "maxQuantity": 500,
+      "doubleSidedOption": true,
       "sizes": [
-        { "id": "a6", "label": "A6", "price": 299 },
-        { "id": "a5", "label": "A5", "price": 399 },
-        { "id": "a4", "label": "A4", "price": 499 }
+        {
+          "id": "a6",
+          "label": "A6",
+          "price": 740,
+          "tiers": [
+            {
+              "minQty": 10,
+              "maxQty": 50,
+              "price": 14
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 14
+            },
+            {
+              "minQty": 101,
+              "maxQty": 200,
+              "price": 13
+            },
+            {
+              "minQty": 201,
+              "maxQty": 300,
+              "price": 13
+            },
+            {
+              "minQty": 301,
+              "maxQty": 400,
+              "price": 12
+            },
+            {
+              "minQty": 401,
+              "maxQty": 500,
+              "price": 11
+            }
+          ]
+        },
+        {
+          "id": "a5",
+          "label": "A5",
+          "price": 780,
+          "tiers": [
+            {
+              "minQty": 10,
+              "maxQty": 50,
+              "price": 18
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 17
+            },
+            {
+              "minQty": 101,
+              "maxQty": 200,
+              "price": 16
+            },
+            {
+              "minQty": 201,
+              "maxQty": 300,
+              "price": 15
+            },
+            {
+              "minQty": 301,
+              "maxQty": 400,
+              "price": 14
+            },
+            {
+              "minQty": 401,
+              "maxQty": 500,
+              "price": 13
+            }
+          ]
+        },
+        {
+          "id": "a4",
+          "label": "A4",
+          "price": 850,
+          "tiers": [
+            {
+              "minQty": 10,
+              "maxQty": 50,
+              "price": 25
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 24
+            },
+            {
+              "minQty": 101,
+              "maxQty": 200,
+              "price": 23
+            },
+            {
+              "minQty": 201,
+              "maxQty": 300,
+              "price": 20
+            },
+            {
+              "minQty": 301,
+              "maxQty": 400,
+              "price": 20
+            },
+            {
+              "minQty": 401,
+              "maxQty": 500,
+              "price": 18
+            }
+          ]
+        }
       ],
       "customSize": {
         "minWidthCm": 5,
         "minHeightCm": 5,
         "maxWidthCm": 30,
         "maxHeightCm": 42,
-        "basePrice": 549
+        "basePrice": 850,
+        "tiers": [
+          {
+            "minQty": 10,
+            "maxQty": 50,
+            "price": 25
+          },
+          {
+            "minQty": 51,
+            "maxQty": 100,
+            "price": 24
+          },
+          {
+            "minQty": 101,
+            "maxQty": 200,
+            "price": 23
+          },
+          {
+            "minQty": 201,
+            "maxQty": 300,
+            "price": 20
+          },
+          {
+            "minQty": 301,
+            "maxQty": 400,
+            "price": 20
+          },
+          {
+            "minQty": 401,
+            "maxQty": 500,
+            "price": 18
+          }
+        ]
       }
     },
     {
@@ -35,15 +182,92 @@
       "hidden": false,
       "name": "Visittkort",
       "description": "Klassiske visittkort med skarp trykk og flere størrelser.",
-      "imageUrl": "/products/visittkort.svg",
+      "imageUrl": "/products/visittkort.jpg",
+      "images": [
+        "/products/visittkort.jpg"
+      ],
       "leadTime": "3–5 virkedager",
-      "delivery": { "label": "3–5 virkedager", "fee": 79 },
+      "delivery": {
+        "label": "3–5 virkedager",
+        "fee": 79
+      },
+      "pricingMode": "pack",
       "minQuantity": 50,
+      "maxQuantity": 500,
+      "quantityStep": 50,
+      "tiers": [
+        {
+          "minQty": 50,
+          "maxQty": 50,
+          "price": 750
+        },
+        {
+          "minQty": 100,
+          "maxQty": 100,
+          "price": 825
+        },
+        {
+          "minQty": 150,
+          "maxQty": 150,
+          "price": 900
+        },
+        {
+          "minQty": 200,
+          "maxQty": 200,
+          "price": 975
+        },
+        {
+          "minQty": 250,
+          "maxQty": 250,
+          "price": 1050
+        },
+        {
+          "minQty": 300,
+          "maxQty": 300,
+          "price": 1125
+        },
+        {
+          "minQty": 350,
+          "maxQty": 350,
+          "price": 1300
+        },
+        {
+          "minQty": 400,
+          "maxQty": 400,
+          "price": 1375
+        },
+        {
+          "minQty": 450,
+          "maxQty": 450,
+          "price": 1450
+        },
+        {
+          "minQty": 500,
+          "maxQty": 500,
+          "price": 1525
+        }
+      ],
       "sizes": [
-        { "id": "9x5", "label": "9×5 cm", "price": 349 },
-        { "id": "9x5.5", "label": "9×5,5 cm", "price": 369 },
-        { "id": "8.5x5", "label": "8,5×5 cm", "price": 349 },
-        { "id": "8.5x5.5", "label": "8,5×5,5 cm", "price": 369 }
+        {
+          "id": "9x5",
+          "label": "9×5 cm",
+          "price": 750
+        },
+        {
+          "id": "9x5.5",
+          "label": "9×5,5 cm",
+          "price": 750
+        },
+        {
+          "id": "8.5x5",
+          "label": "8,5×5 cm",
+          "price": 750
+        },
+        {
+          "id": "8.5x5.5",
+          "label": "8,5×5,5 cm",
+          "price": 750
+        }
       ]
     },
     {
@@ -52,24 +276,318 @@
       "category": "trykk",
       "hidden": false,
       "name": "Plakater",
-      "description": "Plakater i stort format – fra A3 til A0 og populære mål.",
-      "imageUrl": "/products/plakater.svg",
+      "description": "Plakater i satin eller matt papir – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "imageUrl": "/products/plakater.jpg",
+      "images": [
+        "/products/plakater.jpg"
+      ],
       "leadTime": "4–6 virkedager",
-      "delivery": { "label": "4–6 virkedager", "fee": 149 },
+      "delivery": {
+        "label": "4–6 virkedager",
+        "fee": 149
+      },
+      "pricingMode": "perPiece",
+      "setupFee": 600,
+      "minQuantity": 1,
+      "maxQuantity": 500,
       "sizes": [
-        { "id": "a3", "label": "A3", "price": 199 },
-        { "id": "a2", "label": "A2", "price": 299 },
-        { "id": "a1", "label": "A1", "price": 449 },
-        { "id": "a0", "label": "A0", "price": 699 },
-        { "id": "50x70", "label": "50×70 cm", "price": 349 },
-        { "id": "70x100", "label": "70×100 cm", "price": 549 }
+        {
+          "id": "a3",
+          "label": "A3",
+          "price": 650,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 50
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 48
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 48
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 40
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 35
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 32
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 29
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "label": "A2",
+          "price": 900,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 300
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 290
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 270
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 250
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 220
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 210
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 200
+            }
+          ]
+        },
+        {
+          "id": "a1",
+          "label": "A1",
+          "price": 1100,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 500
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 490
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 480
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 470
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 450
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 420
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 400
+            }
+          ]
+        },
+        {
+          "id": "a0",
+          "label": "A0",
+          "price": 1640,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 1040
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 890
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 860
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 850
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 680
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 590
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 570
+            }
+          ]
+        },
+        {
+          "id": "50x70",
+          "label": "50×70 cm",
+          "price": 1100,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 500
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 490
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 480
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 470
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 460
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 420
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 400
+            }
+          ]
+        },
+        {
+          "id": "70x100",
+          "label": "70×100 cm",
+          "price": 1460,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 1,
+              "price": 860
+            },
+            {
+              "minQty": 2,
+              "maxQty": 10,
+              "price": 840
+            },
+            {
+              "minQty": 11,
+              "maxQty": 20,
+              "price": 800
+            },
+            {
+              "minQty": 21,
+              "maxQty": 50,
+              "price": 790
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 680
+            },
+            {
+              "minQty": 101,
+              "maxQty": 199,
+              "price": 570
+            },
+            {
+              "minQty": 200,
+              "maxQty": 500,
+              "price": 470
+            }
+          ]
+        }
       ],
       "customSize": {
         "minWidthCm": 10,
         "minHeightCm": 10,
         "maxWidthCm": 100,
         "maxHeightCm": 140,
-        "basePrice": 799
+        "basePrice": 1040,
+        "pricePerSqm": true,
+        "tiers": [
+          {
+            "minQty": 1,
+            "maxQty": 1,
+            "price": 1040
+          },
+          {
+            "minQty": 2,
+            "maxQty": 10,
+            "price": 890
+          },
+          {
+            "minQty": 11,
+            "maxQty": 20,
+            "price": 860
+          },
+          {
+            "minQty": 21,
+            "maxQty": 50,
+            "price": 850
+          },
+          {
+            "minQty": 51,
+            "maxQty": 100,
+            "price": 680
+          },
+          {
+            "minQty": 101,
+            "maxQty": 199,
+            "price": 590
+          },
+          {
+            "minQty": 200,
+            "maxQty": 500,
+            "price": 570
+          }
+        ]
       }
     },
     {
@@ -81,12 +599,31 @@
       "description": "Slitesterke klistremerker i flere kvadratiske størrelser.",
       "imageUrl": "/products/klistremerker.svg",
       "leadTime": "3–5 virkedager",
-      "delivery": { "label": "3–5 virkedager", "fee": 79 },
+      "delivery": {
+        "label": "3–5 virkedager",
+        "fee": 79
+      },
       "sizes": [
-        { "id": "5x5", "label": "5×5 cm", "price": 199 },
-        { "id": "8x8", "label": "8×8 cm", "price": 249 },
-        { "id": "10x10", "label": "10×10 cm", "price": 299 },
-        { "id": "15x15", "label": "15×15 cm", "price": 399 }
+        {
+          "id": "5x5",
+          "label": "5×5 cm",
+          "price": 199
+        },
+        {
+          "id": "8x8",
+          "label": "8×8 cm",
+          "price": 249
+        },
+        {
+          "id": "10x10",
+          "label": "10×10 cm",
+          "price": 299
+        },
+        {
+          "id": "15x15",
+          "label": "15×15 cm",
+          "price": 399
+        }
       ]
     },
     {
@@ -94,16 +631,253 @@
       "slug": "arbeidstegninger",
       "category": "trykk",
       "hidden": false,
-      "name": "Arbeidstegninger",
-      "description": "Tekniske tegninger og planer i stort format.",
+      "name": "Arbeidstegninger svart/hvitt",
+      "description": "Tekniske tegninger og planer i sort/hvitt, stort format.",
       "imageUrl": "/products/arbeidstegninger.svg",
       "leadTime": "2–4 virkedager",
-      "delivery": { "label": "2–4 virkedager", "fee": 129 },
+      "delivery": {
+        "label": "2–4 virkedager",
+        "fee": 129
+      },
+      "pricingMode": "perPiece",
+      "minQuantity": 1,
+      "maxQuantity": 100,
       "sizes": [
-        { "id": "a3", "label": "A3", "price": 149 },
-        { "id": "a2", "label": "A2", "price": 229 },
-        { "id": "a1", "label": "A1", "price": 349 },
-        { "id": "a0", "label": "A0", "price": 499 }
+        {
+          "id": "a3",
+          "label": "A3",
+          "price": 40,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 40
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 35
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 33
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 28
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "label": "A2",
+          "price": 80,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 80
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 75
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 71
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 60
+            }
+          ]
+        },
+        {
+          "id": "a1",
+          "label": "A1",
+          "price": 100,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 100
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 95
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 89
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 76
+            }
+          ]
+        },
+        {
+          "id": "a0",
+          "label": "A0",
+          "price": 150,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 150
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 145
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 128
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 110
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arbeidstegninger-farge",
+      "slug": "arbeidstegninger-farge",
+      "category": "trykk",
+      "hidden": false,
+      "name": "Arbeidstegninger farge",
+      "description": "Tekniske tegninger og planer i farge, stort format.",
+      "imageUrl": "/products/arbeidstegninger.svg",
+      "leadTime": "2–4 virkedager",
+      "delivery": {
+        "label": "2–4 virkedager",
+        "fee": 129
+      },
+      "pricingMode": "perPiece",
+      "minQuantity": 1,
+      "maxQuantity": 100,
+      "sizes": [
+        {
+          "id": "a3",
+          "label": "A3",
+          "price": 80,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 80
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 60
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 52
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 40
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "label": "A2",
+          "price": 401,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 401
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 301
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 261
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 181
+            }
+          ]
+        },
+        {
+          "id": "a1",
+          "label": "A1",
+          "price": 533,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 533
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 393
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 341
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 236
+            }
+          ]
+        },
+        {
+          "id": "a0",
+          "label": "A0",
+          "price": 660,
+          "tiers": [
+            {
+              "minQty": 1,
+              "maxQty": 10,
+              "price": 660
+            },
+            {
+              "minQty": 11,
+              "maxQty": 25,
+              "price": 495
+            },
+            {
+              "minQty": 26,
+              "maxQty": 50,
+              "price": 429
+            },
+            {
+              "minQty": 51,
+              "maxQty": 100,
+              "price": 297
+            }
+          ]
+        }
       ]
     },
     {
@@ -115,8 +889,17 @@
       "description": "Komplett roll-up banner 85×200 cm med kassett.",
       "imageUrl": "/products/rollup.svg",
       "leadTime": "5–7 virkedager",
-      "delivery": { "label": "5–7 virkedager", "fee": 199 },
-      "sizes": [{ "id": "85x200", "label": "85×200 cm", "price": 1299 }]
+      "delivery": {
+        "label": "5–7 virkedager",
+        "fee": 199
+      },
+      "sizes": [
+        {
+          "id": "85x200",
+          "label": "85×200 cm",
+          "price": 1299
+        }
+      ]
     },
     {
       "id": "magasin",
@@ -125,13 +908,27 @@
       "hidden": false,
       "name": "Magasin",
       "description": "Heftede magasiner i A4 eller A5.",
-      "imageUrl": "/products/magasin.svg",
+      "imageUrl": "/products/magasin.jpg",
+      "images": [
+        "/products/magasin.jpg"
+      ],
       "leadTime": "5–8 virkedager",
-      "delivery": { "label": "5–8 virkedager", "fee": 149 },
+      "delivery": {
+        "label": "5–8 virkedager",
+        "fee": 149
+      },
       "minQuantity": 20,
       "sizes": [
-        { "id": "a5", "label": "A5", "price": 899 },
-        { "id": "a4", "label": "A4", "price": 1199 }
+        {
+          "id": "a5",
+          "label": "A5",
+          "price": 899
+        },
+        {
+          "id": "a4",
+          "label": "A4",
+          "price": 1199
+        }
       ]
     },
     {
@@ -143,11 +940,22 @@
       "description": "Fire-siders programhefte i A4, A5 eller egendefinert størrelse.",
       "imageUrl": "/products/4-sider.svg",
       "leadTime": "4–7 virkedager",
-      "delivery": { "label": "4–7 virkedager", "fee": 129 },
+      "delivery": {
+        "label": "4–7 virkedager",
+        "fee": 129
+      },
       "minQuantity": 20,
       "sizes": [
-        { "id": "a5", "label": "A5", "price": 499 },
-        { "id": "a4", "label": "A4", "price": 699 }
+        {
+          "id": "a5",
+          "label": "A5",
+          "price": 499
+        },
+        {
+          "id": "a4",
+          "label": "A4",
+          "price": 699
+        }
       ],
       "customSize": {
         "minWidthCm": 10,

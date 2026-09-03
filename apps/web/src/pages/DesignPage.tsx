@@ -2,10 +2,10 @@ import {
   BLEED_MM,
   customSizeMinCm,
   effectiveMinQuantity,
-  lineTotalFromPack,
+  linePricingFromProduct,
   mmToPx,
+  quoteLine,
   sizeToMm,
-  unitPriceFromPack,
 } from '@inknova/shared'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -51,8 +51,10 @@ export function DesignPage() {
   const qtyParam = Number(searchParams.get('qty') ?? '1')
   const widthCmParam = Number(searchParams.get('widthCm') ?? '')
   const heightCmParam = Number(searchParams.get('heightCm') ?? '')
+  const sidesParam = searchParams.get('sides')
   const modeParam = searchParams.get('mode')
   const mode: DesignMode = modeParam === 'upload' ? 'upload' : 'editor'
+  const doubleSidedRequested = sidesParam === '2'
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -177,9 +179,12 @@ export function DesignPage() {
     const w = mmToPx(dims!.widthMm)
     const h = mmToPx(dims!.heightMm)
     const tpl = getTemplate(templateKey) ?? getTemplate('blank')!
+    const forceDouble =
+      doubleSidedRequested && product?.doubleSidedOption === true
     return applyProductPageStructure(
       tpl.build(w, h, productSlug, getTemplateCopy()),
       productSlug,
+      { doubleSided: forceDouble || undefined },
     )
   }
 
@@ -197,7 +202,13 @@ export function DesignPage() {
     setPreviewOpen(false)
     setPreviewBlob(null)
     setPreviewFileNameState(null)
-  }, [product?.slug, selectedSize?.id, dims?.widthMm, dims?.heightMm])
+  }, [
+    product?.slug,
+    selectedSize?.id,
+    dims?.widthMm,
+    dims?.heightMm,
+    doubleSidedRequested,
+  ])
 
   function setMode(next: DesignMode) {
     const params = new URLSearchParams(searchParams)
@@ -367,16 +378,41 @@ export function DesignPage() {
       const designPdfKey = createId()
       const fileName =
         previewFileNameState ?? `${product.slug}-${selectedSize.id}.pdf`
+      const doubleSided =
+        product.doubleSidedOption === true && doubleSidedRequested
+      const quote = quoteLine(product, {
+        sizeId: selectedSize.id,
+        qty,
+        widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
+        heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
+        doubleSided,
+      })
+      const pricing = linePricingFromProduct(product, {
+        sizeId: selectedSize.id,
+        qty: quote.qty,
+        widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
+        heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
+        doubleSided,
+      })
+      const sizeLabel = doubleSided
+        ? `${selectedSize.label} · ${t('product.doubleSided')}`
+        : selectedSize.label
       await saveDesignPdf(designPdfKey, previewBlob, fileName)
       addToCart({
         productId: product.id,
         productSlug: product.slug,
         productName: product.name,
         sizeId: selectedSize.id,
-        sizeLabel: selectedSize.label,
-        qty,
+        sizeLabel,
+        qty: quote.qty,
         minQuantity: product.minQuantity,
-        unitPrice: unitPriceFromPack(selectedSize.price, product.minQuantity),
+        maxQuantity: product.maxQuantity,
+        quantityStep: product.quantityStep,
+        unitPrice: quote.unitPrice,
+        doubleSided,
+        widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
+        heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
+        pricing: pricing ?? undefined,
         designPdfKey,
         designFileName: fileName,
         templateId: mode === 'upload' ? 'upload' : templateId,
@@ -474,7 +510,14 @@ export function DesignPage() {
   const lineTotalLabel = t('product.lineTotal', {
     count: qty,
     total: formatNok(
-      lineTotalFromPack(selectedSize.price, qty, product.minQuantity),
+      quoteLine(product, {
+        sizeId: selectedSize.id,
+        qty,
+        widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
+        heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
+        doubleSided:
+          product.doubleSidedOption === true && doubleSidedRequested,
+      }).lineTotal,
     ),
   })
 
