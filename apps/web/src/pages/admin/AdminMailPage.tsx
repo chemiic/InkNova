@@ -1,16 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { adminMailPreview } from '@/lib/adminApi'
 import { cn } from '@/lib/utils'
 
-type Kind = 'order' | 'contact'
+type Kind = 'order' | 'confirmation' | 'shipped' | 'contact'
+
+const KINDS = new Set<string>(['order', 'confirmation', 'shipped', 'contact'])
+
+function parseKind(value: string | null): Kind {
+  if (value && KINDS.has(value)) return value as Kind
+  return 'order'
+}
 
 export function AdminMailPage() {
   const { t } = useTranslation()
-  const [kind, setKind] = useState<Kind>('order')
+  const [params] = useSearchParams()
+  const [kind, setKind] = useState<Kind>(() => parseKind(params.get('kind')))
   const [html, setHtml] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setKind(parseKind(params.get('kind')))
+  }, [params])
 
   useEffect(() => {
     let cancelled = false
@@ -38,8 +51,8 @@ export function AdminMailPage() {
       <h1 className="font-display text-3xl text-ink">{t('admin.mail.title')}</h1>
       <p className="mt-2 max-w-xl text-sm text-ink-muted">{t('admin.mail.intro')}</p>
 
-      <div className="mt-6 flex gap-2">
-        {(['order', 'contact'] as const).map((k) => (
+      <div className="mt-6 flex flex-wrap gap-2">
+        {(['order', 'confirmation', 'shipped', 'contact'] as const).map((k) => (
           <button
             key={k}
             type="button"
@@ -51,7 +64,13 @@ export function AdminMailPage() {
                 : 'border-line text-ink-muted hover:border-ink/30 hover:text-ink',
             )}
           >
-            {k === 'order' ? t('admin.mail.order') : t('admin.mail.contact')}
+            {k === 'order'
+              ? t('admin.mail.order')
+              : k === 'confirmation'
+                ? t('admin.mail.confirmation')
+                : k === 'shipped'
+                  ? t('admin.mail.shipped')
+                  : t('admin.mail.contact')}
           </button>
         ))}
       </div>

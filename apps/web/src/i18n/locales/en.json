@@ -188,10 +188,10 @@
     "confirmSub": "We have received your order and sent the print files to production.",
     "confirmSubInvoice": "We have received your order. An invoice for payment will be sent to your email.",
     "confirmErrorTitle": "Payment could not be confirmed",
-    "confirmErrorSub": "If you were charged, contact us with your order reference. Otherwise try checkout again.",
+    "confirmErrorSub": "If you were charged, contact us with your order number. Otherwise try checkout again.",
     "confirmErrorTitleInvoice": "Could not send the order",
     "confirmErrorSubInvoice": "Try checkout again, or contact us if the problem continues.",
-    "orderRef": "Order reference: {{ref}}"
+    "orderRefHint": "Save this number if you contact us about the order."
   },
   "design": {
     "title": "Design your product",
@@ -665,6 +665,33 @@
       "homepageHint": "— choose which products appear as popular on the homepage",
       "mailHint": "— preview the emails sent to the shop"
     },
+    "storage": {
+      "title": "Server storage",
+      "intro": "Order PDFs and admin-uploaded images are shown here. Cleanup runs only manually after you confirm.",
+      "loadError": "Could not load storage info",
+      "cleanupFailed": "Cleanup failed",
+      "cleanupDone": "Cleanup done: removed {{orders}} order folders and {{uploads}} unused admin images.",
+      "cleanupConfirmTitle": "Confirm cleanup",
+      "cleanupConfirmBody": "This will delete:\n• {{orders}} order folders ({{orderSize}}) — all order PDFs on disk\n• {{uploads}} unused files in /uploads\n\nOrder records in the database are kept. PDFs cannot be recovered.",
+      "cleanupNothing": "No order PDFs or unused admin images to delete right now.",
+      "cleanupHint": "Cleanup removes all order PDFs on the server and unused images in /uploads. Age does not matter.",
+      "cleanupWillRemove": "Will delete: {{orders}} order folders ({{orderSize}}) and {{uploads}} unused admin images.",
+      "cleanupConfirmYes": "Yes, delete",
+      "totalManaged": "InkNova data total",
+      "totalManagedOf": "{{used}} of ~{{budget}} GB",
+      "usageBarLabel": "Share of storage budget",
+      "budgetHint": "~{{budget}} GB of the {{total}} GB disk is allocated to InkNova files. ~{{system}} GB is reserved for the OS, Node and logs.",
+      "budgetWarn": "You are approaching the ~{{budget}} GB budget — consider cleaning up old order PDFs.",
+      "orderFiles": "Order PDFs",
+      "orderCount": "{{count}} folders",
+      "uploads": "Admin-uploaded images (/uploads)",
+      "database": "Database",
+      "maxOrder": "Max per order: {{items}} files at {{mb}} MB each (up to ~{{items}}×{{mb}} MB).",
+      "lastCleanup": "Last cleanup: {{date}}",
+      "runCleanup": "Run cleanup…",
+      "cleaning": "Cleaning…",
+      "serverHint": "The server has {{gb}} GB disk in total — remember OS, Node and logs on top of the figures above."
+    },
     "common": {
       "loading": "Loading…",
       "save": "Save",
@@ -798,7 +825,32 @@
       "paymentMethod": {
         "vipps": "Vipps",
         "card": "Card"
-      }
+      },
+      "notifyShipped": "Send shipping email",
+      "notifyShippedSending": "Sending…",
+      "notifyShippedFailed": "Could not send shipping email",
+      "shippedEmailSent": "Shipping email sent to customer",
+      "shippingNotifySection": "Send shipping email",
+      "trackingNumber": "Tracking number",
+      "trackingNumberOptional": "Optional — included in the customer email",
+      "trackingSaved": "Tracking number sent to customer:",
+      "previewShippedMail": "Preview email template",
+      "contactSection": "Contact",
+      "deliverySection": "Delivery",
+      "fieldName": "Name",
+      "fieldEmail": "Email",
+      "fieldPhone": "Phone",
+      "fieldAddress1": "Street address",
+      "fieldAddress2": "Address line 2",
+      "fieldPostalCode": "Postal code",
+      "fieldCity": "City",
+      "previewFile": "Preview",
+      "previewTitle": "Print file preview",
+      "previewLoading": "Loading preview…",
+      "previewFailed": "Could not display the file",
+      "previewUnavailable": "File not available",
+      "closePreview": "Close preview",
+      "downloadFile": "Download"
     },
     "delivery": {
       "title": "Shipping",
@@ -822,6 +874,8 @@
       "title": "Emails",
       "intro": "Preview of the templates sent to the shop inbox. New emails should reuse the same layout in the API mail helpers.",
       "order": "New order",
+      "confirmation": "Order confirmation (customer)",
+      "shipped": "Order shipped (customer)",
       "contact": "Contact form",
       "loadError": "Could not load email preview"
     }

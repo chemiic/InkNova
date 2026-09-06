@@ -25,6 +25,7 @@ export type StoredOrder = {
   deliveryFee: number;
   totalNok: number;
   copycatSent: boolean;
+  confirmationEmailSent?: boolean;
 };
 
 const TTL_MS = 2 * 60 * 60 * 1000; // 2h — enough for Vipps redirect

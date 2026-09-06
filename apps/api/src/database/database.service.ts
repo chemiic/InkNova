@@ -74,6 +74,9 @@ type OrderRow = {
   delivery_fee: number;
   total_nok: number;
   copycat_sent: number;
+  shipped_email_sent?: number;
+  confirmation_email_sent?: number;
+  shipment_tracking?: string | null;
 };
 
 type OrderItemRow = {
@@ -115,6 +118,7 @@ export type PersistOrderInput = {
   deliveryFee: number;
   totalNok: number;
   copycatSent: boolean;
+  confirmationEmailSent?: boolean;
 };
 
 @Injectable()
@@ -137,6 +141,7 @@ export class DatabaseService implements OnModuleInit {
     this.db.exec('PRAGMA journal_mode = WAL;');
     this.db.exec('PRAGMA foreign_keys = ON;');
     this.createSchema();
+    this.migrateSchema();
     seedIfEmpty(this);
     this.logger.log(`SQLite ready at ${dbPath}`);
   }
@@ -244,6 +249,28 @@ export class DatabaseService implements OnModuleInit {
          ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json`,
       )
       .run(key, value);
+  }
+
+  private migrateSchema() {
+    const cols = this.db
+      .prepare('PRAGMA table_info(orders)')
+      .all() as { name: string }[];
+    if (!cols.some((c) => c.name === 'shipped_email_sent')) {
+      this.db.exec(
+        'ALTER TABLE orders ADD COLUMN shipped_email_sent INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (!cols.some((c) => c.name === 'confirmation_email_sent')) {
+      this.db.exec(
+        'ALTER TABLE orders ADD COLUMN confirmation_email_sent INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    const colsAfter = this.db
+      .prepare('PRAGMA table_info(orders)')
+      .all() as { name: string }[];
+    if (!colsAfter.some((c) => c.name === 'shipment_tracking')) {
+      this.db.exec('ALTER TABLE orders ADD COLUMN shipment_tracking TEXT');
+    }
   }
 
   countProducts(): number {
@@ -491,7 +518,12 @@ export class DatabaseService implements OnModuleInit {
 
   updateOrderFlags(
     reference: string,
-    patch: { status?: OrderStatus; copycatSent?: boolean },
+    patch: {
+      status?: OrderStatus;
+      copycatSent?: boolean;
+      shippedEmailSent?: boolean;
+      confirmationEmailSent?: boolean;
+    },
   ): void {
     const existing = this.findOrderRowByReference(reference);
     if (!existing) return;
@@ -502,11 +534,55 @@ export class DatabaseService implements OnModuleInit {
         : patch.copycatSent
           ? 1
           : 0;
+    const shippedEmailSent =
+      patch.shippedEmailSent === undefined
+        ? (existing.shipped_email_sent ?? 0)
+        : patch.shippedEmailSent
+          ? 1
+          : 0;
+    const confirmationEmailSent =
+      patch.confirmationEmailSent === undefined
+        ? (existing.confirmation_email_sent ?? 0)
+        : patch.confirmationEmailSent
+          ? 1
+          : 0;
     this.db
       .prepare(
-        'UPDATE orders SET status = ?, copycat_sent = ? WHERE reference = ?',
+        'UPDATE orders SET status = ?, copycat_sent = ?, shipped_email_sent = ?, confirmation_email_sent = ? WHERE reference = ?',
       )
-      .run(status, copycatSent, reference);
+      .run(
+        status,
+        copycatSent,
+        shippedEmailSent,
+        confirmationEmailSent,
+        reference,
+      );
+  }
+
+  updateOrderShipment(
+    reference: string,
+    patch: {
+      shippedEmailSent?: boolean;
+      shipmentTracking?: string | null;
+    },
+  ): void {
+    const existing = this.findOrderRowByReference(reference);
+    if (!existing) return;
+    const shippedEmailSent =
+      patch.shippedEmailSent === undefined
+        ? (existing.shipped_email_sent ?? 0)
+        : patch.shippedEmailSent
+          ? 1
+          : 0;
+    const shipmentTracking =
+      patch.shipmentTracking === undefined
+        ? (existing.shipment_tracking ?? null)
+        : patch.shipmentTracking;
+    this.db
+      .prepare(
+        'UPDATE orders SET shipped_email_sent = ?, shipment_tracking = ? WHERE reference = ?',
+      )
+      .run(shippedEmailSent, shipmentTracking, reference);
   }
 
   getOrderStatusByReference(reference: string): {
@@ -529,6 +605,10 @@ export class DatabaseService implements OnModuleInit {
     const row = this.findOrderRowByReference(reference);
     if (!row) return null;
     return rowToPersistOrder(row, this.listOrderItemRows(row.id));
+  }
+
+  orderReferenceExists(reference: string): boolean {
+    return Boolean(this.findOrderRowByReference(reference));
   }
 
   listAdminOrders(): AdminOrderSummary[] {
@@ -555,6 +635,32 @@ export class DatabaseService implements OnModuleInit {
     });
   }
 
+  listOrdersForFileCleanup(): Array<{
+    id: string;
+    reference: string;
+    createdAt: number;
+    status: OrderStatus;
+  }> {
+    const rows = this.db
+      .prepare('SELECT id, reference, created_at, status FROM orders')
+      .all() as Pick<
+      OrderRow,
+      'id' | 'reference' | 'created_at' | 'status'
+    >[];
+    return rows.map((row) => ({
+      id: row.id,
+      reference: row.reference,
+      createdAt: row.created_at,
+      status: row.status as OrderStatus,
+    }));
+  }
+
+  clearOrderPdfPaths(orderId: string): void {
+    this.db
+      .prepare('UPDATE order_items SET pdf_path = NULL WHERE order_id = ?')
+      .run(orderId);
+  }
+
   findAdminOrder(idOrRef: string): AdminOrder | null {
     const row =
       this.findOrderRowById(idOrRef) ?? this.findOrderRowByReference(idOrRef);
@@ -572,6 +678,9 @@ export class DatabaseService implements OnModuleInit {
       deliveryFee: row.delivery_fee,
       totalNok: row.total_nok,
       copycatSent: row.copycat_sent === 1,
+      shippedEmailSent: (row.shipped_email_sent ?? 0) === 1,
+      confirmationEmailSent: (row.confirmation_email_sent ?? 0) === 1,
+      shipmentTracking: row.shipment_tracking ?? null,
     };
   }
 
@@ -715,6 +824,7 @@ function rowToPersistOrder(
     deliveryFee: row.delivery_fee,
     totalNok: row.total_nok,
     copycatSent: row.copycat_sent === 1,
+    confirmationEmailSent: (row.confirmation_email_sent ?? 0) === 1,
   };
 }
 

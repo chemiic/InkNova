@@ -403,6 +403,9 @@ export interface AdminOrder {
   deliveryFee: MoneyNOK;
   totalNok: MoneyNOK;
   copycatSent: boolean;
+  shippedEmailSent: boolean;
+  confirmationEmailSent: boolean;
+  shipmentTracking: string | null;
 }
 
 export interface AdminOrderSummary {
@@ -426,3 +429,39 @@ export interface ApiError {
   ok: false;
   message: string;
 }
+
+export interface StorageUsage {
+  bytes: number;
+  fileCount: number;
+}
+
+export interface StorageCleanupPlan {
+  orderDirsEligible: number;
+  orderBytesEligible: number;
+  orphanUploadsEligible: number;
+}
+
+export interface StorageStats {
+  orderFiles: StorageUsage & { orderCount: number };
+  uploads: StorageUsage;
+  database: { bytes: number };
+  totalManagedBytes: number;
+  maxOrderFileBytes: number;
+  maxOrderLineItems: number;
+  lastCleanupAt: string | null;
+  cleanupPlan: StorageCleanupPlan;
+}
+
+export interface StorageCleanupResult {
+  ok: true;
+  orderDirsRemoved: number;
+  orderBytesFreed: number;
+  uploadsRemoved: number;
+  uploadBytesFreed: number;
+  ranAt: string;
+}
+
+export {
+  formatOrderReference,
+  generateOrderReference,
+} from "./order-reference";

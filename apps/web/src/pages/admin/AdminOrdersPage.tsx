@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import type { AdminOrderSummary, OrderStatus } from '@inknova/shared'
+import { formatOrderReference } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { adminListOrders } from '@/lib/adminApi'
 import { formatNok } from '@/lib/utils'
@@ -101,7 +102,7 @@ export function AdminOrdersPage() {
                       to={`/admin/orders/${encodeURIComponent(order.id)}`}
                       className="font-medium underline-offset-2 hover:underline"
                     >
-                      {order.reference}
+                      {formatOrderReference(order.reference)}
                     </Link>
                   </td>
                   <td className="py-3 pr-3">

@@ -5,6 +5,8 @@ import type {
   DeliverySettings,
   HomepageSettings,
   Product,
+  StorageCleanupResult,
+  StorageStats,
 } from '@inknova/shared'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? ''
@@ -151,7 +153,7 @@ export function adminUpdateHomepage(body: HomepageSettings) {
   })
 }
 
-export function adminMailPreview(kind: 'contact' | 'order') {
+export function adminMailPreview(kind: 'contact' | 'order' | 'confirmation' | 'shipped') {
   return adminRequest<{ kind: string; html: string }>(
     `/api/admin/mail-preview/${kind}`,
   )
@@ -165,6 +167,53 @@ export function adminGetOrder(id: string) {
   return adminRequest<AdminOrder>(
     `/api/admin/orders/${encodeURIComponent(id)}`,
   )
+}
+
+export function adminNotifyOrderShipped(id: string, trackingNumber?: string) {
+  return adminRequest<AdminOrder>(
+    `/api/admin/orders/${encodeURIComponent(id)}/notify-shipped`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        trackingNumber: trackingNumber?.trim() || undefined,
+      }),
+    },
+  )
+}
+
+export function adminGetStorage() {
+  return adminRequest<StorageStats>('/api/admin/storage')
+}
+
+export function adminRunStorageCleanup() {
+  return adminRequest<StorageCleanupResult>('/api/admin/storage/cleanup', {
+    method: 'POST',
+  })
+}
+
+export async function adminFetchOrderFileBlob(
+  orderId: string,
+  itemId: number,
+): Promise<Blob> {
+  const token = getAdminToken()
+  const headers = new Headers()
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+
+  const res = await fetch(
+    `${API_BASE}/api/admin/orders/${encodeURIComponent(orderId)}/items/${itemId}/file?inline=1`,
+    { headers },
+  )
+
+  if (res.status === 401) {
+    setAdminToken(null)
+    throw new Error('unauthorized')
+  }
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(text || res.statusText)
+  }
+
+  return res.blob()
 }
 
 export async function adminDownloadOrderFile(

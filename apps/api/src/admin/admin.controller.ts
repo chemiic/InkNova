@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   StreamableFile,
   UploadedFile,
   UseGuards,
@@ -31,6 +32,7 @@ import {
   HiddenDto,
   HomepageSettingsDto,
   LoginDto,
+  NotifyShippedDto,
   UpsertArticleDto,
   UpsertProductDto,
 } from './admin.dto';
@@ -38,8 +40,12 @@ import { AdminAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import {
   previewContactEmailHtml,
+  previewOrderConfirmationEmailHtml,
   previewOrderEmailHtml,
+  previewOrderShippedEmailHtml,
 } from '../mail/templates';
+import { AdminOrdersService } from './admin-orders.service';
+import { StorageCleanupService } from '../storage/storage-cleanup.service';
 
 @Controller('admin')
 export class AdminController {
@@ -49,6 +55,8 @@ export class AdminController {
     private readonly db: DatabaseService,
     private readonly config: ConfigService,
     private readonly uploadCleanup: UploadCleanupService,
+    private readonly adminOrders: AdminOrdersService,
+    private readonly storage: StorageCleanupService,
   ) {}
 
   @Post('login')
@@ -260,7 +268,25 @@ export class AdminController {
     if (kind === 'order') {
       return { kind, html: previewOrderEmailHtml(siteUrl) };
     }
+    if (kind === 'confirmation') {
+      return { kind, html: previewOrderConfirmationEmailHtml(siteUrl) };
+    }
+    if (kind === 'shipped') {
+      return { kind, html: previewOrderShippedEmailHtml(siteUrl) };
+    }
     throw new BadRequestException('Unknown preview kind');
+  }
+
+  @Get('storage')
+  @UseGuards(AdminAuthGuard)
+  getStorage() {
+    return this.storage.getStats();
+  }
+
+  @Post('storage/cleanup')
+  @UseGuards(AdminAuthGuard)
+  runStorageCleanup() {
+    return this.storage.runCleanup();
   }
 
   @Get('orders')
@@ -277,18 +303,29 @@ export class AdminController {
     return order;
   }
 
+  @Post('orders/:id/notify-shipped')
+  @UseGuards(AdminAuthGuard)
+  notifyOrderShipped(
+    @Param('id') id: string,
+    @Body() body: NotifyShippedDto,
+  ) {
+    return this.adminOrders.notifyShipped(id, body.trackingNumber);
+  }
+
   @Get('orders/:id/items/:itemId/file')
   @UseGuards(AdminAuthGuard)
   downloadOrderFile(
     @Param('id') id: string,
     @Param('itemId') itemId: string,
+    @Query('inline') inline?: string,
   ) {
     const file = this.db.getOrderItemFile(id, Number(itemId));
     if (!file) throw new NotFoundException('File not found');
     const safeName = file.fileName.replace(/[\r\n"]/g, '_');
+    const mode = inline === '1' ? 'inline' : 'attachment';
     return new StreamableFile(createReadStream(file.absPath), {
       type: 'application/pdf',
-      disposition: `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+      disposition: `${mode}; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
     });
   }
 

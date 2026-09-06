@@ -10,6 +10,7 @@ import { ContactModule } from './contact/contact.module';
 import { DatabaseModule } from './database/database.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { MailModule } from './mail/mail.module';
+import { StorageModule } from './storage/storage.module';
 import { OrdersModule } from './orders/orders.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { OrdersModule } from './orders/orders.module';
     CatalogModule,
     ArticlesModule,
     DeliveryModule,
+    StorageModule,
     AdminModule,
     ContactModule,
     MailModule,

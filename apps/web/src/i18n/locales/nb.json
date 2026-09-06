@@ -191,7 +191,7 @@
     "confirmErrorSub": "Hvis du ble belastet, kontakt oss med ordrenummeret. Ellers kan du prøve kassen på nytt.",
     "confirmErrorTitleInvoice": "Bestillingen kunne ikke sendes",
     "confirmErrorSubInvoice": "Prøv kassen på nytt, eller kontakt oss hvis problemet vedvarer.",
-    "orderRef": "Ordrenummer: {{ref}}"
+    "orderRefHint": "Ta vare på nummeret hvis du kontakter oss om bestillingen."
   },
   "design": {
     "title": "Design produktet",
@@ -665,6 +665,33 @@
       "homepageHint": "— velg hvilke produkter som vises som populære på forsiden",
       "mailHint": "— forhåndsvis e-postene som sendes til trykkeriet"
     },
+    "storage": {
+      "title": "Lagring på server",
+      "intro": "Her ser du PDF-er fra ordrer og bilder lastet opp via admin. Opprydding kjøres bare manuelt etter bekreftelse.",
+      "loadError": "Kunne ikke hente lagringsinfo",
+      "cleanupFailed": "Kunne ikke kjøre opprydding",
+      "cleanupDone": "Opprydding ferdig: {{orders}} ordremapper og {{uploads}} ubrukte admin-bilder fjernet.",
+      "cleanupConfirmTitle": "Bekreft opprydding",
+      "cleanupConfirmBody": "Dette sletter:\n• {{orders}} ordremapper ({{orderSize}}) — alle ordre-PDF-er på disk\n• {{uploads}} ubrukte filer i /uploads\n\nOrdreopplysninger i databasen beholdes. PDF-er kan ikke gjenopprettes.",
+      "cleanupNothing": "Ingen ordre-PDF-er eller ubrukte admin-bilder å slette akkurat nå.",
+      "cleanupHint": "Opprydding sletter alle ordre-PDF-er på serveren og ubrukte bilder i /uploads. Alder spiller ingen rolle.",
+      "cleanupWillRemove": "Vil slette: {{orders}} ordremapper ({{orderSize}}) og {{uploads}} ubrukte admin-bilder.",
+      "cleanupConfirmYes": "Ja, slett",
+      "totalManaged": "InkNova-data totalt",
+      "totalManagedOf": "{{used}} av ca. {{budget}} GB",
+      "usageBarLabel": "Andel av lagringsbudsjett",
+      "budgetHint": "Ca. {{budget}} GB av {{total}} GB disk er satt av til InkNova-filer. ~{{system}} GB er reservert for OS, Node og logger.",
+      "budgetWarn": "Du nærmer deg budsjettet på ca. {{budget}} GB — vurder opprydding av gamle ordre-PDF-er.",
+      "orderFiles": "Ordre-PDF-er",
+      "orderCount": "{{count}} mapper",
+      "uploads": "Admin-opplastede bilder (/uploads)",
+      "database": "Database",
+      "maxOrder": "Maks per ordre: {{items}} filer à {{mb}} MB (opptil ~{{items}}×{{mb}} MB).",
+      "lastCleanup": "Siste opprydding: {{date}}",
+      "runCleanup": "Kjør opprydding…",
+      "cleaning": "Rydder…",
+      "serverHint": "Serveren har {{gb}} GB disk totalt — husk OS, Node og logger i tillegg til tallene over."
+    },
     "common": {
       "loading": "Laster…",
       "save": "Lagre",
@@ -798,7 +825,32 @@
       "paymentMethod": {
         "vipps": "Vipps",
         "card": "Kort"
-      }
+      },
+      "notifyShipped": "Send forsendelses-e-post",
+      "notifyShippedSending": "Sender…",
+      "notifyShippedFailed": "Kunne ikke sende forsendelses-e-post",
+      "shippedEmailSent": "Forsendelses-e-post sendt til kunden",
+      "shippingNotifySection": "Send forsendelses-e-post",
+      "trackingNumber": "Sporingsnummer",
+      "trackingNumberOptional": "Valgfritt — vises i e-posten til kunden",
+      "trackingSaved": "Sporingsnummer sendt til kunde:",
+      "previewShippedMail": "Forhåndsvis e-postmal",
+      "contactSection": "Kontakt",
+      "deliverySection": "Levering",
+      "fieldName": "Navn",
+      "fieldEmail": "E-post",
+      "fieldPhone": "Telefon",
+      "fieldAddress1": "Gateadresse",
+      "fieldAddress2": "Adresselinje 2",
+      "fieldPostalCode": "Postnummer",
+      "fieldCity": "Sted",
+      "previewFile": "Forhåndsvis",
+      "previewTitle": "Forhåndsvisning av trykkfil",
+      "previewLoading": "Laster forhåndsvisning…",
+      "previewFailed": "Kunne ikke vise filen",
+      "previewUnavailable": "Filen er ikke tilgjengelig",
+      "closePreview": "Lukk forhåndsvisning",
+      "downloadFile": "Last ned"
     },
     "delivery": {
       "title": "Frakt",
@@ -822,6 +874,8 @@
       "title": "E-post",
       "intro": "Forhåndsvisning av malene som sendes til innboksen. Nye e-poster bør bruke samme layout i API-et.",
       "order": "Ny ordre",
+      "confirmation": "Ordrebekreftelse (kunde)",
+      "shipped": "Ordre sendt (kunde)",
       "contact": "Kontaktskjema",
       "loadError": "Kunne ikke hente e-postforhåndsvisning"
     }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
+import { formatOrderReference } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { confirmOrderPayment, fetchOrderStatus } from '@/lib/api'
 import { useCart } from '@/lib/cart'
@@ -92,8 +93,11 @@ export function OrderConfirmPage() {
                 : 'checkout.confirmSubInvoice',
             )}
           </p>
-          <p className="mt-6 text-sm text-ink-muted">
-            {t('checkout.orderRef', { ref: orderRef })}
+          <p className="mt-6 font-mono text-lg font-semibold tracking-wide text-ink">
+            {formatOrderReference(orderRef)}
+          </p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {t('checkout.orderRefHint')}
           </p>
           {totalNok != null && (
             <p className="mt-2 text-lg font-semibold">{formatNok(totalNok)}</p>

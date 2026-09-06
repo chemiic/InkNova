@@ -8,19 +8,20 @@ import { ConfigService } from '@nestjs/config';
 import {
   clampQuantity,
   effectiveMinQuantity,
+  formatOrderReference,
+  generateOrderReference,
   resolveOrderDeliveryFee,
   tryQuoteLine,
   type CreateOrderResponse,
   type OrderStatusResponse,
   type Product,
 } from '@inknova/shared';
-import { randomBytes } from 'crypto';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
-import { orderEmailHtml } from '../mail/templates';
+import { orderConfirmationEmailHtml, orderEmailHtml } from '../mail/templates';
 import { VippsService } from '../payments/vipps.service';
 import { OrderStore, type StoredLineItem, type StoredOrder } from './order.store';
 import { CreateOrderDto } from './orders.dto';
@@ -159,7 +160,9 @@ export class OrdersService {
       throw new BadRequestException('Order total must be positive');
     }
 
-    const reference = makeReference();
+    const reference = generateOrderReference((ref) =>
+      this.db.orderReferenceExists(ref),
+    );
     const orderId = reference;
     const order: StoredOrder = {
       id: orderId,
@@ -180,6 +183,7 @@ export class OrdersService {
       deliveryFee,
       totalNok,
       copycatSent: false,
+      confirmationEmailSent: false,
     };
     this.store.put(order);
     try {
@@ -251,9 +255,7 @@ export class OrdersService {
     }
 
     if (order.status === 'completed' || order.status === 'paid') {
-      if (!order.copycatSent) {
-        await this.sendCopycatMail(order);
-      }
+      await this.ensureOrderEmails(order.reference);
       return this.getStatus(reference);
     }
 
@@ -298,6 +300,7 @@ export class OrdersService {
       deliveryFee: persisted.deliveryFee,
       totalNok: persisted.totalNok,
       copycatSent: persisted.copycatSent,
+      confirmationEmailSent: persisted.confirmationEmailSent ?? false,
     };
   }
 
@@ -335,17 +338,22 @@ export class OrdersService {
       deliveryFee: order.deliveryFee,
       totalNok: order.totalNok,
       copycatSent: order.copycatSent,
+      confirmationEmailSent: order.confirmationEmailSent ?? false,
     });
   }
 
   private patchOrder(
     reference: string,
-    patch: Partial<Pick<StoredOrder, 'status' | 'copycatSent'>>,
+    patch: Partial<
+      Pick<StoredOrder, 'status' | 'copycatSent' | 'confirmationEmailSent'>
+    >,
   ): StoredOrder | undefined {
     const updated = this.store.update(reference, patch);
     this.db.updateOrderFlags(reference, {
       status: patch.status ?? updated?.status,
       copycatSent: patch.copycatSent ?? updated?.copycatSent,
+      confirmationEmailSent:
+        patch.confirmationEmailSent ?? updated?.confirmationEmailSent,
     });
     return updated ?? this.getOrder(reference);
   }
@@ -353,14 +361,92 @@ export class OrdersService {
   private async finalizePaidOrder(reference: string): Promise<void> {
     const order = this.getOrder(reference);
     if (!order) return;
-    if (order.copycatSent) {
-      this.patchOrder(reference, { status: 'completed' });
-      return;
-    }
     this.patchOrder(reference, { status: 'paid' });
-    await this.sendCopycatMail(this.getOrder(reference)!);
+    await this.ensureOrderEmails(reference);
     this.patchOrder(reference, { status: 'completed' });
     this.store.clearAttachments(reference);
+  }
+
+  private async ensureOrderEmails(reference: string): Promise<void> {
+    const order = this.getOrder(reference);
+    if (!order) return;
+    if (order.copycatSent && order.confirmationEmailSent) return;
+
+    if (!order.copycatSent) {
+      await this.sendCopycatMail(this.getOrder(reference)!);
+    }
+    const afterCopycat = this.getOrder(reference);
+    if (afterCopycat && !afterCopycat.confirmationEmailSent) {
+      await this.sendCustomerConfirmationMail(afterCopycat);
+    }
+  }
+
+  private async sendCustomerConfirmationMail(order: StoredOrder): Promise<void> {
+    if (order.confirmationEmailSent) return;
+
+    const siteUrl = this.config.get<string>(
+      'WEB_ORIGIN',
+      'https://inknova.no',
+    );
+    const contactEmail =
+      this.config.get<string>('CONTACT_TO') || 'Kontakt@inknova.no';
+    const { customer } = order;
+    const subject = `Ordrebekreftelse – ${formatOrderReference(order.reference)}`;
+
+    const lines = [
+      `Hei ${customer.name},`,
+      '',
+      'Takk for bestillingen! Vi har mottatt betalingen og begynner produksjonen av ordren din.',
+      '',
+      `Ordre: ${formatOrderReference(order.reference)}`,
+      `Betaling: ${order.paymentMethod}`,
+      '',
+      'Leveringsadresse:',
+      customer.addressLine1,
+      customer.addressLine2 || '',
+      `${customer.postalCode} ${customer.city}`,
+      '',
+      'Varer:',
+      ...order.items.map(
+        (i) =>
+          `- ${i.productName} (${i.sizeLabel}) × ${i.qty} — ${i.lineTotal} NOK`,
+      ),
+      '',
+      `Frakt: ${order.deliveryFee} NOK`,
+      `Totalt: ${order.totalNok} NOK`,
+      '',
+      'Vi sender deg en e-post når pakken er sendt.',
+      `Har du spørsmål? Skriv til ${contactEmail}.`,
+    ].filter((line) => line !== '');
+
+    try {
+      await this.mail.send({
+        to: customer.email,
+        replyTo: contactEmail,
+        subject,
+        text: lines.join('\n'),
+        html: orderConfirmationEmailHtml({
+          reference: order.reference,
+          customerName: customer.name,
+          customer,
+          items: order.items.map((i) => ({
+            productName: i.productName,
+            sizeLabel: i.sizeLabel,
+            qty: i.qty,
+            lineTotal: i.lineTotal,
+          })),
+          deliveryFee: order.deliveryFee,
+          totalNok: order.totalNok,
+          paymentMethod: order.paymentMethod,
+          siteUrl,
+          contactEmail,
+        }),
+      });
+      this.patchOrder(order.reference, { confirmationEmailSent: true });
+    } catch (e) {
+      this.logger.error('Customer confirmation mail failed', e);
+      throw e;
+    }
   }
 
   private async sendCopycatMail(order: StoredOrder): Promise<void> {
@@ -377,7 +463,7 @@ export class OrdersService {
     const subject = `${productNames} – ${order.customer.name}`;
 
     const lines = [
-      `Ordre: ${order.reference}`,
+      `Ordre: ${formatOrderReference(order.reference)}`,
       `Navn: ${order.customer.name}`,
       `E-post: ${order.customer.email}`,
       `Telefon: ${order.customer.phone}`,
@@ -442,10 +528,6 @@ export class OrdersService {
       throw e;
     }
   }
-}
-
-function makeReference(): string {
-  return `ink-${Date.now().toString(36)}-${randomBytes(4).toString('hex')}`;
 }
 
 function sanitizeFileName(name: string): string {

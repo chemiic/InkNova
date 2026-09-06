@@ -73,36 +73,34 @@ export function SiteHeader({ compact = false }: SiteHeaderProps) {
       <div
         className={cn(
           'mx-auto flex max-w-6xl items-center justify-between gap-3 px-4',
-          compact ? 'h-12' : 'h-16',
+          compact ? 'h-12 md:h-16' : 'h-16',
           'md:grid md:grid-cols-[minmax(7rem,auto)_1fr_minmax(7.5rem,auto)] md:items-center',
         )}
       >
         <Link to="/" className="shrink-0 md:justify-self-start" aria-label="InkNova">
           <Logo
             color="#fff"
-            className={cn(compact ? 'h-7 sm:h-8' : 'h-8 sm:h-9')}
+            className={cn(compact ? 'h-7 sm:h-8 md:h-9' : 'h-8 sm:h-9')}
           />
         </Link>
 
-        {!compact && (
-          <nav className="hidden min-w-0 items-center justify-center gap-5 md:flex lg:gap-6">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  cn(
-                    'text-sm font-medium text-white/75 transition hover:text-white',
-                    isActive &&
-                      'text-white underline decoration-white/40 underline-offset-4',
-                  )
-                }
-              >
-                <StableI18nText i18nKey={`nav.${link.key}`} />
-              </NavLink>
-            ))}
-          </nav>
-        )}
+        <nav className="hidden min-w-0 items-center justify-center gap-5 md:flex lg:gap-6">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                cn(
+                  'text-sm font-medium text-white/75 transition hover:text-white',
+                  isActive &&
+                    'text-white underline decoration-white/40 underline-offset-4',
+                )
+              }
+            >
+              <StableI18nText i18nKey={`nav.${link.key}`} />
+            </NavLink>
+          ))}
+        </nav>
 
         <div
           className={cn(
@@ -110,34 +108,37 @@ export function SiteHeader({ compact = false }: SiteHeaderProps) {
             compact ? 'flex-1 md:col-start-3 md:justify-self-end' : 'md:justify-self-end',
           )}
         >
-          {!compact && (
-            <button
-              type="button"
-              className="hidden h-9 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white sm:inline-flex"
-              onClick={() => void i18n.changeLanguage(isNb ? 'en' : 'nb')}
-              aria-label={t('common.language')}
-              title={t('common.language')}
-            >
-              <FlagNorway
-                className={cn(
-                  'h-3.5 w-[1.2rem] rounded-[2px] ring-1 ring-white/25',
-                  isNb ? 'opacity-100' : 'opacity-40',
-                )}
-              />
-              <FlagUk
-                className={cn(
-                  'h-3.5 w-[1.2rem] rounded-[2px] ring-1 ring-white/25',
-                  !isNb ? 'opacity-100' : 'opacity-40',
-                )}
-              />
-            </button>
-          )}
+          <button
+            type="button"
+            className={cn(
+              'hidden h-9 shrink-0 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white',
+              compact ? 'md:inline-flex' : 'sm:inline-flex',
+            )}
+            onClick={() => void i18n.changeLanguage(isNb ? 'en' : 'nb')}
+            aria-label={t('common.language')}
+            title={t('common.language')}
+          >
+            <FlagNorway
+              className={cn(
+                'h-3.5 w-[1.2rem] rounded-[2px] ring-1 ring-white/25',
+                isNb ? 'opacity-100' : 'opacity-40',
+              )}
+            />
+            <FlagUk
+              className={cn(
+                'h-3.5 w-[1.2rem] rounded-[2px] ring-1 ring-white/25',
+                !isNb ? 'opacity-100' : 'opacity-40',
+              )}
+            />
+          </button>
 
-          {!compact && (
-            <Link
-              to="/handlekurv"
-              className="relative inline-flex h-9 min-w-[2.5rem] shrink-0 items-center justify-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-white/10 sm:min-w-[7.25rem] sm:px-3"
-            >
+          <Link
+            to="/handlekurv"
+            className={cn(
+              'relative inline-flex h-9 min-w-[2.5rem] shrink-0 items-center justify-center gap-2 rounded-md px-2 text-sm font-medium hover:bg-white/10 sm:min-w-[7.25rem] sm:px-3',
+              compact && 'hidden md:inline-flex',
+            )}
+          >
               <ShoppingCart className="h-5 w-5 shrink-0" />
               <span className="hidden sm:inline">
                 <StableI18nText i18nKey="nav.cart" />
@@ -148,7 +149,6 @@ export function SiteHeader({ compact = false }: SiteHeaderProps) {
                 </span>
               )}
             </Link>
-          )}
 
           <Button
             variant="ghost"

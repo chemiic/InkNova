@@ -243,3 +243,9 @@ export class HomepageSettingsDto {
   @IsString({ each: true })
   featuredProductIds!: string[];
 }
+
+export class NotifyShippedDto {
+  @IsOptional()
+  @IsString()
+  trackingNumber?: string;
+}
