@@ -324,7 +324,7 @@ export class AdminController {
     const safeName = file.fileName.replace(/[\r\n"]/g, '_');
     const mode = inline === '1' ? 'inline' : 'attachment';
     return new StreamableFile(createReadStream(file.absPath), {
-      type: 'application/pdf',
+      type: printFileContentType(file.fileName),
       disposition: `${mode}; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
     });
   }
@@ -454,4 +454,11 @@ function mimeExt(mime: string): string {
     default:
       return '.bin';
   }
+}
+
+function printFileContentType(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+  return 'application/pdf';
 }

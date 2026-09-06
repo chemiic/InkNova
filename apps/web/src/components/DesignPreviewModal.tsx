@@ -1,6 +1,11 @@
 import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import {
+  isImagePrintFile,
+  openPrintFileInNewTab,
+  withPrintMimeType,
+} from '@/lib/uploadPrintFile'
 
 type Props = {
   open: boolean
@@ -34,16 +39,18 @@ export function DesignPreviewModal({
   const { t } = useTranslation()
   const titleId = useId()
   const [url, setUrl] = useState<string | null>(null)
+  const isImage = isImagePrintFile(blob, fileName)
 
   useEffect(() => {
     if (!open || !blob) {
       setUrl(null)
       return
     }
-    const objectUrl = URL.createObjectURL(blob)
+    const typedBlob = withPrintMimeType(blob, fileName)
+    const objectUrl = URL.createObjectURL(typedBlob)
     setUrl(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
-  }, [open, blob])
+  }, [open, blob, fileName])
 
   useEffect(() => {
     if (!open) return
@@ -110,19 +117,35 @@ export function DesignPreviewModal({
             </div>
           )}
           {url && !loading && !error && (
-            <iframe
-              title={title ?? t('design.previewTitle')}
-              src={url}
-              className="h-full w-full border-0 bg-white"
-            />
+            isImage ? (
+              <img
+                alt={title ?? t('design.previewTitle')}
+                src={url}
+                className="h-full w-full border-0 bg-white object-contain"
+              />
+            ) : (
+              <iframe
+                title={title ?? t('design.previewTitle')}
+                src={url}
+                className="h-full w-full border-0 bg-white"
+              />
+            )
           )}
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3 sm:px-5">
-          {url && (
+          {url && blob && (
             <Button asChild variant="outline" size="sm">
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                {t('design.previewOpenTab')}
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault()
+                  openPrintFileInNewTab(blob, fileName)
+                }}
+              >
+                {t(isImage ? 'design.previewOpenImageTab' : 'design.previewOpenTab')}
               </a>
             </Button>
           )}

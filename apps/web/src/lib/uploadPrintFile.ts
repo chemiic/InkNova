@@ -1,14 +1,14 @@
-import { BLEED_MM, type SizeDimsMm } from '@inknova/shared'
-import { jsPDF } from 'jspdf'
+import type { SizeDimsMm } from '@inknova/shared'
 
-export const PRINT_UPLOAD_ACCEPT = 'application/pdf,image/png,.pdf,.png'
+export const PRINT_UPLOAD_ACCEPT =
+  'application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg'
 
 const MAX_BYTES = 40 * 1024 * 1024
 
 export type PrintUploadResult = {
   blob: Blob
   fileName: string
-  source: 'pdf' | 'png'
+  source: 'pdf' | 'png' | 'jpg'
 }
 
 function isPdf(file: File): boolean {
@@ -21,80 +21,83 @@ function isPng(file: File): boolean {
   return file.type === 'image/png' || name.endsWith('.png')
 }
 
-function loadImageFromFile(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file)
-    const img = new window.Image()
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      resolve(img)
-    }
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('png load failed'))
-    }
-    img.src = url
-  })
-}
-
-/** Wrap a PNG into a single-page PDF at product trim size + bleed. */
-async function pngToPrintPdf(
-  file: File,
-  dims: SizeDimsMm,
-): Promise<Blob> {
-  const img = await loadImageFromFile(file)
-  const pageWmm = dims.widthMm + BLEED_MM * 2
-  const pageHmm = dims.heightMm + BLEED_MM * 2
-  const orientation = pageWmm > pageHmm ? 'landscape' : 'portrait'
-
-  const pdf = new jsPDF({
-    orientation,
-    unit: 'mm',
-    format: [pageWmm, pageHmm],
-  })
-
-  // Cover the full print page (customer is responsible for bleed in the file).
-  const pageRatio = pageWmm / pageHmm
-  const imgRatio = img.naturalWidth / img.naturalHeight
-  let drawW = pageWmm
-  let drawH = pageHmm
-  let offsetX = 0
-  let offsetY = 0
-  if (imgRatio > pageRatio) {
-    drawH = pageHmm
-    drawW = pageHmm * imgRatio
-    offsetX = (pageWmm - drawW) / 2
-  } else {
-    drawW = pageWmm
-    drawH = pageWmm / imgRatio
-    offsetY = (pageHmm - drawH) / 2
-  }
-
-  const canvas = document.createElement('canvas')
-  canvas.width = img.naturalWidth
-  canvas.height = img.naturalHeight
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('canvas unavailable')
-  ctx.drawImage(img, 0, 0)
-  const dataUrl = canvas.toDataURL('image/png')
-
-  pdf.addImage(dataUrl, 'PNG', offsetX, offsetY, drawW, drawH)
-  return pdf.output('blob')
+function isJpg(file: File): boolean {
+  const name = file.name.toLowerCase()
+  return (
+    file.type === 'image/jpeg' ||
+    name.endsWith('.jpg') ||
+    name.endsWith('.jpeg')
+  )
 }
 
 function baseName(fileName: string): string {
   return fileName.replace(/\.[^.]+$/, '') || 'design'
 }
 
+function withExtension(fileName: string, ext: '.pdf' | '.png' | '.jpg'): string {
+  const lower = fileName.toLowerCase()
+  if (lower.endsWith(ext)) return fileName
+  return `${baseName(fileName)}${ext}`
+}
+
 /**
- * Accept a customer print file (PDF or PNG) and return a PDF blob for the cart.
- * PDF is stored as-is; PNG is wrapped into a page matching the selected size.
+ * Accept a customer print file (PDF, PNG, or JPG) and return it unchanged for the cart.
  */
+export function printFileMimeType(
+  blob: Blob | null,
+  fileName?: string | null,
+): string {
+  if (blob?.type && blob.type !== 'application/octet-stream') {
+    return blob.type
+  }
+  const lower = (fileName ?? '').toLowerCase()
+  if (lower.endsWith('.png')) return 'image/png'
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg'
+  return 'application/pdf'
+}
+
+export function isImagePrintFile(
+  blob: Blob | null,
+  fileName?: string | null,
+): boolean {
+  return printFileMimeType(blob, fileName).startsWith('image/')
+}
+
+export function withPrintMimeType(blob: Blob, fileName?: string | null): Blob {
+  const mime = printFileMimeType(blob, fileName)
+  if (blob.type === mime) return blob
+  return new Blob([blob], { type: mime })
+}
+
+/** Open a print file in a new tab. Creates a fresh object URL from the blob. */
+export function openPrintFileInNewTab(blob: Blob, fileName?: string | null): void {
+  const typed = withPrintMimeType(blob, fileName)
+  const url = URL.createObjectURL(typed)
+  const cleanup = () => {
+    window.setTimeout(() => URL.revokeObjectURL(url), 120_000)
+  }
+
+  const tab = window.open(url, '_blank', 'noopener,noreferrer')
+  if (tab) {
+    cleanup()
+    return
+  }
+
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.target = '_blank'
+  anchor.rel = 'noopener noreferrer'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  cleanup()
+}
+
 export async function normalizePrintUpload(
   file: File,
-  dims: SizeDimsMm,
-  productSlug: string,
-  sizeId: string,
+  _dims: SizeDimsMm,
+  _productSlug: string,
+  _sizeId: string,
 ): Promise<PrintUploadResult> {
   if (file.size <= 0 || file.size > MAX_BYTES) {
     throw new Error('invalid-size')
@@ -103,19 +106,24 @@ export async function normalizePrintUpload(
   if (isPdf(file)) {
     return {
       blob: file,
-      fileName: file.name.toLowerCase().endsWith('.pdf')
-        ? file.name
-        : `${baseName(file.name)}.pdf`,
+      fileName: withExtension(file.name, '.pdf'),
       source: 'pdf',
     }
   }
 
   if (isPng(file)) {
-    const blob = await pngToPrintPdf(file, dims)
     return {
-      blob,
-      fileName: `${productSlug}-${sizeId}.pdf`,
+      blob: file,
+      fileName: withExtension(file.name, '.png'),
       source: 'png',
+    }
+  }
+
+  if (isJpg(file)) {
+    return {
+      blob: file,
+      fileName: withExtension(file.name, '.jpg'),
+      source: 'jpg',
     }
   }
 

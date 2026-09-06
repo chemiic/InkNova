@@ -13,6 +13,7 @@ import {
   adminNotifyOrderShipped,
 } from '@/lib/adminApi'
 import { cn, formatNok } from '@/lib/utils'
+import { isImagePrintFile } from '@/lib/uploadPrintFile'
 import { statusLabel } from './AdminOrdersPage'
 
 function formatOrderDate(iso: string, lang: string) {
@@ -395,11 +396,19 @@ export function AdminOrderDetailPage() {
             <p className="mt-4 text-sm text-red-700">{previewError}</p>
           )}
           {previewUrl && !previewLoading && !previewError && (
-            <iframe
-              title={previewItem?.designFileName ?? t('admin.orders.previewTitle')}
-              src={previewUrl}
-              className="mt-4 h-[min(720px,70vh)] w-full rounded-md border border-line bg-white"
-            />
+            previewItem && isImagePrintFile(null, previewItem.designFileName) ? (
+              <img
+                alt={previewItem.designFileName}
+                src={previewUrl}
+                className="mt-4 h-[min(720px,70vh)] w-full rounded-md border border-line bg-white object-contain"
+              />
+            ) : (
+              <iframe
+                title={previewItem?.designFileName ?? t('admin.orders.previewTitle')}
+                src={previewUrl}
+                className="mt-4 h-[min(720px,70vh)] w-full rounded-md border border-line bg-white"
+              />
+            )
           )}
         </section>
       )}

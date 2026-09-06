@@ -74,9 +74,7 @@ export async function submitOrder(
   form.append('payload', JSON.stringify(payload))
   pdfFiles.forEach((blob, i) => {
     const name =
-      payload.items[i]?.designFileName?.endsWith('.pdf')
-        ? payload.items[i]!.designFileName
-        : `${payload.items[i]?.designFileName ?? `design-${i}`}.pdf`
+      payload.items[i]?.designFileName?.trim() || `design-${i}.pdf`
     form.append('files', blob, name)
   })
 

@@ -77,19 +77,18 @@ export class OrdersService {
     }
     if (!files || files.length !== dto.items.length) {
       throw new BadRequestException(
-        'Each line item needs exactly one PDF attachment',
+        'Each line item needs exactly one print file attachment',
       );
     }
 
     for (const file of files) {
       if (file.size <= 0 || file.size > MAX_FILE_BYTES) {
-        throw new BadRequestException('PDF file size invalid');
+        throw new BadRequestException('Print file size invalid');
       }
-      const isPdf =
-        file.mimetype === 'application/pdf' ||
-        file.originalname.toLowerCase().endsWith('.pdf');
-      if (!isPdf) {
-        throw new BadRequestException('Only PDF attachments are accepted');
+      if (!isAcceptedPrintFile(file)) {
+        throw new BadRequestException(
+          'Only PDF, PNG, and JPG attachments are accepted',
+        );
       }
     }
 
@@ -391,6 +390,7 @@ export class OrdersService {
     const contactEmail =
       this.config.get<string>('CONTACT_TO') || 'Kontakt@inknova.no';
     const { customer } = order;
+    const showPayment = this.vipps.isConfigured() && !this.vipps.isDryRun();
     const subject = `Ordrebekreftelse – ${formatOrderReference(order.reference)}`;
 
     const lines = [
@@ -399,8 +399,7 @@ export class OrdersService {
       'Takk for bestillingen! Vi har mottatt betalingen og begynner produksjonen av ordren din.',
       '',
       `Ordre: ${formatOrderReference(order.reference)}`,
-      `Betaling: ${order.paymentMethod}`,
-      '',
+      ...(showPayment ? [`Betaling: ${order.paymentMethod}`, ''] : []),
       'Leveringsadresse:',
       customer.addressLine1,
       customer.addressLine2 || '',
@@ -438,6 +437,7 @@ export class OrdersService {
           deliveryFee: order.deliveryFee,
           totalNok: order.totalNok,
           paymentMethod: order.paymentMethod,
+          showPayment,
           siteUrl,
           contactEmail,
         }),
@@ -515,11 +515,9 @@ export class OrdersService {
         attachments: order.items
           .filter((i) => i.pdf.length > 0)
           .map((i) => ({
-            filename: i.designFileName.endsWith('.pdf')
-              ? i.designFileName
-              : `${i.designFileName}.pdf`,
+            filename: printAttachmentFileName(i.designFileName),
             content: i.pdf,
-            contentType: 'application/pdf',
+            contentType: printFileContentType(i.designFileName),
           })),
       });
       this.patchOrder(order.reference, { copycatSent: true });
@@ -532,6 +530,40 @@ export class OrdersService {
 
 function sanitizeFileName(name: string): string {
   return name.replace(/[^\w.\-()+ ]+/g, '_').slice(0, 180) || 'design.pdf';
+}
+
+function isAcceptedPrintFile(file: Express.Multer.File): boolean {
+  const name = file.originalname.toLowerCase();
+  const mime = file.mimetype.toLowerCase();
+  return (
+    mime === 'application/pdf' ||
+    name.endsWith('.pdf') ||
+    mime === 'image/png' ||
+    name.endsWith('.png') ||
+    mime === 'image/jpeg' ||
+    name.endsWith('.jpg') ||
+    name.endsWith('.jpeg')
+  );
+}
+
+function printFileContentType(fileName: string): string {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+  return 'application/pdf';
+}
+
+function printAttachmentFileName(designFileName: string): string {
+  const lower = designFileName.toLowerCase();
+  if (
+    lower.endsWith('.pdf') ||
+    lower.endsWith('.png') ||
+    lower.endsWith('.jpg') ||
+    lower.endsWith('.jpeg')
+  ) {
+    return designFileName;
+  }
+  return `${designFileName}.pdf`;
 }
 
 function orderSummarySubject(order: StoredOrder): string {

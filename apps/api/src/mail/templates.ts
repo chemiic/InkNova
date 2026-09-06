@@ -112,7 +112,7 @@ export function orderEmailHtml(input: {
       ['Frakt', formatNok(input.deliveryFee)],
       ['Totalt', formatNok(input.totalNok), true],
     ]),
-    `<p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b6560;">PDF-filer ligger vedlagt.</p>`,
+    `<p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b6560;">Trykkfiler ligger vedlagt.</p>`,
   ].join('');
 
   return wrapEmail({
@@ -153,6 +153,8 @@ export function orderConfirmationEmailHtml(input: {
   deliveryFee: number;
   totalNok: number;
   paymentMethod: PaymentMethod;
+  /** When false, hides the payment method row (e.g. before live Vipps). */
+  showPayment?: boolean;
   siteUrl?: string;
   contactEmail?: string;
 }): string {
@@ -172,15 +174,22 @@ export function orderConfirmationEmailHtml(input: {
   ]);
 
   const contact = escapeHtml(input.contactEmail ?? 'Kontakt@inknova.no');
+  const showPayment = input.showPayment !== false;
+  const orderRows: Array<[string, string]> = [
+    ['Referanse', `<strong>${escapeHtml(formatOrderReference(input.reference))}</strong>`],
+  ];
+  if (showPayment) {
+    orderRows.push([
+      'Betaling',
+      escapeHtml(PAYMENT_LABEL[input.paymentMethod] ?? input.paymentMethod),
+    ]);
+  }
 
   const bodyHtml = [
     `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Hei ${escapeHtml(input.customerName)},</p>`,
     `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Takk for bestillingen! Vi har mottatt betalingen og begynner produksjonen av ordren din.</p>`,
     sectionTitle('Ordre'),
-    kvTable([
-      ['Referanse', `<strong>${escapeHtml(formatOrderReference(input.reference))}</strong>`],
-      ['Betaling', escapeHtml(PAYMENT_LABEL[input.paymentMethod] ?? input.paymentMethod)],
-    ]),
+    kvTable(orderRows),
     sectionTitle('Leveringsadresse'),
     kvTable([['Adresse', address]]),
     sectionTitle('Varer'),
@@ -220,6 +229,7 @@ export function previewOrderConfirmationEmailHtml(siteUrl?: string): string {
     deliveryFee: 99,
     totalNok: 1488,
     paymentMethod: 'vipps',
+    showPayment: false,
     siteUrl,
   });
 }
