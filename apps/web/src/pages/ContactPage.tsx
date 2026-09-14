@@ -47,7 +47,7 @@ export function ContactPage() {
       </h1>
       <p className="mt-4 text-ink-muted">{t('contact.info')}</p>
       <p className="mt-2 text-sm text-ink-muted">
-        {t('contact.org')}: 832028452 ·{' '}
+        {t('contact.legalLine')} ·{' '}
         <a className="text-ink hover:underline" href="mailto:Kontakt@inknova.no">
           Kontakt@inknova.no
         </a>

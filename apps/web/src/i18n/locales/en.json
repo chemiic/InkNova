@@ -309,6 +309,7 @@
     "error": "Something went wrong. Please try again later.",
     "errorConsent": "You must accept the privacy policy to send the form.",
     "org": "Org. no.",
+    "legalLine": "Nordlie Invest · Org. no. 938295484",
     "info": "Questions about products, files or delivery? Send us a message.",
     "privacyConsent": "I agree that InkNova processes my contact details to answer this enquiry. See the <privacy>privacy policy</privacy>."
   },
@@ -435,10 +436,10 @@
     "updated": "Last updated: August 2026",
     "seller": {
       "title": "Seller",
-      "p1": "The contract is with InkNova.",
+      "p1": "The contract is with Nordlie Invest.",
       "list": [
-        "InkNova",
-        "Org. no. 832028452",
+        "Nordlie Invest",
+        "Org. no. 938295484",
         "Email: Kontakt@inknova.no",
         "Norway"
       ]
@@ -493,10 +494,10 @@
     "updated": "Last updated: August 2026",
     "controller": {
       "title": "Controller",
-      "p1": "InkNova is the controller for personal data we collect via the website.",
+      "p1": "Nordlie Invest is the controller for personal data we collect via the website.",
       "list": [
-        "InkNova",
-        "Org. no. 832028452",
+        "Nordlie Invest",
+        "Org. no. 938295484",
         "Email: Kontakt@inknova.no",
         "Norway"
       ]

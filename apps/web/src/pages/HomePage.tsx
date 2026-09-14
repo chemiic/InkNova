@@ -40,10 +40,12 @@ export function HomePage() {
         <HeroTiles trackRef={heroRef} />
         <div className="relative z-10 mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-center justify-center gap-6 px-4 py-16 text-center sm:min-h-[70dvh] sm:gap-8 sm:py-20 md:min-h-[75dvh]">
           <Logo color="#fff" layout="stack" className="mx-auto" />
-          <h1 className="max-w-2xl text-2xl font-medium leading-snug text-white/90 md:text-3xl">
+          <h1 className="max-w-2xl whitespace-pre-line text-2xl font-medium leading-snug text-white/90 md:text-3xl">
             {t('home.headline')}
           </h1>
-          <p className="max-w-xl text-base text-white/65 md:text-lg">{t('home.sub')}</p>
+          {t('home.sub') ? (
+            <p className="max-w-xl text-base text-white/70 md:text-lg">{t('home.sub')}</p>
+          ) : null}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button
               asChild

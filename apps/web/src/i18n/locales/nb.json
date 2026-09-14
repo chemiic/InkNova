@@ -17,8 +17,8 @@
   "announcement": "Velkommen til InkNova – kvalitetstrykk levert i hele Norge",
   "home": {
     "brand": "InkNova",
-    "headline": "Trykk som ser skarpt ut – og føles enkelt",
-    "sub": "Flyers, visittkort, plakater og program. Velg størrelse, design selv, få levert i posten.",
+    "headline": "Din kreativitet. Vårt trykk.\nDesign direkte på nett hos InkNova.",
+    "sub": "Bytt ut alt det med heller din kreativitet, vårt trykk. Trykksaker gjort enkelt.",
     "ctaProducts": "Se alle produkter",
     "ctaContact": "Kontakt oss",
     "featured": "Populære produkter"
@@ -309,6 +309,7 @@
     "error": "Noe gikk galt. Prøv igjen senere.",
     "errorConsent": "Du må godta personvernerklæringen for å sende skjemaet.",
     "org": "Org. nr.",
+    "legalLine": "Nordlie Invest · Org. nr. 938295484",
     "info": "Spørsmål om produkter, filer eller levering? Send oss en melding.",
     "privacyConsent": "Jeg godtar at InkNova behandler kontaktopplysningene mine for å svare på henvendelsen. Se <privacy>personvernerklæringen</privacy>."
   },
@@ -435,10 +436,10 @@
     "updated": "Sist oppdatert: august 2026",
     "seller": {
       "title": "Selger",
-      "p1": "Avtalen inngås med InkNova.",
+      "p1": "Avtalen inngås med Nordlie Invest.",
       "list": [
-        "InkNova",
-        "Org.nr. 832028452",
+        "Nordlie Invest",
+        "Org.nr. 938295484",
         "E-post: Kontakt@inknova.no",
         "Norge"
       ]
@@ -493,10 +494,10 @@
     "updated": "Sist oppdatert: august 2026",
     "controller": {
       "title": "Behandlingsansvarlig",
-      "p1": "InkNova er behandlingsansvarlig for personopplysningene vi samler inn via nettstedet.",
+      "p1": "Nordlie Invest er behandlingsansvarlig for personopplysningene vi samler inn via nettstedet.",
       "list": [
-        "InkNova",
-        "Org.nr. 832028452",
+        "Nordlie Invest",
+        "Org.nr. 938295484",
         "E-post: Kontakt@inknova.no",
         "Norge"
       ]

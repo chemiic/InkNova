@@ -64,9 +64,7 @@ export function SiteFooter() {
               Kontakt@inknova.no
             </a>
           </p>
-          <p>
-            {t('contact.org')}: 832028452
-          </p>
+          <p>{t('contact.legalLine')}</p>
           <div className="flex flex-wrap justify-center gap-3 pt-4 sm:justify-start">
             {socials.map(({ href, label, Icon }) => (
               <a

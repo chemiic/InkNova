@@ -87,7 +87,7 @@ flowchart LR
 
 **Дизайн/страницы (ориентир trykk24 + IKEA PDP)**
 
-- Shell: announcement bar, header (лого, корзина, meny), footer (ссылки, org nr `832028452`, email, соцсети).
+- Shell: announcement bar, header (лого, корзина, meny), footer (ссылки, Nordlie Invest / org nr `938295484`, email, соцсети).
 - **Hjem:** лаконичная главная в духе trykk24 (герой + сетка категорий/товаров).
 - **Alle produkter:** поиск + фильтр категорий + grid карточек («Sjekk pris»).
 - **Produkt:** 2 колонки — галерея | название, цена, **карточки размеров как IKEA**, кол-во, срок доставки (placeholder), CTA. В фазе A CTA сразу «Legg i handlekurv» (без дизайна). В фазе C перед add — шаг дизайна/upload.
