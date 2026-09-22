@@ -17,7 +17,14 @@ import { OrdersModule } from './orders/orders.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [join(__dirname, '..', '.env'), '.env'],
+      // apps/api/.env wins when a key exists in both files.
+      // Repo-root .env fills in keys that are only kept there (Vipps).
+      envFilePath: [
+        join(__dirname, '..', '.env'),
+        join(process.cwd(), '.env'),
+        join(__dirname, '..', '..', '..', '.env'),
+        join(process.cwd(), '..', '..', '.env'),
+      ],
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     DatabaseModule,
