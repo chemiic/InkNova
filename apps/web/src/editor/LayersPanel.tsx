@@ -1,4 +1,4 @@
-import { ImageIcon, Type } from 'lucide-react'
+import { ImageIcon, Trash2, Type } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { DesignElement } from './types'
@@ -12,6 +12,7 @@ type Props = {
    * Pass ids in that same order (index 0 = bottom of stack).
    */
   onReorder: (orderedIdsBackToFront: string[]) => void
+  onRemove: (id: string) => void
 }
 
 function layerLabel(el: DesignElement, t: (k: string) => string): string {
@@ -27,6 +28,7 @@ export function LayersPanel({
   selectedId,
   onSelect,
   onReorder,
+  onRemove,
 }: Props) {
   const { t } = useTranslation()
   const [dragId, setDragId] = useState<string | null>(null)
@@ -59,7 +61,24 @@ export function LayersPanel({
             const selected = selectedId === el.id
             const dragging = dragId === el.id
             return (
-              <li key={el.id}>
+              <li
+                key={el.id}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  const fromId = e.dataTransfer.getData('text/plain') || dragId
+                  if (fromId) move(fromId, el.id)
+                  setDragId(null)
+                }}
+                className={`flex items-center rounded-md border pr-0.5 transition ${
+                  selected
+                    ? 'border-accent bg-accent/10 font-medium'
+                    : 'border-transparent hover:border-line hover:bg-paper'
+                } ${dragging ? 'opacity-50' : ''}`}
+              >
                 <button
                   type="button"
                   draggable
@@ -69,22 +88,8 @@ export function LayersPanel({
                     e.dataTransfer.setData('text/plain', el.id)
                   }}
                   onDragEnd={() => setDragId(null)}
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    e.dataTransfer.dropEffect = 'move'
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    const fromId = e.dataTransfer.getData('text/plain') || dragId
-                    if (fromId) move(fromId, el.id)
-                    setDragId(null)
-                  }}
                   onClick={() => onSelect(el.id)}
-                  className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-sm transition ${
-                    selected
-                      ? 'border-accent bg-accent/10 font-medium'
-                      : 'border-transparent hover:border-line hover:bg-paper'
-                  } ${dragging ? 'opacity-50' : ''}`}
+                  className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm"
                 >
                   {el.type === 'text' ? (
                     <Type className="size-3.5 shrink-0 text-ink-muted" />
@@ -92,6 +97,19 @@ export function LayersPanel({
                     <ImageIcon className="size-3.5 shrink-0 text-ink-muted" />
                   )}
                   <span className="min-w-0 flex-1 truncate">{layerLabel(el, t)}</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={t('design.delete')}
+                  title={t('design.delete')}
+                  className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-ink hover:bg-paper"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRemove(el.id)
+                  }}
+                >
+                  <Trash2 className="size-3.5" />
                 </button>
               </li>
             )

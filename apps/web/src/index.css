@@ -167,6 +167,14 @@
   background: transparent;
 }
 
+/* Editor gradient sliders — native drag, ink-colored thumb and fill */
+.editor-range {
+  accent-color: #0a0a0a;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
 @keyframes accordion-down {
   from {
     height: 0;

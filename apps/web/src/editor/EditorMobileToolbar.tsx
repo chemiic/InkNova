@@ -179,7 +179,7 @@ export function EditorMobileToolbar({
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 w-9 shrink-0 p-0 text-warm"
+              className="h-9 w-9 shrink-0 border-ink p-0 text-ink hover:bg-ink hover:text-white"
               onClick={() => onRemoveElement(selected.id)}
               aria-label={t('design.delete')}
             >
@@ -204,7 +204,7 @@ export function EditorMobileToolbar({
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 w-9 shrink-0 p-0 text-warm"
+              className="h-9 w-9 shrink-0 border-ink p-0 text-ink hover:bg-ink hover:text-white"
               onClick={() => onRemoveElement(selected.id)}
               aria-label={t('design.delete')}
             >

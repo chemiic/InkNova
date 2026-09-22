@@ -32,9 +32,9 @@ export function normalizeGradient(
       angle: gradient.angle ?? 180,
       centerX: gradient.centerX ?? 50,
       centerY: gradient.centerY ?? 50,
-      stops: [...gradient.stops]
-        .sort((a, b) => a.position - b.position)
-        .slice(0, MAX_GRADIENT_STOPS),
+      // Keep array order stable. Sorting here would swap which slider a
+      // drag is bound to as soon as one stop passes another.
+      stops: gradient.stops.slice(0, MAX_GRADIENT_STOPS),
     }
   }
 

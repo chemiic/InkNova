@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { Trash2 } from 'lucide-react'
+import { useRef, type ComponentProps, type PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +24,54 @@ import type {
   TextElement,
 } from './types'
 import { uid } from './types'
+
+function setRangeValue(el: HTMLInputElement, value: string) {
+  const setter = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    'value',
+  )?.set
+  setter?.call(el, value)
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+}
+
+/** Native range drag is cancelled inside the scrollable sidebar, so track the pointer ourselves. */
+function RangeField({ className, onPointerDown, ...props }: ComponentProps<'input'>) {
+  function handlePointerDown(e: PointerEvent<HTMLInputElement>) {
+    onPointerDown?.(e)
+    if (e.button !== 0 || e.defaultPrevented) return
+    e.preventDefault()
+    const el = e.currentTarget
+    el.focus()
+    const update = (clientX: number) => {
+      const rect = el.getBoundingClientRect()
+      const min = Number(el.min || 0)
+      const max = Number(el.max || 100)
+      const thumb = 16
+      const span = Math.max(1, rect.width - thumb)
+      const ratio = Math.min(1, Math.max(0, (clientX - rect.left - thumb / 2) / span))
+      setRangeValue(el, String(Math.round(min + ratio * (max - min))))
+    }
+    update(e.clientX)
+    const move = (ev: globalThis.PointerEvent) => update(ev.clientX)
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+  }
+
+  return (
+    <input
+      {...props}
+      type="range"
+      onPointerDown={handlePointerDown}
+      className={`editor-range h-5 w-full cursor-pointer bg-transparent ${className ?? ''}`}
+    />
+  )
+}
 
 type Props = {
   productSlug: string
@@ -333,7 +382,7 @@ export function EditorSidebar({
               </div>
               {gradient.stops.map((stop, index) => (
                 <div
-                  key={`${index}-${stop.position}`}
+                  key={index}
                   className="rounded-md border border-line p-2"
                 >
                   <div className="mb-2 flex items-center justify-between gap-2">
@@ -383,9 +432,8 @@ export function EditorSidebar({
                       >
                         {t('design.gradientPosition', { pos: stop.position })}
                       </Label>
-                      <Input
+                      <RangeField
                         id={`grad-stop-pos-${index}`}
-                        type="range"
                         min={0}
                         max={100}
                         value={stop.position}
@@ -396,7 +444,7 @@ export function EditorSidebar({
                             }),
                           )
                         }
-                        className="mt-2 w-full"
+                        className="mt-2"
                       />
                     </div>
                   </div>
@@ -411,16 +459,15 @@ export function EditorSidebar({
                     angle: gradient.angle ?? 180,
                   })}
                 </Label>
-                <Input
+                <RangeField
                   id="grad-angle"
-                  type="range"
                   min={0}
                   max={360}
                   value={gradient.angle ?? 180}
                   onChange={(e) =>
                     patchGradient({ angle: Number(e.target.value) })
                   }
-                  className="mt-1 w-full"
+                  className="mt-1"
                 />
               </div>
             )}
@@ -432,16 +479,15 @@ export function EditorSidebar({
                     pos: gradient.centerX ?? 50,
                   })}
                 </Label>
-                <Input
+                <RangeField
                   id="grad-center-x"
-                  type="range"
                   min={0}
                   max={100}
                   value={gradient.centerX ?? 50}
                   onChange={(e) =>
                     patchGradient({ centerX: Number(e.target.value) })
                   }
-                  className="mt-1 w-full"
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -450,16 +496,15 @@ export function EditorSidebar({
                     pos: gradient.centerY ?? 50,
                   })}
                 </Label>
-                <Input
+                <RangeField
                   id="grad-center-y"
-                  type="range"
                   min={0}
                   max={100}
                   value={gradient.centerY ?? 50}
                   onChange={(e) =>
                     patchGradient({ centerY: Number(e.target.value) })
                   }
-                  className="mt-1 w-full"
+                  className="mt-1"
                 />
               </div>
             </div>
@@ -526,6 +571,7 @@ export function EditorSidebar({
         selectedId={selectedId}
         onSelect={onSelect}
         onReorder={onReorderElements}
+        onRemove={onRemoveElement}
       />
 
       {selected?.type === 'text' && (
@@ -609,9 +655,10 @@ export function EditorSidebar({
             type="button"
             size="sm"
             variant="outline"
-            className="hidden text-warm lg:inline-flex"
+            className="hidden w-full border-ink text-ink hover:bg-ink hover:text-white lg:inline-flex"
             onClick={() => onRemoveElement(selected.id)}
           >
+            <Trash2 className="size-3.5" />
             {t('design.delete')}
           </Button>
         </div>
@@ -656,9 +703,10 @@ export function EditorSidebar({
               type="button"
               size="sm"
               variant="outline"
-              className="hidden w-full text-warm lg:flex"
+              className="hidden w-full border-ink text-ink hover:bg-ink hover:text-white lg:flex"
               onClick={() => onRemoveElement(selected.id)}
             >
+              <Trash2 className="size-3.5" />
               {t('design.delete')}
             </Button>
           </div>
