@@ -11,6 +11,28 @@ import {
 } from './sqlite-catalog-pricing.store';
 import { CatalogPricingStore } from './catalog-pricing.store';
 
+/** Storefront order. Unknown products sort after these, by name. */
+const STOREFRONT_ORDER = [
+  'visittkort',
+  'flyers',
+  'plakater',
+  '4-sider',
+  'rollup',
+  'klistremerker',
+  'arbeidstegninger',
+  'arbeidstegninger-farge',
+  'magasin',
+];
+
+function compareStorefront(a: Product, b: Product): number {
+  const ai = STOREFRONT_ORDER.indexOf(a.id);
+  const bi = STOREFRONT_ORDER.indexOf(b.id);
+  const ao = ai === -1 ? STOREFRONT_ORDER.length : ai;
+  const bo = bi === -1 ? STOREFRONT_ORDER.length : bi;
+  if (ao !== bo) return ao - bo;
+  return a.name.localeCompare(b.name, 'nb');
+}
+
 @Injectable()
 export class CatalogService {
   constructor(
@@ -22,14 +44,14 @@ export class CatalogService {
   /** Public storefront: only visible products. */
   async list(): Promise<Product[]> {
     const all = await this.store.findAll();
-    return all.filter(isProductVisible);
+    return all.filter(isProductVisible).sort(compareStorefront);
   }
 
   /** Homepage "Popular products" — admin-curated order, fallback to first 6 visible. */
   async listFeatured(): Promise<Product[]> {
     const settings = this.db.getHomepageSettings();
     const all = await this.store.findAll();
-    const visible = all.filter(isProductVisible);
+    const visible = all.filter(isProductVisible).sort(compareStorefront);
     const byId = new Map(all.map((p) => [p.id, p]));
 
     const featured: Product[] = [];

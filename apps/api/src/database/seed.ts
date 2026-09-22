@@ -7,7 +7,7 @@ import type { DatabaseService } from './database.service';
 const logger = new Logger('DatabaseSeed');
 
 /** Bump to re-apply catalog.json prices/images onto an existing DB. */
-export const CATALOG_PRICING_VERSION = 'priser-2026-09-03';
+export const CATALOG_PRICING_VERSION = 'katalog-2026-09-22b';
 
 const ARTICLE_SEED: Omit<Article, 'createdAt' | 'updatedAt'>[] = [
   {
@@ -179,8 +179,8 @@ function upsertCatalogProduct(
     leadTime: product.leadTime,
     imageUrl: images[0] ?? product.imageUrl,
     images,
-    // Preserve storefront visibility and per-product delivery overrides
-    hidden: existing.hidden,
+    // Catalog can force-hide a product. Admin hides stay until catalog unhides.
+    hidden: product.hidden === true ? true : existing.hidden,
     delivery: existing.delivery,
   });
 }
