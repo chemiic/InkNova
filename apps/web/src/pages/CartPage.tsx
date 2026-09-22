@@ -8,7 +8,20 @@ import { fetchDeliverySettings, fetchProducts } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
 import { getDesignPdf } from '@/lib/designStore'
-import { formatNok } from '@/lib/utils'
+import { cn, formatNok } from '@/lib/utils'
+
+function readQty(raw: string, minQty: number, maxQty?: number) {
+  const trimmed = raw.trim()
+  const isInt = /^\d+$/.test(trimmed)
+  const n = isInt ? Number(trimmed) : null
+  const cap = maxQty ?? 9999
+  return {
+    n,
+    below: n == null || n < minQty,
+    above: n != null && n > cap,
+    valid: n != null && n >= minQty && n <= cap,
+  }
+}
 
 export function CartPage() {
   const { t } = useTranslation()
@@ -83,17 +96,33 @@ export function CartPage() {
     setPreviewError(null)
   }
 
-  function commitQty(itemId: string, minQty: number, raw: string) {
-    const n = Number(raw)
-    const next =
-      Number.isFinite(n) && n >= 1 ? Math.max(minQty, Math.floor(n)) : minQty
-    updateQty(itemId, next)
+  function onQtyChange(itemId: string, minQty: number, maxQty: number | undefined, raw: string) {
+    setDraftQty((prev) => ({ ...prev, [itemId]: raw }))
+    const parsed = readQty(raw, minQty, maxQty)
+    if (parsed.valid && parsed.n != null) updateQty(itemId, parsed.n)
+  }
+
+  function onQtyBlur(
+    itemId: string,
+    minQty: number,
+    maxQty: number | undefined,
+    raw: string,
+  ) {
+    const parsed = readQty(raw, minQty, maxQty)
+    if (!parsed.valid || parsed.n == null) return
+    updateQty(itemId, parsed.n)
     setDraftQty((prev) => {
       const nextDraft = { ...prev }
       delete nextDraft[itemId]
       return nextDraft
     })
   }
+
+  const qtyAllValid = items.every((item) => {
+    const minQty = item.minQuantity && item.minQuantity > 1 ? item.minQuantity : 1
+    const raw = draftQty[item.id] ?? String(item.qty)
+    return readQty(raw, minQty, item.maxQuantity).valid
+  })
 
   if (items.length === 0) {
     return (
@@ -116,9 +145,8 @@ export function CartPage() {
           {items.map((item) => {
             const minQty =
               item.minQuantity && item.minQuantity > 1 ? item.minQuantity : 1
-            const maxQty = item.maxQuantity ?? 9999
-            const step =
-              item.quantityStep && item.quantityStep > 1 ? item.quantityStep : 1
+            const rawQty = draftQty[item.id] ?? String(item.qty)
+            const qtyState = readQty(rawQty, minQty, item.maxQuantity)
             return (
               <li
                 key={item.id}
@@ -159,24 +187,38 @@ export function CartPage() {
                     </label>
                     <input
                       id={`qty-${item.id}`}
-                      type="number"
-                      min={minQty}
-                      max={maxQty}
-                      step={step}
-                      value={draftQty[item.id] ?? String(item.qty)}
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      aria-invalid={!qtyState.valid}
+                      value={rawQty}
                       onChange={(e) =>
-                        setDraftQty((prev) => ({
-                          ...prev,
-                          [item.id]: e.target.value,
-                        }))
+                        onQtyChange(
+                          item.id,
+                          minQty,
+                          item.maxQuantity,
+                          e.target.value,
+                        )
                       }
-                      onBlur={(e) => commitQty(item.id, minQty, e.target.value)}
+                      onBlur={(e) =>
+                        onQtyBlur(
+                          item.id,
+                          minQty,
+                          item.maxQuantity,
+                          e.target.value,
+                        )
+                      }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.currentTarget.blur()
                         }
                       }}
-                      className="h-10 w-16 rounded-md border border-line bg-paper-card px-2 text-center text-sm"
+                      className={cn(
+                        'h-10 w-16 rounded-md border bg-paper-card px-2 text-center text-sm transition-colors duration-300 ease-out',
+                        qtyState.valid
+                          ? 'border-line text-ink'
+                          : 'border-red-600 bg-red-50 text-red-800',
+                      )}
                     />
                     <button
                       type="button"
@@ -187,8 +229,23 @@ export function CartPage() {
                     </button>
                   </div>
                   {minQty > 1 && (
-                    <p className="text-xs text-ink-muted">
+                    <p
+                      className={cn(
+                        'text-xs transition-colors duration-300 ease-out',
+                        qtyState.below ? 'text-red-700' : 'text-ink-muted',
+                      )}
+                    >
                       {t('product.minOrder', { count: minQty })}
+                    </p>
+                  )}
+                  {item.maxQuantity != null && (
+                    <p
+                      className={cn(
+                        'text-xs transition-colors duration-300 ease-out',
+                        qtyState.above ? 'text-red-700' : 'text-ink-muted',
+                      )}
+                    >
+                      {t('product.maxOrder', { count: item.maxQuantity })}
                     </p>
                   )}
                 </div>
@@ -216,9 +273,15 @@ export function CartPage() {
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link to="/kasse">{t('cart.checkout')}</Link>
-            </Button>
+            {qtyAllValid ? (
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link to="/kasse">{t('cart.checkout')}</Link>
+              </Button>
+            ) : (
+              <Button size="lg" className="w-full sm:w-auto" disabled>
+                {t('cart.checkout')}
+              </Button>
+            )}
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
               <Link to="/produkter">{t('cart.continue')}</Link>
             </Button>

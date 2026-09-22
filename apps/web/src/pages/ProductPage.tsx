@@ -1,21 +1,23 @@
 import {
-  clampQuantity,
   customSizeMinCm,
   effectiveMinQuantity,
-  quoteLine,
   productGallery,
+  quoteLine,
+  startingPrice,
   type Product,
   type SizeOption,
 } from '@inknova/shared'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchProduct } from '@/lib/api'
 import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
+import { absoluteUrl, metaDescription } from '@/lib/site'
 import { cn, formatNok } from '@/lib/utils'
 
 export function ProductPage() {
@@ -29,7 +31,7 @@ export function ProductPage() {
   const [sizeId, setSizeId] = useState<string | null>(null)
   const [customWidthCm, setCustomWidthCm] = useState('')
   const [customHeightCm, setCustomHeightCm] = useState('')
-  const [qty, setQty] = useState(1)
+  const [qtyText, setQtyText] = useState('1')
   const [doubleSided, setDoubleSided] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
 
@@ -42,7 +44,7 @@ export function ProductPage() {
         if (cancelled) return
         setProduct(data)
         setSizeId(data.sizes[0]?.id ?? (data.customSize ? 'custom' : null))
-        setQty(effectiveMinQuantity(data.minQuantity))
+        setQtyText(String(effectiveMinQuantity(data.minQuantity)))
         setDoubleSided(false)
         setActiveImage(0)
         if (data.customSize) {
@@ -99,13 +101,22 @@ export function ProductPage() {
     return product.sizes.find((s) => s.id === sizeId) ?? null
   }, [product, sizeId, customDims, t])
 
+  const minQty = effectiveMinQuantity(product?.minQuantity)
+  const maxQty = product?.maxQuantity ?? 9999
+  const qtyTrimmed = qtyText.trim()
+  const qtyIsInt = /^\d+$/.test(qtyTrimmed)
+  const qtyNumber = qtyIsInt ? Number(qtyTrimmed) : null
+  const qtyBelowMin = qtyNumber == null || qtyNumber < minQty
+  const qtyAboveMax = qtyNumber != null && qtyNumber > maxQty
+  const qtyValid = qtyNumber != null && !qtyBelowMin && !qtyAboveMax
+
   const quote = useMemo(() => {
-    if (!product || !selectedSize) return null
+    if (!product || !selectedSize || !qtyValid || qtyNumber == null) return null
     if (selectedSize.id === 'custom' && !customDims) return null
     try {
       return quoteLine(product, {
         sizeId: selectedSize.id,
-        qty,
+        qty: qtyNumber,
         widthCm: customDims?.width,
         heightCm: customDims?.height,
         doubleSided,
@@ -113,11 +124,19 @@ export function ProductPage() {
     } catch {
       return null
     }
-  }, [product, selectedSize, qty, customDims, doubleSided])
+  }, [
+    product,
+    selectedSize,
+    qtyValid,
+    qtyNumber,
+    customDims,
+    doubleSided,
+  ])
 
   const canContinue =
     selectedSize != null &&
     quote != null &&
+    qtyValid &&
     (sizeId !== 'custom' || customDims != null)
 
   function clampCustomDim(
@@ -142,16 +161,6 @@ export function ProductPage() {
     setter(raw)
   }
 
-  function setQtySafe(raw: number) {
-    if (!product) return
-    setQty(
-      clampQuantity(product.minQuantity, raw, {
-        maxQuantity: product.maxQuantity,
-        quantityStep: product.quantityStep,
-      }),
-    )
-  }
-
   function handleContinue(mode?: 'upload') {
     if (!product || !selectedSize || !canContinue || !quote) return
     const params = new URLSearchParams({
@@ -172,6 +181,11 @@ export function ProductPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-ink-muted">
+        <Seo
+          title={t('seo.products.title')}
+          description={t('seo.products.description')}
+          path={`/produkter/${slug}`}
+        />
         {t('common.loading')}
       </div>
     )
@@ -180,6 +194,12 @@ export function ProductPage() {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16">
+        <Seo
+          title={t('seo.notFound.title')}
+          description={t('seo.notFound.description')}
+          path={`/produkter/${slug}`}
+          noindex
+        />
         <p className="text-ink-muted">{t('common.error')}</p>
         <Link to="/produkter" className="mt-4 inline-block text-ink underline">
           {t('common.back')}
@@ -190,10 +210,66 @@ export function ProductPage() {
 
   const copy = catalogCopy(product, t)
   const gallery = productGallery(product)
+  const productPath = `/produkter/${product.slug}`
+  let fromPrice = 0
+  try {
+    fromPrice = startingPrice(product)
+  } catch {
+    fromPrice = 0
+  }
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Product',
+        name: copy.name,
+        description: copy.description,
+        image: gallery.length
+          ? gallery.map((url) => absoluteUrl(url))
+          : undefined,
+        brand: { '@type': 'Brand', name: 'InkNova' },
+        url: absoluteUrl(productPath),
+        ...(fromPrice > 0
+          ? {
+              offers: {
+                '@type': 'Offer',
+                priceCurrency: 'NOK',
+                price: String(fromPrice),
+                availability: 'https://schema.org/InStock',
+                url: absoluteUrl(productPath),
+              },
+            }
+          : {}),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('nav.home'),
+            item: absoluteUrl('/'),
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('nav.products'),
+            item: absoluteUrl('/produkter'),
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: copy.name,
+            item: absoluteUrl(productPath),
+          },
+        ],
+      },
+    ],
+  }
+  const ogImage = gallery.find((url) =>
+    /\.(jpe?g|jfif|png|webp|gif)(\?|$)/i.test(url),
+  )
   const mainImage = gallery[activeImage] ?? gallery[0] ?? product.imageUrl
-  const minQty = effectiveMinQuantity(product.minQuantity)
-  const maxQty = product.maxQuantity ?? 9999
-  const step = product.quantityStep && product.quantityStep > 1 ? product.quantityStep : 1
   const packTiers =
     product.pricingMode === 'pack'
       ? (product.tiers ?? selectedSize?.tiers ?? [])
@@ -206,7 +282,7 @@ export function ProductPage() {
     try {
       return quoteLine(product!, {
         sizeId: size.id,
-        qty,
+        qty: qtyValid && qtyNumber != null ? qtyNumber : minQty,
         doubleSided,
       }).lineTotal
     } catch {
@@ -216,12 +292,19 @@ export function ProductPage() {
 
   return (
     <div className="relative pb-above-sticky-bar lg:pb-12">
+      <Seo
+        title={copy.name}
+        description={metaDescription(copy.description)}
+        path={productPath}
+        image={ogImage}
+        jsonLd={productJsonLd}
+      />
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-2">
       <div>
         <div className="flex items-center justify-center rounded-lg bg-[#eceae6] p-6 sm:p-10">
           <img
             src={assetUrl(mainImage)}
-            alt=""
+            alt={copy.name}
             className="max-h-64 w-full object-contain sm:max-h-80"
           />
         </div>
@@ -231,6 +314,7 @@ export function ProductPage() {
               <button
                 key={`${url}-${index}`}
                 type="button"
+                aria-label={`${copy.name} ${index + 1}`}
                 onClick={() => setActiveImage(index)}
                 className={cn(
                   'border bg-[#eceae6] p-1 transition',
@@ -323,7 +407,7 @@ export function ProductPage() {
                     {formatNok(
                       quoteLine(product, {
                         sizeId: 'custom',
-                        qty,
+                        qty: qtyValid && qtyNumber != null ? qtyNumber : minQty,
                         widthCm: customDims.width,
                         heightCm: customDims.height,
                         doubleSided,
@@ -445,8 +529,8 @@ export function ProductPage() {
             <select
               id="qty"
               className="mt-2 flex h-11 w-full max-w-[16rem] rounded-md border border-transparent bg-[#ededed] px-3 text-sm"
-              value={qty}
-              onChange={(e) => setQtySafe(Number(e.target.value))}
+              value={qtyText}
+              onChange={(e) => setQtyText(e.target.value)}
             >
               {packTiers.map((tier) => {
                 const total = quoteLine(product, {
@@ -466,22 +550,36 @@ export function ProductPage() {
           ) : (
             <Input
               id="qty"
-              type="number"
-              min={minQty}
-              max={maxQty}
-              step={step}
-              value={qty}
-              onChange={(e) => setQtySafe(Number(e.target.value))}
-              className="mt-2 max-w-[12rem]"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={qtyText}
+              aria-invalid={!qtyValid}
+              onChange={(e) => setQtyText(e.target.value)}
+              className={cn(
+                'mt-2 max-w-[12rem] transition-colors duration-300 ease-out',
+                !qtyValid &&
+                  'border-red-600 bg-red-50 text-red-800 focus-visible:ring-red-600',
+              )}
             />
           )}
           {minQty > 1 && (
-            <p className="mt-2 text-sm text-ink-muted">
+            <p
+              className={cn(
+                'mt-2 text-sm transition-colors duration-300 ease-out',
+                qtyBelowMin ? 'text-red-700' : 'text-ink-muted',
+              )}
+            >
               {t('product.minOrder', { count: minQty })}
             </p>
           )}
           {product.maxQuantity != null && (
-            <p className="mt-1 text-sm text-ink-muted">
+            <p
+              className={cn(
+                'mt-1 text-sm transition-colors duration-300 ease-out',
+                qtyAboveMax ? 'text-red-700' : 'text-ink-muted',
+              )}
+            >
               {t('product.maxOrder', { count: product.maxQuantity })}
             </p>
           )}
