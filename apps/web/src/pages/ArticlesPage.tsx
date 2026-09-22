@@ -58,7 +58,7 @@ export function ArticlesPage() {
                     {article.imageUrl ? (
                       <img
                         src={assetUrl(article.imageUrl)}
-                        alt=""
+                        alt={copy.title}
                         className="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                       />
                     ) : (

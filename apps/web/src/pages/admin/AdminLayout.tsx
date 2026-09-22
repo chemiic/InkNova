@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Navigate, Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AdminLangToggle } from '@/components/AdminLangToggle'
+import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { getAdminToken, setAdminToken } from '@/lib/adminApi'
 import { cn } from '@/lib/utils'
@@ -43,6 +44,11 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
+      <Seo
+        title={t('seo.admin.title')}
+        description={t('seo.admin.description')}
+        noindex
+      />
       <div className="mx-auto flex min-h-dvh max-w-6xl flex-col md:flex-row">
         <aside className="flex flex-col border-b border-line bg-paper-card md:w-56 md:border-b-0 md:border-r">
           <div className="flex items-start justify-between gap-2 border-b border-line px-4 py-4 md:py-5">

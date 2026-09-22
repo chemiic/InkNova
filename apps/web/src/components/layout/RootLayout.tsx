@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { CookieConsent } from '@/components/CookieConsent'
+import { RouteSeo } from '@/components/RouteSeo'
 import {
   hasCookieConsent,
   subscribeCookieConsent,
@@ -33,6 +34,7 @@ export function RootLayout() {
         bannerSpace && !isDesign && 'pb-44 sm:pb-36',
       )}
     >
+      <RouteSeo />
       <SiteHeader compact={isDesign} />
       <main className={cn('flex-1', isDesign && 'min-h-0 overflow-hidden')}>
         <Outlet />

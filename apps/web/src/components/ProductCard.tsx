@@ -23,7 +23,7 @@ export function ProductCard({ product }: { product: Product }) {
       <Link to={`/produkter/${product.slug}`} className="block bg-[#eceae6] p-4 sm:p-6">
         <img
           src={assetUrl(cover)}
-          alt=""
+          alt={copy.name}
           className="mx-auto h-40 w-full object-contain sm:h-44"
         />
       </Link>

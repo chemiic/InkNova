@@ -2,9 +2,11 @@ import { articleLocalized, type Article } from '@inknova/shared'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
+import { Seo } from '@/components/Seo'
 import { fetchArticle } from '@/lib/api'
 import { sanitizeArticleHtml } from '@/lib/articleHtml'
 import { assetUrl } from '@/lib/assetUrl'
+import { absoluteUrl, metaDescription } from '@/lib/site'
 
 export function ArticleDetailPage() {
   const { slug = '' } = useParams()
@@ -39,6 +41,11 @@ export function ArticleDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-ink-muted">
+        <Seo
+          title={t('seo.articles.title')}
+          description={t('seo.articles.description')}
+          path={`/artikler/${slug}`}
+        />
         {t('common.loading')}
       </div>
     )
@@ -47,6 +54,12 @@ export function ArticleDetailPage() {
   if (error || !article) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
+        <Seo
+          title={t('seo.notFound.title')}
+          description={t('seo.notFound.description')}
+          path={`/artikler/${slug}`}
+          noindex
+        />
         <p className="text-warm">{t('common.error')}</p>
         <Link
           to="/artikler"
@@ -59,9 +72,69 @@ export function ArticleDetailPage() {
   }
 
   const copy = articleLocalized(article, lang)
+  const articlePath = `/artikler/${article.slug}`
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: copy.title,
+        description: copy.excerpt,
+        image: article.imageUrl ? absoluteUrl(article.imageUrl) : undefined,
+        inLanguage: lang,
+        datePublished: article.createdAt,
+        dateModified: article.updatedAt,
+        mainEntityOfPage: absoluteUrl(articlePath),
+        author: { '@type': 'Organization', name: 'InkNova' },
+        publisher: {
+          '@type': 'Organization',
+          name: 'InkNova',
+          logo: {
+            '@type': 'ImageObject',
+            url: absoluteUrl('/brand/logo.png'),
+          },
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: t('nav.home'),
+            item: absoluteUrl('/'),
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: t('nav.articles'),
+            item: absoluteUrl('/artikler'),
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: copy.title,
+            item: absoluteUrl(articlePath),
+          },
+        ],
+      },
+    ],
+  }
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-12">
+      <Seo
+        title={copy.title}
+        description={metaDescription(copy.excerpt || copy.body)}
+        path={articlePath}
+        image={
+          article.imageUrl &&
+          /\.(jpe?g|jfif|png|webp|gif)(\?|$)/i.test(article.imageUrl)
+            ? article.imageUrl
+            : undefined
+        }
+        jsonLd={articleJsonLd}
+      />
       <Link
         to="/artikler"
         className="text-sm font-semibold text-accent hover:underline"
@@ -72,7 +145,7 @@ export function ArticleDetailPage() {
         <div className="mt-6 overflow-hidden rounded-lg bg-[#eceae6]">
           <img
             src={assetUrl(article.imageUrl)}
-            alt=""
+            alt={copy.title}
             className="aspect-[16/9] w-full object-cover"
           />
         </div>

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /handlekurv
+Disallow: /kasse
+Disallow: /ordre
+Disallow: /produkter/*/design
+
+Sitemap: https://inknova.no/sitemap.xml

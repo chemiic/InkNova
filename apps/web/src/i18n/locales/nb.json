@@ -881,5 +881,72 @@
       "contact": "Kontaktskjema",
       "loadError": "Kunne ikke hente e-postforhåndsvisning"
     }
+  },
+  "seo": {
+    "home": {
+      "title": "InkNova – kvalitetstrykk levert i hele Norge",
+      "description": "Bestill flyers, visittkort, plakater og roll-up. Design direkte på nett hos InkNova og få trykksaker levert i hele Norge."
+    },
+    "products": {
+      "title": "Alle produkter",
+      "description": "Se trykksaker fra InkNova: flyers, visittkort, plakater, roll-up og programhefter. Sjekk pris og design direkte på nett."
+    },
+    "about": {
+      "title": "Om oss",
+      "description": "InkNova er et trykkeri for bedrifter og privatpersoner. Vi samarbeider med lokale trykkerier for skarpt trykk og enkel bestilling."
+    },
+    "faq": {
+      "title": "Spørsmål og svar",
+      "description": "Svar på vanlige spørsmål om bestilling, filformater, betaling, leveringstid og angrerett hos InkNova."
+    },
+    "contact": {
+      "title": "Kontakt oss",
+      "description": "Kontakt InkNova om produkter, trykkfiler eller levering. Send en melding, så svarer vi på e-post."
+    },
+    "articles": {
+      "title": "Artikler om trykk",
+      "description": "Tips om trykk, filer og design: trykkklart PDF, valg av størrelse, RGB og CMYK, og bildeoppløsning."
+    },
+    "terms": {
+      "title": "Angrerett og reklamasjon",
+      "description": "Informasjon om angrerett, reklamasjon og klagerett ved kjøp av spesialproduserte trykksaker hos InkNova."
+    },
+    "salesTerms": {
+      "title": "Kjøpsvilkår",
+      "description": "Kjøpsvilkår for nettbutikken til InkNova: priser, bestilling, betaling, levering og reklamasjon."
+    },
+    "privacy": {
+      "title": "Personvernerklæring",
+      "description": "Slik behandler InkNova personopplysninger når du bestiller trykk, bruker nettbutikken eller kontakter oss."
+    },
+    "cookies": {
+      "title": "Informasjonskapsler",
+      "description": "Informasjon om informasjonskapsler og lokal lagring på inknova.no, og hvordan du styrer valgene dine."
+    },
+    "cart": {
+      "title": "Handlekurv",
+      "description": "Se produktene i handlekurven din hos InkNova."
+    },
+    "checkout": {
+      "title": "Kasse",
+      "description": "Fullfør bestillingen av trykksaker hos InkNova."
+    },
+    "order": {
+      "title": "Ordrebekreftelse",
+      "description": "Bekreftelse på bestillingen din hos InkNova."
+    },
+    "design": {
+      "title": "Design produktet",
+      "description": "Design trykksaken din direkte i nettleseren hos InkNova."
+    },
+    "notFound": {
+      "title": "Siden finnes ikke",
+      "description": "Siden du leter etter finnes ikke. Gå til forsiden eller se produktene våre.",
+      "body": "Lenken kan være feil, eller siden er flyttet."
+    },
+    "admin": {
+      "title": "Admin",
+      "description": "Administrasjon for InkNova."
+    }
   }
 }

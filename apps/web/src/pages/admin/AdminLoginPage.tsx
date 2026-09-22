@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Eye, EyeOff } from 'lucide-react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { AdminLangToggle } from '@/components/AdminLangToggle'
+import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,6 +49,11 @@ export function AdminLoginPage() {
 
   return (
     <div className="relative flex min-h-dvh items-center justify-center bg-paper px-4">
+      <Seo
+        title={t('seo.admin.title')}
+        description={t('seo.admin.description')}
+        noindex
+      />
       <div className="absolute right-4 top-4">
         <AdminLangToggle />
       </div>

@@ -10,6 +10,7 @@ import { ContactPage } from '@/pages/ContactPage'
 import { DesignPage } from '@/pages/DesignPage'
 import { FaqPage } from '@/pages/FaqPage'
 import { HomePage } from '@/pages/HomePage'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { OrderConfirmPage } from '@/pages/OrderConfirmPage'
 import { ProductPage } from '@/pages/ProductPage'
 import { ProductsPage } from '@/pages/ProductsPage'
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="vilkar" element={<SalesTermsPage />} />
           <Route path="personvern" element={<PrivacyPage />} />
           <Route path="informasjonskapsler" element={<CookiesPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

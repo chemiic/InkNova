@@ -881,5 +881,72 @@
       "contact": "Contact form",
       "loadError": "Could not load email preview"
     }
+  },
+  "seo": {
+    "home": {
+      "title": "InkNova – quality print delivered across Norway",
+      "description": "Order flyers, business cards, posters and roll-ups. Design online at InkNova and get print delivered across Norway."
+    },
+    "products": {
+      "title": "All products",
+      "description": "Print from InkNova: flyers, business cards, posters, roll-ups and programmes. Check the price and design online."
+    },
+    "about": {
+      "title": "About us",
+      "description": "InkNova is a print shop for businesses and individuals. We work with local printers for sharp print and simple ordering."
+    },
+    "faq": {
+      "title": "Questions and answers",
+      "description": "Answers to common questions about ordering, file formats, payment, lead time and the right of withdrawal at InkNova."
+    },
+    "contact": {
+      "title": "Contact us",
+      "description": "Contact InkNova about products, print files or delivery. Send a message and we will reply by email."
+    },
+    "articles": {
+      "title": "Print guides",
+      "description": "Tips on print, files and design: print-ready PDF, choosing a size, RGB and CMYK, and image resolution."
+    },
+    "terms": {
+      "title": "Withdrawal and complaints",
+      "description": "Information about withdrawal, complaints and claims when buying made-to-order print from InkNova."
+    },
+    "salesTerms": {
+      "title": "Terms of sale",
+      "description": "Terms of sale for the InkNova webshop: prices, orders, payment, delivery and complaints."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "description": "How InkNova processes personal data when you order print, use the webshop or contact us."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "description": "How InkNova uses cookies and local storage on inknova.no, and how you can manage your choices."
+    },
+    "cart": {
+      "title": "Cart",
+      "description": "Review the products in your InkNova cart."
+    },
+    "checkout": {
+      "title": "Checkout",
+      "description": "Complete your print order at InkNova."
+    },
+    "order": {
+      "title": "Order confirmation",
+      "description": "Confirmation of your InkNova order."
+    },
+    "design": {
+      "title": "Design your product",
+      "description": "Design your print in the browser at InkNova."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you are looking for does not exist. Go to the homepage or browse our products.",
+      "body": "The link may be wrong, or the page has moved."
+    },
+    "admin": {
+      "title": "Admin",
+      "description": "InkNova administration."
+    }
   }
 }
