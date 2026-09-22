@@ -8,6 +8,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
   MinLength,
@@ -25,8 +26,9 @@ export class CheckoutCustomerDto {
   email!: string;
 
   @IsString()
-  @MinLength(8)
-  @MaxLength(20)
+  @MinLength(6)
+  @MaxLength(15)
+  @Matches(/^\+?[\d\s().-]{6,15}$/)
   phone!: string;
 
   @IsString()

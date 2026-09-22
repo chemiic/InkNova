@@ -19,11 +19,12 @@ import { fetchDeliverySettings, fetchProducts, submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
 import {
-  applyNoPhoneInput,
   applyNoPostalInput,
   checkoutErrorsFromApi,
   formatNoPostal,
-  toNoPhoneE164,
+  isValidPhone,
+  normalizePhone,
+  PHONE_MAX_LENGTH,
   validateCheckoutForm,
   type CheckoutField,
   type CheckoutFieldErrors,
@@ -57,17 +58,8 @@ export function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({})
   const [deliveryFee, setDeliveryFee] = useState(0)
-  const phoneRef = useRef<HTMLInputElement>(null)
   const postalRef = useRef<HTMLInputElement>(null)
-  const phoneCaretRef = useRef<number | null>(null)
   const postalCaretRef = useRef<number | null>(null)
-
-  useLayoutEffect(() => {
-    const pos = phoneCaretRef.current
-    if (pos === null || !phoneRef.current) return
-    phoneRef.current.setSelectionRange(pos, pos)
-    phoneCaretRef.current = null
-  }, [form.phone])
 
   useLayoutEffect(() => {
     const pos = postalCaretRef.current
@@ -123,19 +115,6 @@ export function CheckoutPage() {
     })
   }
 
-  function onPhoneChange(e: ChangeEvent<HTMLInputElement>) {
-    const { value, caret } = applyNoPhoneInput(
-      e.target.value,
-      e.target.selectionStart ?? e.target.value.length,
-    )
-    phoneCaretRef.current = caret
-    if (value === form.phone) {
-      e.target.setSelectionRange(caret, caret)
-      return
-    }
-    patch('phone', value)
-  }
-
   function onPostalChange(e: ChangeEvent<HTMLInputElement>) {
     const { value, caret } = applyNoPostalInput(
       e.target.value,
@@ -165,13 +144,12 @@ export function CheckoutPage() {
       return
     }
 
-    const phone = toNoPhoneE164(form.phone)
-    if (!phone) {
+    const phone = normalizePhone(form.phone)
+    if (!isValidPhone(phone)) {
       setFieldErrors({ phone: t('checkout.errors.phoneInvalid') })
       setError(t('checkout.errorFields'))
       return
     }
-
 
     setSubmitting(true)
     setError(null)
@@ -349,14 +327,15 @@ export function CheckoutPage() {
                 error={fieldErrors.phone}
               >
                 <Input
-                  ref={phoneRef}
                   id="phone"
                   type="tel"
                   inputMode="tel"
                   className={fieldClass(fieldErrors.phone)}
                   value={form.phone}
-                  placeholder="+47 00 00 00 00"
-                  onChange={onPhoneChange}
+                  maxLength={PHONE_MAX_LENGTH}
+                  onChange={(e) =>
+                    patch('phone', e.target.value.slice(0, PHONE_MAX_LENGTH))
+                  }
                   autoComplete="tel"
                   aria-invalid={Boolean(fieldErrors.phone)}
                   aria-describedby={

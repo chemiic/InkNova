@@ -11,95 +11,21 @@ export type CheckoutFormState = {
 export type CheckoutField = keyof CheckoutFormState
 export type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>
 
-const PHONE_PREFIX = '+47 '
+/** Hard cap for the phone field, including spaces and a leading +. */
+export const PHONE_MAX_LENGTH = 15
 
-function localStart(value: string): number {
-  if (value.startsWith('+47 ')) return 4
-  if (value.startsWith('+47')) return 3
-  return 0
+/** Digits plus common separators. Country code and spacing are left as typed. */
+const PHONE_RE = /^\+?[\d\s().-]{6,15}$/
+
+export function normalizePhone(raw: string): string {
+  return raw.trim().replace(/\s+/g, ' ')
 }
 
-/** Digits of the 8-digit Norwegian subscriber number. */
-export function extractNoPhoneDigits(raw: string): string {
-  if (raw.startsWith('+47')) {
-    return raw.slice(localStart(raw)).replace(/\D/g, '').slice(0, 8)
-  }
-  let digits = raw.replace(/\D/g, '')
-  if (digits.startsWith('0047')) digits = digits.slice(4)
-  else if (digits.startsWith('47') && digits.length > 8) digits = digits.slice(2)
-  return digits.slice(0, 8)
-}
-
-function digitsInRange(value: string, from: number, to: number): string {
-  const start = localStart(value)
-  const a = Math.max(from, start)
-  const b = Math.max(a, to)
-  return value.slice(a, b).replace(/\D/g, '')
-}
-
-function formatFromLocalDigits(local: string): string {
-  if (!local) return ''
-  const parts = [
-    local.slice(0, 2),
-    local.slice(2, 4),
-    local.slice(4, 6),
-    local.slice(6, 8),
-  ].filter(Boolean)
-  return `${PHONE_PREFIX}${parts.join(' ')}`
-}
-
-/** Display mask: +47 XX XX XX XX */
-export function formatNoPhoneMask(raw: string): string {
-  return formatFromLocalDigits(extractNoPhoneDigits(raw))
-}
-
-export function caretAfterNoPhoneDigits(
-  digitCount: number,
-  formatted: string,
-): number {
-  if (!formatted) return 0
-  const start = localStart(formatted)
-  if (digitCount <= 0) return start
-  let seen = 0
-  for (let i = start; i < formatted.length; i++) {
-    if (/\d/.test(formatted[i]!)) {
-      seen += 1
-      if (seen === digitCount) return i + 1
-    }
-  }
-  return formatted.length
-}
-
-/** Reformat while keeping the caret on the same digit. */
-export function applyNoPhoneInput(
-  next: string,
-  caret: number,
-): { value: string; caret: number } {
-  let before = digitsInRange(next, 0, caret)
-  let after = digitsInRange(next, caret, next.length)
-  const extra = before.length + after.length - 8
-  if (extra > 0) {
-    if (after.length >= extra) after = after.slice(0, after.length - extra)
-    else {
-      before = before.slice(
-        0,
-        Math.max(0, before.length - (extra - after.length)),
-      )
-      after = ''
-    }
-  }
-  const value = formatFromLocalDigits(before + after)
-  return {
-    value,
-    caret: caretAfterNoPhoneDigits(before.length, value),
-  }
-}
-
-/** Stored / API value: +4712345678 */
-export function toNoPhoneE164(raw: string): string | null {
-  const local = extractNoPhoneDigits(raw)
-  if (local.length !== 8) return null
-  return `+47${local}`
+export function isValidPhone(raw: string): boolean {
+  const value = normalizePhone(raw)
+  if (!PHONE_RE.test(value)) return false
+  const digits = value.replace(/\D/g, '').length
+  return digits >= 6 && digits <= 15
 }
 
 export function formatNoPostal(raw: string): string {
@@ -136,9 +62,9 @@ export function validateCheckoutForm(
   if (!email) errors.email = t('checkout.errors.emailRequired')
   else if (!EMAIL_RE.test(email)) errors.email = t('checkout.errors.emailInvalid')
 
-  if (!extractNoPhoneDigits(form.phone)) {
+  if (!form.phone.trim()) {
     errors.phone = t('checkout.errors.phoneRequired')
-  } else if (!toNoPhoneE164(form.phone)) {
+  } else if (!isValidPhone(form.phone)) {
     errors.phone = t('checkout.errors.phoneInvalid')
   }
 
@@ -200,6 +126,9 @@ function messageForApiConstraint(
   t: (key: string) => string,
 ): string {
   if (constraints.isEmail) return t('checkout.errors.emailInvalid')
+  if (constraints.matches && field === 'phone') {
+    return t('checkout.errors.phoneInvalid')
+  }
   if (constraints.minLength) {
     if (field === 'phone') return t('checkout.errors.phoneInvalid')
     if (field === 'postalCode') return t('checkout.errors.postalInvalid')
