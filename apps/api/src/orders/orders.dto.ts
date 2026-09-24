@@ -26,9 +26,9 @@ export class CheckoutCustomerDto {
   email!: string;
 
   @IsString()
-  @MinLength(6)
-  @MaxLength(15)
-  @Matches(/^\+?[\d\s().-]{6,15}$/)
+  @MinLength(11)
+  @MaxLength(14)
+  @Matches(/^\+(?:45\d{8}|46\d{9}|47\d{8}|358\d{9,10})$/)
   phone!: string;
 
   @IsString()

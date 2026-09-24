@@ -172,7 +172,7 @@
       "emailRequired": "Enter your email address.",
       "emailInvalid": "Invalid email address.",
       "phoneRequired": "Enter a phone number.",
-      "phoneInvalid": "Enter a valid phone number.",
+      "phoneInvalid": "Enter a Nordic number: +47, +45, +46 or +358.",
       "addressRequired": "Enter the street address.",
       "addressShort": "Address must be at least 3 characters.",
       "postalRequired": "Enter the postal code.",

@@ -172,7 +172,7 @@
       "emailRequired": "Skriv inn e-postadressen din.",
       "emailInvalid": "Ugyldig e-postadresse.",
       "phoneRequired": "Skriv inn telefonnummeret.",
-      "phoneInvalid": "Skriv inn et gyldig telefonnummer.",
+      "phoneInvalid": "Skriv inn et nordisk nummer: +47, +45, +46 eller +358.",
       "addressRequired": "Skriv inn gateadressen.",
       "addressShort": "Adressen må ha minst 3 tegn.",
       "postalRequired": "Skriv inn postnummer.",
