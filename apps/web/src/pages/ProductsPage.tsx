@@ -23,16 +23,30 @@ export function ProductsPage() {
 
   useEffect(() => {
     let cancelled = false
-    void fetchProducts()
-      .then((data) => {
-        if (!cancelled) setProducts(data)
-      })
-      .catch(() => {
-        if (!cancelled) setError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+
+    async function load() {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const data = await fetchProducts()
+          if (cancelled) return
+          setProducts(data)
+          setError(false)
+          setLoading(false)
+          return
+        } catch {
+          if (cancelled) return
+          if (attempt < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)))
+          }
+        }
+      }
+      if (!cancelled) {
+        setError(true)
+        setLoading(false)
+      }
+    }
+
+    void load()
     return () => {
       cancelled = true
     }
