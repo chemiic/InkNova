@@ -22,7 +22,10 @@ import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
 import { orderConfirmationEmailHtml, orderEmailHtml } from '../mail/templates';
-import { VippsService } from '../payments/vipps.service';
+import {
+  VippsService,
+  type VippsPaymentSnapshot,
+} from '../payments/vipps.service';
 import { OrderStore, type StoredLineItem, type StoredOrder } from './order.store';
 import { CreateOrderDto } from './orders.dto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -35,6 +38,8 @@ const MAX_FILES = 20;
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
   private readonly store = new OrderStore();
+  /** Serializes confirm calls so a double return cannot capture twice. */
+  private readonly confirmQueue = new Map<string, Promise<void>>();
 
   constructor(
     private readonly catalog: CatalogService,
@@ -216,7 +221,7 @@ export class OrdersService {
       dto.paymentMethod === 'card' ? 'CARD' : 'WALLET';
     const payment = await this.vipps.createPayment({
       reference,
-      amountOre: totalNok * 100,
+      amountOre: toOre(totalNok),
       returnUrl,
       paymentMethod: vippsMethod,
       phone: order.customer.phone,
@@ -248,6 +253,31 @@ export class OrdersService {
   }
 
   async confirmPayment(reference: string): Promise<OrderStatusResponse> {
+    return this.enqueueConfirm(reference, () => this.confirmPaymentOnce(reference));
+  }
+
+  private enqueueConfirm<T>(
+    reference: string,
+    task: () => Promise<T>,
+  ): Promise<T> {
+    const previous = this.confirmQueue.get(reference) ?? Promise.resolve();
+    const run = previous.then(task, task);
+    const done = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    this.confirmQueue.set(reference, done);
+    void done.finally(() => {
+      if (this.confirmQueue.get(reference) === done) {
+        this.confirmQueue.delete(reference);
+      }
+    });
+    return run;
+  }
+
+  private async confirmPaymentOnce(
+    reference: string,
+  ): Promise<OrderStatusResponse> {
     const order = this.getOrder(reference);
     if (!order) {
       throw new NotFoundException('Order not found');
@@ -258,14 +288,37 @@ export class OrdersService {
       return this.getStatus(reference);
     }
 
-    const state = await this.vipps.getPaymentState(reference);
-    if (state !== 'AUTHORIZED' && state !== 'CAPTURED') {
+    const payment = await this.vipps.getPayment(reference);
+    if (payment.state !== 'AUTHORIZED' && payment.state !== 'CAPTURED') {
       this.patchOrder(reference, { status: 'failed' });
-      throw new BadRequestException(`Payment not completed (${state})`);
+      throw new BadRequestException(`Payment not completed (${payment.state})`);
     }
 
-    if (state === 'AUTHORIZED') {
-      await this.vipps.capturePayment(reference, order.totalNok * 100);
+    if (payment.state === 'AUTHORIZED' && !isFullyCaptured(payment)) {
+      const orderOre = toOre(order.totalNok);
+      const remaining =
+        payment.authorizedOre > 0
+          ? payment.authorizedOre - payment.capturedOre
+          : orderOre;
+      if (payment.authorizedOre > 0 && payment.authorizedOre < orderOre) {
+        this.logger.error(
+          `Vipps reserved ${payment.authorizedOre} øre for ${reference}, order is ${orderOre} øre`,
+        );
+        throw new BadRequestException('Payment amount does not match the order');
+      }
+      if (remaining > 0) {
+        try {
+          await this.vipps.capturePayment(reference, Math.min(orderOre, remaining));
+        } catch (error) {
+          const after = await this.vipps.getPayment(reference);
+          if (after.state !== 'CAPTURED' && !isFullyCaptured(after)) {
+            throw error;
+          }
+          this.logger.warn(
+            `Vipps capture already completed for ${reference} (${after.state})`,
+          );
+        }
+      }
     }
 
     await this.finalizePaidOrder(reference);
@@ -526,6 +579,17 @@ export class OrdersService {
       throw e;
     }
   }
+}
+
+function toOre(nok: number): number {
+  return Math.round(nok * 100);
+}
+
+function isFullyCaptured(payment: VippsPaymentSnapshot): boolean {
+  return (
+    payment.capturedOre > 0 &&
+    (payment.authorizedOre <= 0 || payment.capturedOre >= payment.authorizedOre)
+  );
 }
 
 function sanitizeFileName(name: string): string {

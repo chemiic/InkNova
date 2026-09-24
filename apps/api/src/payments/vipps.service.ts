@@ -9,6 +9,14 @@ export type VippsCreateResult = {
   redirectUrl: string;
 };
 
+export type VippsPaymentSnapshot = {
+  state: string;
+  /** Amount the customer accepted, in øre. 0 when Vipps did not return it. */
+  authorizedOre: number;
+  /** Amount already captured, in øre. */
+  capturedOre: number;
+};
+
 @Injectable()
 export class VippsService {
   private readonly logger = new Logger(VippsService.name);
@@ -111,10 +119,11 @@ export class VippsService {
     }
 
     const phone = normalizeVippsPhone(input.phone);
+    const reference = toVippsReference(input.reference);
     const body: Record<string, unknown> = {
       amount: { currency: 'NOK', value: input.amountOre },
       paymentMethod: { type: input.paymentMethod },
-      reference: input.reference,
+      reference,
       returnUrl: input.returnUrl,
       userFlow: 'WEB_REDIRECT',
       paymentDescription: input.description.slice(0, 100),
@@ -142,16 +151,20 @@ export class VippsService {
     if (!data.redirectUrl) {
       throw new Error('Vipps did not return redirectUrl');
     }
-    return { reference: data.reference, redirectUrl: data.redirectUrl };
+    return { reference: input.reference, redirectUrl: data.redirectUrl };
   }
 
   async getPaymentState(reference: string): Promise<string> {
+    return (await this.getPayment(reference)).state;
+  }
+
+  async getPayment(reference: string): Promise<VippsPaymentSnapshot> {
     if (this.isDryRun() || !this.isConfigured()) {
-      return 'AUTHORIZED';
+      return { state: 'AUTHORIZED', authorizedOre: 0, capturedOre: 0 };
     }
 
     const res = await fetch(
-      `${this.baseUrl()}/epayment/v1/payments/${encodeURIComponent(reference)}`,
+      `${this.baseUrl()}/epayment/v1/payments/${encodeURIComponent(toVippsReference(reference))}`,
       {
         method: 'GET',
         headers: await this.authHeaders(),
@@ -164,8 +177,20 @@ export class VippsService {
       throw new Error('Could not fetch Vipps payment');
     }
 
-    const data = (await res.json()) as { state?: string };
-    return data.state ?? 'UNKNOWN';
+    const data = (await res.json()) as {
+      state?: string;
+      amount?: { value?: number };
+      aggregate?: {
+        authorizedAmount?: { value?: number };
+        capturedAmount?: { value?: number };
+      };
+    };
+    return {
+      state: data.state ?? 'UNKNOWN',
+      authorizedOre:
+        data.aggregate?.authorizedAmount?.value ?? data.amount?.value ?? 0,
+      capturedOre: data.aggregate?.capturedAmount?.value ?? 0,
+    };
   }
 
   async capturePayment(reference: string, amountOre: number): Promise<void> {
@@ -177,7 +202,7 @@ export class VippsService {
     }
 
     const res = await fetch(
-      `${this.baseUrl()}/epayment/v1/payments/${encodeURIComponent(reference)}/capture`,
+      `${this.baseUrl()}/epayment/v1/payments/${encodeURIComponent(toVippsReference(reference))}/capture`,
       {
         method: 'POST',
         headers: await this.authHeaders(randomUUID()),
@@ -195,12 +220,21 @@ export class VippsService {
   }
 }
 
-/** Vipps expects country code + number, e.g. 4712345678 */
+/** Vipps reference: 8–64 chars, only letters, digits and hyphen. */
+function toVippsReference(reference: string): string {
+  if (/^[a-zA-Z0-9-]{8,64}$/.test(reference)) return reference;
+  const prefixed = `ink-${reference}`.replace(/[^a-zA-Z0-9-]/g, '');
+  if (prefixed.length >= 8) return prefixed.slice(0, 64);
+  return prefixed.padEnd(8, '0');
+}
+
+/** Vipps MSISDN without +: Norway 47, Denmark 45, Finland 358. */
 function normalizeVippsPhone(phone?: string): string | undefined {
   if (!phone) return undefined;
   const digits = phone.replace(/\D/g, '');
-  if (digits.length < 8) return undefined;
-  if (digits.startsWith('47') && digits.length >= 10) return digits;
-  if (digits.length === 8) return `47${digits}`;
-  return digits;
+  if (/^47\d{8}$/.test(digits)) return digits;
+  if (/^45\d{8}$/.test(digits)) return digits;
+  if (/^358\d{9,10}$/.test(digits)) return digits;
+  if (/^\d{8}$/.test(digits)) return `47${digits}`;
+  return undefined;
 }

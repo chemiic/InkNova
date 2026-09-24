@@ -97,9 +97,20 @@ export function fetchOrderStatus(reference: string) {
   )
 }
 
+const confirmInflight = new Map<string, Promise<OrderStatusResponse>>()
+
 export function confirmOrderPayment(reference: string) {
-  return request<OrderStatusResponse>(
+  const existing = confirmInflight.get(reference)
+  if (existing) return existing
+
+  const pending = request<OrderStatusResponse>(
     `/api/orders/${encodeURIComponent(reference)}/confirm`,
     { method: 'POST' },
-  )
+  ).finally(() => {
+    if (confirmInflight.get(reference) === pending) {
+      confirmInflight.delete(reference)
+    }
+  })
+  confirmInflight.set(reference, pending)
+  return pending
 }

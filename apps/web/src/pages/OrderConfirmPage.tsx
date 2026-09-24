@@ -56,6 +56,20 @@ export function OrderConfirmPage() {
         }
       } catch (e) {
         console.error(e)
+        if (cancelled) return
+        try {
+          const status = await fetchOrderStatus(reference)
+          if (cancelled) return
+          if (status.status === 'completed' || status.status === 'paid') {
+            setOrderRef(status.reference)
+            setTotalNok(status.totalNok)
+            await clearCart()
+            setState('ok')
+            return
+          }
+        } catch (statusError) {
+          console.error(statusError)
+        }
         if (!cancelled) setState('err')
       }
     }
