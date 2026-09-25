@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
+import { toVippsReference } from './vipps-reference';
 
 type VippsPaymentMethod = 'WALLET' | 'CARD';
 
@@ -205,7 +206,9 @@ export class VippsService {
       `${this.baseUrl()}/epayment/v1/payments/${encodeURIComponent(toVippsReference(reference))}/capture`,
       {
         method: 'POST',
-        headers: await this.authHeaders(randomUUID()),
+        headers: await this.authHeaders(
+          captureIdempotencyKey(reference, amountOre),
+        ),
         body: JSON.stringify({
           modificationAmount: { currency: 'NOK', value: amountOre },
         }),
@@ -218,14 +221,105 @@ export class VippsService {
       throw new Error('Could not capture Vipps payment');
     }
   }
+
+  merchantSerialNumber(): string {
+    return this.config.get<string>('VIPPS_MSN') ?? '';
+  }
+
+  async listWebhooks(): Promise<VippsWebhookRegistration[]> {
+    const res = await fetch(`${this.baseUrl()}/webhooks/v1/webhooks`, {
+      method: 'GET',
+      headers: await this.authHeaders(),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      this.logger.error(`Vipps listWebhooks failed: ${res.status} ${text}`);
+      throw new Error('Could not list Vipps webhooks');
+    }
+    const data = (await res.json()) as unknown;
+    return parseWebhookList(data);
+  }
+
+  async registerWebhook(
+    url: string,
+    events: string[],
+  ): Promise<{ id: string; secret: string }> {
+    const res = await fetch(`${this.baseUrl()}/webhooks/v1/webhooks`, {
+      method: 'POST',
+      headers: await this.authHeaders(randomUUID()),
+      body: JSON.stringify({ url, events }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      this.logger.error(`Vipps registerWebhook failed: ${res.status} ${text}`);
+      throw new Error('Could not register Vipps webhook');
+    }
+    const data = (await res.json()) as { id?: string; secret?: string };
+    if (!data.id || !data.secret) {
+      throw new Error('Vipps webhook registration did not return a secret');
+    }
+    return { id: data.id, secret: data.secret };
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    const res = await fetch(
+      `${this.baseUrl()}/webhooks/v1/webhooks/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: await this.authHeaders(),
+      },
+    );
+    if (!res.ok && res.status !== 404) {
+      const text = await res.text();
+      this.logger.error(`Vipps deleteWebhook failed: ${res.status} ${text}`);
+      throw new Error('Could not delete Vipps webhook');
+    }
+  }
 }
 
-/** Vipps reference: 8–64 chars, only letters, digits and hyphen. */
-function toVippsReference(reference: string): string {
-  if (/^[a-zA-Z0-9-]{8,64}$/.test(reference)) return reference;
-  const prefixed = `ink-${reference}`.replace(/[^a-zA-Z0-9-]/g, '');
-  if (prefixed.length >= 8) return prefixed.slice(0, 64);
-  return prefixed.padEnd(8, '0');
+export type VippsWebhookRegistration = {
+  id: string;
+  url: string;
+  events: string[];
+};
+
+function parseWebhookList(data: unknown): VippsWebhookRegistration[] {
+  const rows = Array.isArray(data)
+    ? data
+    : data &&
+        typeof data === 'object' &&
+        Array.isArray((data as { webhooks?: unknown }).webhooks)
+      ? (data as { webhooks: unknown[] }).webhooks
+      : [];
+
+  return rows.flatMap((row) => {
+    if (!row || typeof row !== 'object') return [];
+    const record = row as { id?: unknown; url?: unknown; events?: unknown };
+    if (typeof record.id !== 'string' || typeof record.url !== 'string') {
+      return [];
+    }
+    const events = Array.isArray(record.events)
+      ? record.events.filter((event): event is string => typeof event === 'string')
+      : [];
+    return [{ id: record.id, url: record.url, events }];
+  });
+}
+
+/** Same capture from the return page and the webhook must not charge twice. */
+function captureIdempotencyKey(reference: string, amountOre: number): string {
+  const hash = createHash('sha256')
+    .update(`capture:${toVippsReference(reference)}:${amountOre}`)
+    .digest('hex');
+  const variant = ((parseInt(hash.slice(16, 18), 16) & 0x3f) | 0x80)
+    .toString(16)
+    .padStart(2, '0');
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    `5${hash.slice(13, 16)}`,
+    `${variant}${hash.slice(18, 20)}`,
+    hash.slice(20, 32),
+  ].join('-');
 }
 
 /** Vipps MSISDN without +: Norway 47, Denmark 45, Finland 358. */

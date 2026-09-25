@@ -39,6 +39,7 @@ Or both: `pnpm dev`.
 | `COPYCAT_TO` | Print-shop inbox (defaults to `CONTACT_TO`) |
 | `WEB_ORIGIN` | Public site URL for Vipps return (defaults to `CORS_ORIGIN`) |
 | `VIPPS_*` | ePayment keys when `PAYMENT_DRY_RUN=false` |
+| `VIPPS_WEBHOOK_URL` | Public `https://…/api/payments/vipps/webhook`. Defaults to `WEB_ORIGIN` + that path. Registered on API startup; secret is stored in SQLite |
 | `SMTP_HOST` | `send.one.com` |
 | `SMTP_PORT` | `587` |
 | `SMTP_USER` / `SMTP_PASS` | mailbox credentials |

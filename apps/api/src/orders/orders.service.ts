@@ -22,6 +22,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
 import { orderConfirmationEmailHtml, orderEmailHtml } from '../mail/templates';
+import { orderReferenceFromVipps } from '../payments/vipps-reference';
 import {
   VippsService,
   type VippsPaymentSnapshot,
@@ -253,7 +254,34 @@ export class OrdersService {
   }
 
   async confirmPayment(reference: string): Promise<OrderStatusResponse> {
-    return this.enqueueConfirm(reference, () => this.confirmPaymentOnce(reference));
+    return this.enqueueConfirm(reference, () =>
+      this.confirmPaymentOnce(reference, true),
+    );
+  }
+
+  /**
+   * Vipps told us the customer accepted or the capture landed.
+   * Does not mark the order failed when Vipps has not caught up yet,
+   * so the webhook can be retried.
+   */
+  async completeFromWebhook(
+    vippsReference: string,
+  ): Promise<'done' | 'retry'> {
+    const reference = orderReferenceFromVipps(vippsReference);
+    return this.enqueueConfirm(reference, () =>
+      this.completeFromWebhookOnce(reference, vippsReference),
+    );
+  }
+
+  /**
+   * Customer cancelled, the payment expired, or the reservation was dropped.
+   * Returns false when Vipps could not be checked, so the webhook is retried.
+   */
+  async failFromWebhook(vippsReference: string): Promise<boolean> {
+    const reference = orderReferenceFromVipps(vippsReference);
+    return this.enqueueConfirm(reference, () =>
+      this.failFromWebhookOnce(reference),
+    );
   }
 
   private enqueueConfirm<T>(
@@ -275,8 +303,72 @@ export class OrdersService {
     return run;
   }
 
+  private async completeFromWebhookOnce(
+    reference: string,
+    vippsReference: string,
+  ): Promise<'done' | 'retry'> {
+    const order = this.getOrder(reference);
+    if (!order) {
+      this.logger.warn(
+        `Vipps webhook for ${vippsReference} did not match an order`,
+      );
+      return 'done';
+    }
+    try {
+      await this.confirmPaymentOnce(reference, false);
+      return 'done';
+    } catch (error) {
+      if (error instanceof PaymentNotReadyError) return 'retry';
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        return 'done';
+      }
+      this.logger.error(`Vipps webhook confirm failed for ${reference}`, error);
+      return 'retry';
+    }
+  }
+
+  private async failFromWebhookOnce(reference: string): Promise<boolean> {
+    const order = this.getOrder(reference);
+    if (!order || order.status !== 'pending_payment') return true;
+    let payment: VippsPaymentSnapshot;
+    try {
+      payment = await this.vipps.getPayment(reference);
+    } catch (error) {
+      this.logger.warn(
+        `Vipps status check failed while closing ${reference}`,
+        error,
+      );
+      return false;
+    }
+    if (payment.state === 'AUTHORIZED' || payment.state === 'CAPTURED') {
+      try {
+        await this.confirmPaymentOnce(reference, false);
+      } catch (error) {
+        if (error instanceof PaymentNotReadyError) return false;
+        if (
+          error instanceof BadRequestException ||
+          error instanceof NotFoundException
+        ) {
+          return true;
+        }
+        this.logger.error(`Vipps webhook confirm failed for ${reference}`, error);
+        return false;
+      }
+      return true;
+    }
+    const current = this.getOrder(reference);
+    if (current?.status === 'pending_payment') {
+      this.patchOrder(reference, { status: 'failed' });
+    }
+    return true;
+  }
+
   private async confirmPaymentOnce(
     reference: string,
+    failIfUnpaid: boolean,
   ): Promise<OrderStatusResponse> {
     const order = this.getOrder(reference);
     if (!order) {
@@ -290,7 +382,12 @@ export class OrdersService {
 
     const payment = await this.vipps.getPayment(reference);
     if (payment.state !== 'AUTHORIZED' && payment.state !== 'CAPTURED') {
-      this.patchOrder(reference, { status: 'failed' });
+      const terminal =
+        failIfUnpaid || TERMINAL_UNPAID_STATES.has(payment.state);
+      if (terminal && order.status === 'pending_payment') {
+        this.patchOrder(reference, { status: 'failed' });
+      }
+      if (!terminal) throw new PaymentNotReadyError(payment.state);
       throw new BadRequestException(`Payment not completed (${payment.state})`);
     }
 
@@ -578,6 +675,21 @@ export class OrdersService {
       this.logger.error('Copycat mail failed', e);
       throw e;
     }
+  }
+}
+
+const TERMINAL_UNPAID_STATES = new Set([
+  'ABORTED',
+  'EXPIRED',
+  'TERMINATED',
+  'CANCELLED',
+  'FAILED',
+]);
+
+class PaymentNotReadyError extends Error {
+  constructor(state: string) {
+    super(`Vipps payment is not ready (${state})`);
+    this.name = 'PaymentNotReadyError';
   }
 }
 
