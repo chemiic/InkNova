@@ -11,5 +11,6 @@ import { OrdersService } from './orders.service';
   imports: [CatalogModule, MailModule],
   controllers: [OrdersController, VippsWebhookController],
   providers: [OrdersService, VippsService, VippsWebhookRegistrar],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

@@ -312,6 +312,12 @@ export class AdminController {
     return this.adminOrders.notifyShipped(id, body.trackingNumber);
   }
 
+  @Post('orders/:id/sync-payment')
+  @UseGuards(AdminAuthGuard)
+  syncOrderPayment(@Param('id') id: string) {
+    return this.adminOrders.syncPayment(id);
+  }
+
   @Get('orders/:id/items/:itemId/file')
   @UseGuards(AdminAuthGuard)
   downloadOrderFile(

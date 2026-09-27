@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AdminOrder, OrderStatus } from '@inknova/shared';
@@ -10,6 +11,7 @@ import { formatOrderReference } from '@inknova/shared';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
 import { orderShippedEmailHtml } from '../mail/templates';
+import { OrdersService } from '../orders/orders.service';
 
 const SHIPPABLE_STATUSES = new Set<OrderStatus>(['paid', 'completed']);
 
@@ -30,7 +32,36 @@ export class AdminOrdersService {
     private readonly db: DatabaseService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
+    private readonly orders: OrdersService,
   ) {}
+
+  /** Re-check Vipps and complete the order when payment is authorized/captured. */
+  async syncPayment(orderId: string): Promise<AdminOrder> {
+    const order = this.db.findAdminOrder(orderId);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status === 'completed' || order.status === 'paid') {
+      return order;
+    }
+
+    try {
+      await this.orders.confirmPayment(order.reference);
+    } catch (error) {
+      if (error instanceof ServiceUnavailableException) {
+        throw new BadRequestException(
+          'Vipps has not confirmed the payment yet. Wait a moment and try again.',
+        );
+      }
+      throw error;
+    }
+
+    const updated = this.db.findAdminOrder(orderId);
+    if (!updated) {
+      throw new NotFoundException('Order not found');
+    }
+    return updated;
+  }
 
   async notifyShipped(
     orderId: string,

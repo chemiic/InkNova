@@ -181,6 +181,13 @@ export function adminNotifyOrderShipped(id: string, trackingNumber?: string) {
   )
 }
 
+export function adminSyncOrderPayment(id: string) {
+  return adminRequest<AdminOrder>(
+    `/api/admin/orders/${encodeURIComponent(id)}/sync-payment`,
+    { method: 'POST' },
+  )
+}
+
 export function adminGetStorage() {
   return adminRequest<StorageStats>('/api/admin/storage')
 }

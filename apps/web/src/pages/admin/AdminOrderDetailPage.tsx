@@ -11,6 +11,7 @@ import {
   adminFetchOrderFileBlob,
   adminGetOrder,
   adminNotifyOrderShipped,
+  adminSyncOrderPayment,
 } from '@/lib/adminApi'
 import { cn, formatNok } from '@/lib/utils'
 import { isImagePrintFile } from '@/lib/uploadPrintFile'
@@ -74,6 +75,10 @@ export function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const [notifyingShipped, setNotifyingShipped] = useState(false)
+  const [syncingPayment, setSyncingPayment] = useState(false)
+  const [paymentSyncMessage, setPaymentSyncMessage] = useState<string | null>(
+    null,
+  )
   const [trackingNumber, setTrackingNumber] = useState('')
   const [previewItemId, setPreviewItemId] = useState<number | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -161,6 +166,27 @@ export function AdminOrderDetailPage() {
     }
   }
 
+  async function syncPayment() {
+    setSyncingPayment(true)
+    setError(null)
+    setPaymentSyncMessage(null)
+    try {
+      const updated = await adminSyncOrderPayment(id)
+      setOrder(updated)
+      if (updated.status === 'completed' || updated.status === 'paid') {
+        setPaymentSyncMessage(t('admin.orders.syncPaymentSuccess'))
+      } else {
+        setPaymentSyncMessage(t('admin.orders.syncPaymentStillOpen'))
+      }
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : t('admin.orders.syncPaymentFailed'),
+      )
+    } finally {
+      setSyncingPayment(false)
+    }
+  }
+
   async function notifyShipped() {
     setNotifyingShipped(true)
     setError(null)
@@ -202,6 +228,9 @@ export function AdminOrderDetailPage() {
 
   const { customer } = order
   const previewItem = order.items.find((item) => item.id === previewItemId)
+
+  const canSyncPayment =
+    order.status === 'pending_payment' || order.status === 'failed'
 
   const canNotifyShipped =
     (order.status === 'paid' || order.status === 'completed') &&
@@ -427,6 +456,32 @@ export function AdminOrderDetailPage() {
           <span>{formatNok(order.totalNok)}</span>
         </div>
       </section>
+
+      {canSyncPayment && (
+        <section className="mt-10 max-w-lg rounded-md border border-line bg-paper p-4 sm:p-5">
+          <h2 className="text-sm font-medium text-ink-muted">
+            {t('admin.orders.syncPaymentSection')}
+          </h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            {t('admin.orders.syncPaymentHint')}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={syncingPayment}
+              onClick={() => void syncPayment()}
+            >
+              {syncingPayment
+                ? t('admin.orders.syncPaymentSending')
+                : t('admin.orders.syncPayment')}
+            </Button>
+          </div>
+          {paymentSyncMessage && (
+            <p className="mt-3 text-sm text-ink">{paymentSyncMessage}</p>
+          )}
+        </section>
+      )}
 
       {(canNotifyShipped || order.shippedEmailSent) && (
         <section className="mt-10 max-w-lg rounded-md border border-line bg-paper p-4 sm:p-5">
