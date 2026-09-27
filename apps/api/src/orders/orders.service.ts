@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -254,9 +255,16 @@ export class OrdersService {
   }
 
   async confirmPayment(reference: string): Promise<OrderStatusResponse> {
-    return this.enqueueConfirm(reference, () =>
-      this.confirmPaymentOnce(reference, true),
-    );
+    return this.enqueueConfirm(reference, async () => {
+      try {
+        return await this.confirmPaymentOnce(reference);
+      } catch (error) {
+        if (error instanceof PaymentNotReadyError) {
+          throw new ServiceUnavailableException(error.message);
+        }
+        throw error;
+      }
+    });
   }
 
   /**
@@ -315,7 +323,7 @@ export class OrdersService {
       return 'done';
     }
     try {
-      await this.confirmPaymentOnce(reference, false);
+      await this.confirmPaymentOnce(reference);
       return 'done';
     } catch (error) {
       if (error instanceof PaymentNotReadyError) return 'retry';
@@ -345,7 +353,7 @@ export class OrdersService {
     }
     if (payment.state === 'AUTHORIZED' || payment.state === 'CAPTURED') {
       try {
-        await this.confirmPaymentOnce(reference, false);
+        await this.confirmPaymentOnce(reference);
       } catch (error) {
         if (error instanceof PaymentNotReadyError) return false;
         if (
@@ -368,7 +376,6 @@ export class OrdersService {
 
   private async confirmPaymentOnce(
     reference: string,
-    failIfUnpaid: boolean,
   ): Promise<OrderStatusResponse> {
     const order = this.getOrder(reference);
     if (!order) {
@@ -382,12 +389,14 @@ export class OrdersService {
 
     const payment = await this.vipps.getPayment(reference);
     if (payment.state !== 'AUTHORIZED' && payment.state !== 'CAPTURED') {
-      const terminal =
-        failIfUnpaid || TERMINAL_UNPAID_STATES.has(payment.state);
+      const terminal = TERMINAL_UNPAID_STATES.has(payment.state);
       if (terminal && order.status === 'pending_payment') {
         this.patchOrder(reference, { status: 'failed' });
+        throw new BadRequestException(`Payment not completed (${payment.state})`);
       }
-      if (!terminal) throw new PaymentNotReadyError(payment.state);
+      if (!terminal) {
+        throw new PaymentNotReadyError(payment.state);
+      }
       throw new BadRequestException(`Payment not completed (${payment.state})`);
     }
 

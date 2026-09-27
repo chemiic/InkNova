@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { formatOrderReference } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
-import { confirmOrderPayment, fetchOrderStatus } from '@/lib/api'
+import { confirmOrderPaymentWithRetry, fetchOrderStatus } from '@/lib/api'
 import { useCart } from '@/lib/cart'
 import { PAYMENT_ENABLED } from '@/lib/features'
 import { formatNok } from '@/lib/utils'
@@ -44,7 +44,7 @@ export function OrderConfirmPage() {
           return
         }
 
-        const confirmed = await confirmOrderPayment(reference)
+        const confirmed = await confirmOrderPaymentWithRetry(reference)
         if (cancelled) return
         setOrderRef(confirmed.reference)
         setTotalNok(confirmed.totalNok)

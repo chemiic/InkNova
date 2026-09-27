@@ -114,3 +114,27 @@ export function confirmOrderPayment(reference: string) {
   confirmInflight.set(reference, pending)
   return pending
 }
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** Card/3DS can lag behind the return URL — poll confirm like Vipps recommends. */
+export async function confirmOrderPaymentWithRetry(
+  reference: string,
+): Promise<OrderStatusResponse> {
+  await sleep(2000)
+  let lastError: unknown
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      return await confirmOrderPayment(reference)
+    } catch (error) {
+      lastError = error
+      const status = await fetchOrderStatus(reference).catch(() => null)
+      if (status?.status === 'completed' || status?.status === 'paid') {
+        return status
+      }
+      if (attempt === 19) break
+      await sleep(2000)
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Payment confirm failed')
+}
