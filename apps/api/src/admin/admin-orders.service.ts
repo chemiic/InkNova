@@ -63,6 +63,28 @@ export class AdminOrdersService {
     return updated;
   }
 
+  /** Mark paid without asking Vipps. Used when the transfer landed but Vipps failed. */
+  async markPaid(orderId: string): Promise<AdminOrder> {
+    const order = this.db.findAdminOrder(orderId);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status === 'completed' || order.status === 'paid') {
+      return order;
+    }
+    if (order.status !== 'pending_payment' && order.status !== 'failed') {
+      throw new BadRequestException('Order cannot be marked as paid');
+    }
+
+    await this.orders.markPaidManually(order.reference);
+
+    const updated = this.db.findAdminOrder(orderId);
+    if (!updated) {
+      throw new NotFoundException('Order not found');
+    }
+    return updated;
+  }
+
   async notifyShipped(
     orderId: string,
     trackingNumberRaw?: string,

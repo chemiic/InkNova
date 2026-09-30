@@ -188,6 +188,13 @@ export function adminSyncOrderPayment(id: string) {
   )
 }
 
+export function adminMarkOrderPaid(id: string) {
+  return adminRequest<AdminOrder>(
+    `/api/admin/orders/${encodeURIComponent(id)}/mark-paid`,
+    { method: 'POST' },
+  )
+}
+
 export function adminGetStorage() {
   return adminRequest<StorageStats>('/api/admin/storage')
 }

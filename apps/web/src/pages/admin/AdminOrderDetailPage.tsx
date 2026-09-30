@@ -10,6 +10,7 @@ import {
   adminDownloadOrderFile,
   adminFetchOrderFileBlob,
   adminGetOrder,
+  adminMarkOrderPaid,
   adminNotifyOrderShipped,
   adminSyncOrderPayment,
 } from '@/lib/adminApi'
@@ -76,6 +77,7 @@ export function AdminOrderDetailPage() {
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const [notifyingShipped, setNotifyingShipped] = useState(false)
   const [syncingPayment, setSyncingPayment] = useState(false)
+  const [markingPaid, setMarkingPaid] = useState(false)
   const [paymentSyncMessage, setPaymentSyncMessage] = useState<string | null>(
     null,
   )
@@ -184,6 +186,24 @@ export function AdminOrderDetailPage() {
       )
     } finally {
       setSyncingPayment(false)
+    }
+  }
+
+  async function markPaid() {
+    if (!window.confirm(t('admin.orders.markPaidConfirm'))) return
+    setMarkingPaid(true)
+    setError(null)
+    setPaymentSyncMessage(null)
+    try {
+      const updated = await adminMarkOrderPaid(id)
+      setOrder(updated)
+      setPaymentSyncMessage(t('admin.orders.markPaidSuccess'))
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : t('admin.orders.markPaidFailed'),
+      )
+    } finally {
+      setMarkingPaid(false)
     }
   }
 
@@ -469,14 +489,26 @@ export function AdminOrderDetailPage() {
             <Button
               type="button"
               variant="outline"
-              disabled={syncingPayment}
+              disabled={syncingPayment || markingPaid}
               onClick={() => void syncPayment()}
             >
               {syncingPayment
                 ? t('admin.orders.syncPaymentSending')
                 : t('admin.orders.syncPayment')}
             </Button>
+            <Button
+              type="button"
+              disabled={syncingPayment || markingPaid}
+              onClick={() => void markPaid()}
+            >
+              {markingPaid
+                ? t('admin.orders.markPaidSending')
+                : t('admin.orders.markPaid')}
+            </Button>
           </div>
+          <p className="mt-3 text-sm text-ink-muted">
+            {t('admin.orders.markPaidHint')}
+          </p>
           {paymentSyncMessage && (
             <p className="mt-3 text-sm text-ink">{paymentSyncMessage}</p>
           )}

@@ -268,6 +268,16 @@ export class OrdersService {
   }
 
   /**
+   * Admin override when money arrived but Vipps cannot confirm it.
+   * Skips the Vipps status check and still sends the order emails.
+   */
+  async markPaidManually(reference: string): Promise<OrderStatusResponse> {
+    return this.enqueueConfirm(reference, () =>
+      this.markPaidManuallyOnce(reference),
+    );
+  }
+
+  /**
    * Vipps told us the customer accepted or the capture landed.
    * Does not mark the order failed when Vipps has not caught up yet,
    * so the webhook can be retried.
@@ -427,6 +437,28 @@ export class OrdersService {
       }
     }
 
+    await this.finalizePaidOrder(reference);
+    return this.getStatus(reference);
+  }
+
+  private async markPaidManuallyOnce(
+    reference: string,
+  ): Promise<OrderStatusResponse> {
+    const order = this.getOrder(reference);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status === 'completed' || order.status === 'paid') {
+      await this.ensureOrderEmails(order.reference);
+      return this.getStatus(reference);
+    }
+    if (order.status !== 'pending_payment' && order.status !== 'failed') {
+      throw new BadRequestException('Order cannot be marked as paid');
+    }
+
+    this.logger.warn(
+      `Manual payment confirmation for ${reference} (was ${order.status})`,
+    );
     await this.finalizePaidOrder(reference);
     return this.getStatus(reference);
   }

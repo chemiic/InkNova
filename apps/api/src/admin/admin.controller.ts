@@ -318,6 +318,12 @@ export class AdminController {
     return this.adminOrders.syncPayment(id);
   }
 
+  @Post('orders/:id/mark-paid')
+  @UseGuards(AdminAuthGuard)
+  markOrderPaid(@Param('id') id: string) {
+    return this.adminOrders.markPaid(id);
+  }
+
   @Get('orders/:id/items/:itemId/file')
   @UseGuards(AdminAuthGuard)
   downloadOrderFile(
