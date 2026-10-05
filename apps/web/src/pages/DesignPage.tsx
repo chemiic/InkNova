@@ -1,9 +1,11 @@
 import {
   BLEED_MM,
+  buildLineSizeLabel,
   customSizeMinCm,
   effectiveMinQuantity,
   linePricingFromProduct,
   mmToPx,
+  paperTypeLabelFor,
   quoteLine,
   sizeToMm,
 } from '@inknova/shared'
@@ -52,6 +54,7 @@ export function DesignPage() {
   const widthCmParam = Number(searchParams.get('widthCm') ?? '')
   const heightCmParam = Number(searchParams.get('heightCm') ?? '')
   const sidesParam = searchParams.get('sides')
+  const paperParam = searchParams.get('paper')
   const modeParam = searchParams.get('mode')
   const mode: DesignMode = modeParam === 'upload' ? 'upload' : 'editor'
   const doubleSidedRequested = sidesParam === '2'
@@ -134,6 +137,15 @@ export function DesignPage() {
     }
     return product.sizes.find((s) => s.id === sizeId) ?? null
   }, [product, sizeIdParam, widthCmParam, heightCmParam, t])
+
+  const resolvedPaperTypeId = useMemo(() => {
+    const options = product?.paperTypes
+    if (!options?.length) return undefined
+    if (paperParam && options.some((p) => p.id === paperParam)) {
+      return paperParam
+    }
+    return options[0]?.id
+  }, [product, paperParam])
 
   const dims = useMemo(() => {
     if (!selectedSize) return null
@@ -394,9 +406,12 @@ export function DesignPage() {
         heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
         doubleSided,
       })
-      const sizeLabel = doubleSided
-        ? `${selectedSize.label} · ${t('product.doubleSided')}`
-        : selectedSize.label
+      const sizeLabel = buildLineSizeLabel(selectedSize.label, {
+        paperTypeLabel: paperTypeLabelFor(product, resolvedPaperTypeId),
+        doubleSidedLabel: doubleSided
+          ? t('product.doubleSided')
+          : undefined,
+      })
       await saveDesignPdf(designPdfKey, previewBlob, fileName)
       addToCart({
         productId: product.id,
@@ -410,6 +425,7 @@ export function DesignPage() {
         quantityStep: product.quantityStep,
         unitPrice: quote.unitPrice,
         doubleSided,
+        paperTypeId: resolvedPaperTypeId,
         widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
         heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
         pricing: pricing ?? undefined,

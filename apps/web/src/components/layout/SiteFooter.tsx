@@ -1,21 +1,21 @@
-import {
-  Facebook,
-  Instagram,
-  Linkedin,
-  Pin,
-} from 'lucide-react'
+// import {
+//   Facebook,
+//   Instagram,
+//   Linkedin,
+//   Pin,
+// } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
 import { openCookieSettings } from '@/lib/cookieConsent'
 
-const socials = [
-  { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
-  { href: 'https://instagram.com', label: 'Instagram', Icon: Instagram },
-  { href: 'https://tiktok.com', label: 'TikTok', Icon: () => <span className="text-sm font-bold">Tt</span> },
-  { href: 'https://linkedin.com', label: 'LinkedIn', Icon: Linkedin },
-  { href: 'https://pinterest.com', label: 'Pinterest', Icon: Pin },
-]
+// const socials = [
+//   { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
+//   { href: 'https://instagram.com', label: 'Instagram', Icon: Instagram },
+//   { href: 'https://tiktok.com', label: 'TikTok', Icon: () => <span className="text-sm font-bold">Tt</span> },
+//   { href: 'https://linkedin.com', label: 'LinkedIn', Icon: Linkedin },
+//   { href: 'https://pinterest.com', label: 'Pinterest', Icon: Pin },
+// ]
 
 const footerLinks = [
   { to: '/produkter', key: 'products' },
@@ -65,6 +65,7 @@ export function SiteFooter() {
             </a>
           </p>
           <p>{t('contact.legalLine')}</p>
+          {/* Social links — re-enable when profiles are ready
           <div className="flex flex-wrap justify-center gap-3 pt-4 sm:justify-start">
             {socials.map(({ href, label, Icon }) => (
               <a
@@ -79,6 +80,7 @@ export function SiteFooter() {
               </a>
             ))}
           </div>
+          */}
           <div className="flex flex-col gap-2 pt-6 text-sm">
             {legalLinks.map((link) => (
               <Link

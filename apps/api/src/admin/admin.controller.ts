@@ -18,7 +18,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import type { Article, Product } from '@inknova/shared';
-import { MAX_FEATURED_PRODUCTS } from '@inknova/shared';
+import { MAX_FEATURED_PRODUCTS, paperTypesFromLabels } from '@inknova/shared';
 import { memoryStorage } from 'multer';
 import { randomBytes } from 'node:crypto';
 import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
@@ -419,6 +419,10 @@ function dtoToProduct(body: UpsertProductDto, id: string): Product {
     pricingMode: body.pricingMode ?? undefined,
     setupFee: body.setupFee ?? undefined,
     doubleSidedOption: body.doubleSidedOption,
+    paperTypes:
+      body.paperTypes && body.paperTypes.length > 0
+        ? paperTypesFromLabels(body.paperTypes.map((p) => p.label))
+        : undefined,
     tiers: body.tiers,
     hidden: body.hidden === true,
   };

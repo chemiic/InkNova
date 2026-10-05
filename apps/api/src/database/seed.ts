@@ -7,7 +7,7 @@ import type { DatabaseService } from './database.service';
 const logger = new Logger('DatabaseSeed');
 
 /** Bump to re-apply catalog.json prices/images onto an existing DB. */
-export const CATALOG_PRICING_VERSION = 'katalog-2026-09-22b';
+export const CATALOG_PRICING_VERSION = 'katalog-2026-10-05-paper-all';
 
 const ARTICLE_SEED: Omit<Article, 'createdAt' | 'updatedAt'>[] = [
   {
@@ -175,6 +175,7 @@ function upsertCatalogProduct(
     pricingMode: product.pricingMode,
     setupFee: product.setupFee,
     doubleSidedOption: product.doubleSidedOption,
+    paperTypes: product.paperTypes,
     tiers: product.tiers,
     leadTime: product.leadTime,
     imageUrl: images[0] ?? product.imageUrl,

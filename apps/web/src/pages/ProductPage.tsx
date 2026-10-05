@@ -33,6 +33,7 @@ export function ProductPage() {
   const [customHeightCm, setCustomHeightCm] = useState('')
   const [qtyText, setQtyText] = useState('1')
   const [doubleSided, setDoubleSided] = useState(false)
+  const [paperTypeId, setPaperTypeId] = useState<string | null>(null)
   const [activeImage, setActiveImage] = useState(0)
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export function ProductPage() {
         setSizeId(data.sizes[0]?.id ?? (data.customSize ? 'custom' : null))
         setQtyText(String(effectiveMinQuantity(data.minQuantity)))
         setDoubleSided(false)
+        setPaperTypeId(data.paperTypes?.[0]?.id ?? null)
         setActiveImage(0)
         if (data.customSize) {
           setCustomWidthCm(String(data.customSize.maxWidthCm))
@@ -133,10 +135,17 @@ export function ProductPage() {
     doubleSided,
   ])
 
+  const paperTypes = product?.paperTypes ?? []
+  const paperRequired = paperTypes.length > 0
+  const paperTypeValid =
+    !paperRequired ||
+    (paperTypeId != null && paperTypes.some((p) => p.id === paperTypeId))
+
   const canContinue =
     selectedSize != null &&
     quote != null &&
     qtyValid &&
+    paperTypeValid &&
     (sizeId !== 'custom' || customDims != null)
 
   function clampCustomDim(
@@ -173,6 +182,9 @@ export function ProductPage() {
     }
     if (product.doubleSidedOption) {
       params.set('sides', doubleSided ? '2' : '1')
+    }
+    if (paperTypeId) {
+      params.set('paper', paperTypeId)
     }
     if (mode === 'upload') params.set('mode', 'upload')
     navigate(`/produkter/${product.slug}/design?${params}`)
@@ -485,6 +497,31 @@ export function ProductPage() {
             </div>
           )}
         </div>
+
+        {paperTypes.length > 0 && (
+          <div>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+              {t('product.paperType')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {paperTypes.map((paper) => (
+                <button
+                  key={paper.id}
+                  type="button"
+                  onClick={() => setPaperTypeId(paper.id)}
+                  className={cn(
+                    'rounded-lg border-2 bg-paper-card px-4 py-2 text-sm font-medium transition',
+                    paperTypeId === paper.id
+                      ? 'border-accent shadow-sm'
+                      : 'border-line hover:border-ink/30',
+                  )}
+                >
+                  {paper.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {product.doubleSidedOption && (
           <div>

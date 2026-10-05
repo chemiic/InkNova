@@ -210,6 +210,7 @@ export function CheckoutPage() {
             designFileName:
               item.designFileName ?? `${item.productSlug}-${item.sizeId}.pdf`,
             doubleSided: item.doubleSided,
+            paperTypeId: item.paperTypeId,
             widthCm: item.widthCm,
             heightCm: item.heightCm,
           })),

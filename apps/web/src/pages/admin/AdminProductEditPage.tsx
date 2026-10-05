@@ -1,12 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import type {
-  PricingMode,
-  Product,
-  ProductCategory,
-  QtyPriceTier,
-  SizeOption,
+import {
+  paperTypesFromLabels,
+  type PaperTypeOption,
+  type PricingMode,
+  type Product,
+  type ProductCategory,
+  type QtyPriceTier,
+  type SizeOption,
 } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,6 +53,7 @@ type FormState = {
   pricingMode: PricingMode | ''
   setupFee: string
   doubleSidedOption: boolean
+  paperTypes: PaperTypeOption[]
   pricePerSqm: boolean
   productTiers: QtyPriceTier[]
   customTiers: QtyPriceTier[]
@@ -81,6 +84,7 @@ function emptyForm(): FormState {
     pricingMode: '',
     setupFee: '',
     doubleSidedOption: false,
+    paperTypes: [],
     pricePerSqm: false,
     productTiers: [],
     customTiers: [],
@@ -119,6 +123,7 @@ function fromProduct(p: Product): FormState {
     pricingMode: p.pricingMode ?? '',
     setupFee: p.setupFee != null ? String(p.setupFee) : '',
     doubleSidedOption: p.doubleSidedOption === true,
+    paperTypes: p.paperTypes ? p.paperTypes.map((pt) => ({ ...pt })) : [],
     pricePerSqm: p.customSize?.pricePerSqm === true,
     productTiers: p.tiers ? p.tiers.map((t) => ({ ...t })) : [],
     customTiers: p.customSize?.tiers
@@ -173,6 +178,9 @@ function toPayload(form: FormState, id?: string) {
     pricingMode: form.pricingMode || null,
     setupFee: form.setupFee.trim() ? Number(form.setupFee) : null,
     doubleSidedOption: form.doubleSidedOption,
+    paperTypes: paperTypesFromLabels(
+      form.paperTypes.map((pt) => pt.label),
+    ),
     tiers: form.productTiers.length > 0 ? form.productTiers : undefined,
     hidden: form.hidden,
   }
@@ -210,6 +218,15 @@ export function AdminProductEditPage() {
 
   function patch<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }))
+  }
+
+  function updatePaperTypeLabel(index: number, label: string) {
+    setForm((f) => ({
+      ...f,
+      paperTypes: f.paperTypes.map((pt, i) =>
+        i === index ? { ...pt, label } : pt,
+      ),
+    }))
   }
 
   function updateSize(index: number, key: keyof SizeOption, value: string) {
@@ -410,6 +427,68 @@ export function AdminProductEditPage() {
             />
             {t('admin.products.doubleSidedOption')}
           </label>
+          <div className="space-y-3 rounded-lg border border-line p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                {t('admin.products.paperTypes')}
+              </h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setForm((f) => ({
+                    ...f,
+                    paperTypes: [...f.paperTypes, { id: '', label: '' }],
+                  }))
+                }
+              >
+                {t('admin.products.addPaperType')}
+              </Button>
+            </div>
+            {form.paperTypes.length === 0 ? (
+              <p className="text-sm text-ink-muted">
+                {t('admin.products.paperTypesEmpty')}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {form.paperTypes.map((paper, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div>
+                      <Label className="mb-1 text-xs text-ink-muted sm:sr-only">
+                        {t('admin.products.paperTypeLabel')}
+                      </Label>
+                      <Input
+                        placeholder="150 g matt"
+                        value={paper.label}
+                        onChange={(e) =>
+                          updatePaperTypeLabel(index, e.target.value)
+                        }
+                        aria-label={t('admin.products.paperTypeLabel')}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-11 w-full shrink-0 sm:w-auto"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          paperTypes: f.paperTypes.filter((_, i) => i !== index),
+                        }))
+                      }
+                    >
+                      {t('admin.products.removePaperType')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {(form.productTiers.length > 0 ||
             form.sizes.some((s) => s.tiers && s.tiers.length > 0)) && (
             <p className="text-sm text-ink-muted">

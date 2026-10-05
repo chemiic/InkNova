@@ -27,6 +27,14 @@ export class HiddenDto {
   hidden!: boolean;
 }
 
+export class PaperTypeOptionDto {
+  @IsString()
+  id!: string;
+
+  @IsString()
+  label!: string;
+}
+
 export class SizeOptionDto {
   @IsString()
   id!: string;
@@ -180,6 +188,12 @@ export class UpsertProductDto {
   @IsOptional()
   @IsBoolean()
   doubleSidedOption?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PaperTypeOptionDto)
+  paperTypes?: PaperTypeOptionDto[];
 
   @IsOptional()
   @IsArray()

@@ -46,6 +46,7 @@ type ProductPricingJson = {
   maxQuantity?: number;
   quantityStep?: number;
   doubleSidedOption?: boolean;
+  paperTypes?: import('@inknova/shared').PaperTypeOption[];
   tiers?: QtyPriceTier[];
 };
 
@@ -727,6 +728,9 @@ function pricingToJson(product: Product): string | null {
   if (product.doubleSidedOption != null) {
     payload.doubleSidedOption = product.doubleSidedOption;
   }
+  if (product.paperTypes && product.paperTypes.length > 0) {
+    payload.paperTypes = product.paperTypes;
+  }
   if (product.tiers && product.tiers.length > 0) payload.tiers = product.tiers;
   return Object.keys(payload).length > 0 ? JSON.stringify(payload) : null;
 }
@@ -745,6 +749,7 @@ function applyPricingJson(
       maxQuantity: parsed.maxQuantity,
       quantityStep: parsed.quantityStep,
       doubleSidedOption: parsed.doubleSidedOption,
+      paperTypes: parsed.paperTypes,
       tiers: parsed.tiers,
     };
   } catch {

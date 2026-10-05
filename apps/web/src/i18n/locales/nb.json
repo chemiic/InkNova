@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Profesjonelle flyers i 150 g matt eller silkepapir. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
+      "description": "Profesjonelle flyers. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
       "leadTime": "3–5 virkedager"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Plakater",
-      "description": "Plakater i satin eller matt papir – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "description": "Plakater – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
       "leadTime": "4–6 virkedager"
     },
     "klistremerker": {
@@ -110,6 +110,7 @@
     "minOrder": "Minstebestilling: {{count}} stk",
     "maxOrder": "Maks {{count}} stk",
     "setupIncluded": "Inkl. oppstart og skjæring {{fee}}",
+    "paperType": "Papir",
     "printSides": "Sider",
     "singleSided": "Ensidig",
     "doubleSided": "Tosidig",
@@ -733,6 +734,12 @@
       "pricingMode": "Prismodell",
       "pricingModeDefault": "Standard (pakke)",
       "doubleSidedOption": "Tilby tosidig (dobbel stykkpris)",
+      "paperTypes": "Papirtyper",
+      "addPaperType": "Legg til papirtype",
+      "removePaperType": "Fjern",
+      "paperTypesEmpty": "Ingen papirtyper – kunden velger ikke papir. Legg til minst én for å vise valg på produktsiden.",
+      "paperTypeId": "ID",
+      "paperTypeLabel": "Navn",
       "tiersHint": "Produktet har mengdepriser fra katalog. Lagre for å beholde dem.",
       "pricePerSqm": "Pris per m² (egendefinert)",
       "description": "Beskrivelse",

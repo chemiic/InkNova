@@ -79,6 +79,11 @@ export class CheckoutLineItemDto {
   doubleSided?: boolean;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  paperTypeId?: string;
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   widthCm?: number;

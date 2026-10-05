@@ -123,6 +123,7 @@ export function addToCart(item: Omit<CartItem, 'id'>) {
       i.designPdfKey === nextItem.designPdfKey &&
       (i.templateId ?? null) === (nextItem.templateId ?? null) &&
       Boolean(i.doubleSided) === Boolean(nextItem.doubleSided) &&
+      (i.paperTypeId ?? null) === (nextItem.paperTypeId ?? null) &&
       i.widthCm === nextItem.widthCm &&
       i.heightCm === nextItem.heightCm,
   )

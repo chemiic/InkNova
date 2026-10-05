@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Professional flyers on 150 g matte or silk paper. Setup and cutting 600 NOK. Double-sided costs twice per piece.",
+      "description": "Professional flyers. Setup and cutting 600 NOK. Double-sided costs twice per piece.",
       "leadTime": "3–5 business days"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Posters",
-      "description": "Posters on satin or matte paper – from A3 to A0 and popular sizes. Setup and cutting 600 NOK.",
+      "description": "Posters – from A3 to A0 and popular sizes. Setup and cutting 600 NOK.",
       "leadTime": "4–6 business days"
     },
     "klistremerker": {
@@ -110,6 +110,7 @@
     "minOrder": "Minimum order: {{count}}",
     "maxOrder": "Max {{count}}",
     "setupIncluded": "Incl. setup and cutting {{fee}}",
+    "paperType": "Paper",
     "printSides": "Sides",
     "singleSided": "Single-sided",
     "doubleSided": "Double-sided",
@@ -733,6 +734,12 @@
       "pricingMode": "Pricing mode",
       "pricingModeDefault": "Default (pack)",
       "doubleSidedOption": "Offer double-sided (2× per piece)",
+      "paperTypes": "Paper types",
+      "addPaperType": "Add paper type",
+      "removePaperType": "Remove",
+      "paperTypesEmpty": "No paper types — customers won't see a paper choice. Add at least one to show it on the product page.",
+      "paperTypeId": "ID",
+      "paperTypeLabel": "Label",
       "tiersHint": "This product has quantity tiers from the catalog. Save to keep them.",
       "pricePerSqm": "Price per m² (custom size)",
       "description": "Description",

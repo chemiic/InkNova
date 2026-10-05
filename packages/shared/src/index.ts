@@ -74,6 +74,55 @@ export function sizeToMm(sizeId: string): SizeDimsMm {
   return SIZE_MM[sizeId] ?? SIZE_MM.a4;
 }
 
+/** Selectable paper/finish (e.g. matte vs silk) on a product line. */
+export interface PaperTypeOption {
+  id: string;
+  label: string;
+}
+
+const PAPER_TYPE_SLUG_CHARS: Record<string, string> = {
+  æ: "ae",
+  ø: "o",
+  å: "a",
+  ä: "a",
+  ö: "o",
+  ü: "u",
+};
+
+/** Stable URL/cart id from a display label (admin-generated). */
+export function slugifyPaperTypeId(label: string): string {
+  let s = label.trim().toLowerCase();
+  for (const [char, repl] of Object.entries(PAPER_TYPE_SLUG_CHARS)) {
+    s = s.replaceAll(char, repl);
+  }
+  s = s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (!s) s = "paper";
+  return s.slice(0, 48);
+}
+
+/** Build paper type options with unique ids from labels (order preserved). */
+export function paperTypesFromLabels(labels: string[]): PaperTypeOption[] {
+  const used = new Set<string>();
+  const out: PaperTypeOption[] = [];
+  for (const raw of labels) {
+    const label = raw.trim();
+    if (!label) continue;
+    const base = slugifyPaperTypeId(label);
+    let id = base;
+    let n = 2;
+    while (used.has(id)) {
+      id = `${base}-${n++}`;
+    }
+    used.add(id);
+    out.push({ id, label });
+  }
+  return out;
+}
+
 export interface SizeOption {
   id: string;
   /** Display label, e.g. "A4" or "9×5 cm" */
@@ -191,6 +240,8 @@ export interface Product {
   setupFee?: MoneyNOK;
   /** Customer can choose double-sided (doubles per-piece price). */
   doubleSidedOption?: boolean;
+  /** When set, customer must pick a paper type before checkout. */
+  paperTypes?: PaperTypeOption[];
   /** Shared quantity tiers when sizes omit their own. */
   tiers?: import("./pricing").QtyPriceTier[];
   /**
@@ -203,6 +254,28 @@ export interface Product {
 /** Public storefront visibility (omitted/false = visible). */
 export function isProductVisible(product: Product): boolean {
   return product.hidden !== true;
+}
+
+export function paperTypeLabelFor(
+  product: Product,
+  paperTypeId: string | undefined,
+): string | undefined {
+  if (!paperTypeId || !product.paperTypes?.length) return undefined;
+  return product.paperTypes.find((p) => p.id === paperTypeId)?.label;
+}
+
+/** Cart / order display: size · paper · double-sided. */
+export function buildLineSizeLabel(
+  sizeLabel: string,
+  opts?: {
+    paperTypeLabel?: string;
+    doubleSidedLabel?: string;
+  },
+): string {
+  const parts = [sizeLabel];
+  if (opts?.paperTypeLabel) parts.push(opts.paperTypeLabel);
+  if (opts?.doubleSidedLabel) parts.push(opts.doubleSidedLabel);
+  return parts.join(' · ');
 }
 
 /** Gallery list with cover fallback. */
@@ -295,6 +368,7 @@ export interface CartItem {
   maxQuantity?: number;
   quantityStep?: number;
   doubleSided?: boolean;
+  paperTypeId?: string;
   widthCm?: number;
   heightCm?: number;
   /** Offline re-quote when qty changes */
@@ -339,6 +413,7 @@ export interface CheckoutLineItemInput {
   /** Original filename for the print PDF attached to this line */
   designFileName: string;
   doubleSided?: boolean;
+  paperTypeId?: string;
   widthCm?: number;
   heightCm?: number;
 }

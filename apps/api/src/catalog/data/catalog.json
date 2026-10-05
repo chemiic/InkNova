@@ -10,7 +10,17 @@
       "category": "trykk",
       "hidden": false,
       "name": "Flyers",
-      "description": "Profesjonelle flyers i 150 g matt eller silkepapir. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
+      "description": "Profesjonelle flyers. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
+      "paperTypes": [
+        {
+          "id": "matt-150",
+          "label": "150 g matt"
+        },
+        {
+          "id": "silk-150",
+          "label": "150 g silkepapir"
+        }
+      ],
       "imageUrl": "/products/flyers.svg",
       "leadTime": "3–5 virkedager",
       "delivery": {
@@ -182,6 +192,16 @@
       "hidden": false,
       "name": "Visittkort",
       "description": "Klassiske visittkort med skarp trykk og flere størrelser.",
+      "paperTypes": [
+        {
+          "id": "matt-350",
+          "label": "350 g matt"
+        },
+        {
+          "id": "silk-400",
+          "label": "400 g silke"
+        }
+      ],
       "imageUrl": "/products/visittkort.jpg",
       "images": [
         "/products/visittkort.jpg"
@@ -276,7 +296,17 @@
       "category": "trykk",
       "hidden": false,
       "name": "Plakater",
-      "description": "Plakater i satin eller matt papir – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "description": "Plakater – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "paperTypes": [
+        {
+          "id": "satin",
+          "label": "Satin"
+        },
+        {
+          "id": "matt",
+          "label": "Matt"
+        }
+      ],
       "imageUrl": "/products/plakater.jpg",
       "images": [
         "/products/plakater.jpg"
@@ -597,6 +627,16 @@
       "hidden": true,
       "name": "Klistremerker",
       "description": "Slitesterke klistremerker i flere kvadratiske størrelser.",
+      "paperTypes": [
+        {
+          "id": "paper-matt",
+          "label": "Papir (permanent)"
+        },
+        {
+          "id": "vinyl",
+          "label": "Vinyl"
+        }
+      ],
       "imageUrl": "/products/klistremerker.svg",
       "leadTime": "3–5 virkedager",
       "delivery": {
@@ -633,6 +673,16 @@
       "hidden": true,
       "name": "Arbeidstegninger svart/hvitt",
       "description": "Tekniske tegninger og planer i sort/hvitt, stort format.",
+      "paperTypes": [
+        {
+          "id": "copy-80",
+          "label": "80 g kopipapir"
+        },
+        {
+          "id": "copy-90",
+          "label": "90 g tykkere papir"
+        }
+      ],
       "imageUrl": "/products/arbeidstegninger.svg",
       "leadTime": "2–4 virkedager",
       "delivery": {
@@ -760,6 +810,16 @@
       "hidden": true,
       "name": "Arbeidstegninger farge",
       "description": "Tekniske tegninger og planer i farge, stort format.",
+      "paperTypes": [
+        {
+          "id": "copy-80",
+          "label": "80 g kopipapir"
+        },
+        {
+          "id": "copy-90",
+          "label": "90 g tykkere papir"
+        }
+      ],
       "imageUrl": "/products/arbeidstegninger.svg",
       "leadTime": "2–4 virkedager",
       "delivery": {
@@ -887,6 +947,16 @@
       "hidden": false,
       "name": "Roll-up",
       "description": "Komplett roll-up banner 85×200 cm med kassett.",
+      "paperTypes": [
+        {
+          "id": "standard",
+          "label": "Standard bannerduk"
+        },
+        {
+          "id": "premium",
+          "label": "Premium bannerduk"
+        }
+      ],
       "imageUrl": "/products/rollup.svg",
       "leadTime": "5–7 virkedager",
       "delivery": {
@@ -908,6 +978,16 @@
       "hidden": true,
       "name": "Magasin",
       "description": "Heftede magasiner i A4 eller A5.",
+      "paperTypes": [
+        {
+          "id": "matt-130",
+          "label": "130 g matt"
+        },
+        {
+          "id": "matt-170",
+          "label": "170 g matt"
+        }
+      ],
       "imageUrl": "/products/magasin.jpg",
       "images": [
         "/products/magasin.jpg"
@@ -938,6 +1018,16 @@
       "hidden": false,
       "name": "4-siders program",
       "description": "Fire-siders programhefte i A4, A5 eller egendefinert størrelse.",
+      "paperTypes": [
+        {
+          "id": "matt-130",
+          "label": "130 g matt"
+        },
+        {
+          "id": "matt-170",
+          "label": "170 g matt"
+        }
+      ],
       "imageUrl": "/products/4-sider.jfif",
       "leadTime": "4–7 virkedager",
       "delivery": {
