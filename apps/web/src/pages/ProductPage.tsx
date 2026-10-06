@@ -1,6 +1,7 @@
 import {
   customSizeMinCm,
   effectiveMinQuantity,
+  paperQuoteAdjustments,
   productGallery,
   quoteLine,
   startingPrice,
@@ -122,6 +123,7 @@ export function ProductPage() {
         widthCm: customDims?.width,
         heightCm: customDims?.height,
         doubleSided,
+        ...paperQuoteAdjustments(product, paperTypeId),
       })
     } catch {
       return null
@@ -133,6 +135,7 @@ export function ProductPage() {
     qtyNumber,
     customDims,
     doubleSided,
+    paperTypeId,
   ])
 
   const paperTypes = product?.paperTypes ?? []
@@ -296,6 +299,7 @@ export function ProductPage() {
         sizeId: size.id,
         qty: qtyValid && qtyNumber != null ? qtyNumber : minQty,
         doubleSided,
+        ...paperQuoteAdjustments(product, paperTypeId),
       }).lineTotal
     } catch {
       return size.price
@@ -423,6 +427,7 @@ export function ProductPage() {
                         widthCm: customDims.width,
                         heightCm: customDims.height,
                         doubleSided,
+                        ...paperQuoteAdjustments(product, paperTypeId),
                       }).lineTotal,
                     )}
                   </span>
@@ -515,8 +520,18 @@ export function ProductPage() {
                       ? 'border-accent shadow-sm'
                       : 'border-line hover:border-ink/30',
                   )}
-                >
-                  {paper.label}
+                  >
+                  <span>{paper.label}</span>
+                  {paper.surcharge != null && paper.surcharge > 0 && (
+                    <span className="ml-1.5 tabular-nums text-ink-muted">
+                      +{Math.round(paper.surcharge)}
+                    </span>
+                  )}
+                  {paper.surchargePercent != null && paper.surchargePercent > 0 && (
+                    <span className="ml-1.5 tabular-nums text-ink-muted">
+                      +{paper.surchargePercent}%
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -576,6 +591,7 @@ export function ProductPage() {
                   widthCm: customDims?.width,
                   heightCm: customDims?.height,
                   doubleSided,
+                  ...paperQuoteAdjustments(product, paperTypeId),
                 }).lineTotal
                 return (
                   <option key={tier.minQty} value={tier.minQty}>

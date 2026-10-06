@@ -179,7 +179,11 @@ function toPayload(form: FormState, id?: string) {
     setupFee: form.setupFee.trim() ? Number(form.setupFee) : null,
     doubleSidedOption: form.doubleSidedOption,
     paperTypes: paperTypesFromLabels(
-      form.paperTypes.map((pt) => pt.label),
+      form.paperTypes.map((pt) => ({
+        label: pt.label,
+        surcharge: pt.surcharge,
+        surchargePercent: pt.surchargePercent,
+      })),
     ),
     tiers: form.productTiers.length > 0 ? form.productTiers : undefined,
     hidden: form.hidden,
@@ -225,6 +229,23 @@ export function AdminProductEditPage() {
       ...f,
       paperTypes: f.paperTypes.map((pt, i) =>
         i === index ? { ...pt, label } : pt,
+      ),
+    }))
+  }
+
+  function updatePaperTypeSurcharge(index: number, raw: string) {
+    const trimmed = raw.trim()
+    let surcharge: number | undefined
+    if (trimmed !== '') {
+      const n = Number(trimmed)
+      if (!Number.isFinite(n) || n < 0) return
+      surcharge = Math.round(n)
+      if (surcharge === 0) surcharge = undefined
+    }
+    setForm((f) => ({
+      ...f,
+      paperTypes: f.paperTypes.map((pt, i) =>
+        i === index ? { ...pt, surcharge } : pt,
       ),
     }))
   }
@@ -446,6 +467,9 @@ export function AdminProductEditPage() {
                 {t('admin.products.addPaperType')}
               </Button>
             </div>
+            <p className="text-sm text-ink-muted">
+              {t('admin.products.paperTypeSurchargeHint')}
+            </p>
             {form.paperTypes.length === 0 ? (
               <p className="text-sm text-ink-muted">
                 {t('admin.products.paperTypesEmpty')}
@@ -455,10 +479,10 @@ export function AdminProductEditPage() {
                 {form.paperTypes.map((paper, index) => (
                   <div
                     key={index}
-                    className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center"
+                    className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8.5rem_auto] sm:items-end"
                   >
                     <div>
-                      <Label className="mb-1 text-xs text-ink-muted sm:sr-only">
+                      <Label className="mb-1 text-xs text-ink-muted">
                         {t('admin.products.paperTypeLabel')}
                       </Label>
                       <Input
@@ -468,6 +492,25 @@ export function AdminProductEditPage() {
                           updatePaperTypeLabel(index, e.target.value)
                         }
                         aria-label={t('admin.products.paperTypeLabel')}
+                      />
+                    </div>
+                    <div>
+                      <Label className="mb-1 text-xs text-ink-muted">
+                        {t('admin.products.paperTypeSurcharge')}
+                      </Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={1}
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={
+                          paper.surcharge == null ? '' : String(paper.surcharge)
+                        }
+                        onChange={(e) =>
+                          updatePaperTypeSurcharge(index, e.target.value)
+                        }
+                        aria-label={t('admin.products.paperTypeSurcharge')}
                       />
                     </div>
                     <Button

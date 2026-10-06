@@ -78,6 +78,16 @@ export function sizeToMm(sizeId: string): SizeDimsMm {
 export interface PaperTypeOption {
   id: string;
   label: string;
+  /**
+   * Flat NOK added once to the line total when this paper is selected.
+   * Omitted or 0 means no surcharge. Shown on the storefront as "+50".
+   */
+  surcharge?: MoneyNOK;
+  /**
+   * Percent added to the line total when this paper is selected.
+   * 5 means the quoted price is 5% higher. Omitted or 0 means no extra.
+   */
+  surchargePercent?: number;
 }
 
 const PAPER_TYPE_SLUG_CHARS: Record<string, string> = {
@@ -104,12 +114,79 @@ export function slugifyPaperTypeId(label: string): string {
   return s.slice(0, 48);
 }
 
+/** Positive whole-kroner surcharge, or undefined when there is none. */
+export function normalizePaperSurcharge(
+  value: number | null | undefined,
+): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+  return Math.round(value);
+}
+
+/** Percent of the line total, or undefined when there is none. */
+export function normalizePaperSurchargePercent(
+  value: number | null | undefined,
+): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+  if (value > 100) return undefined;
+  const rounded = Math.round(value * 10) / 10;
+  return rounded > 0 ? rounded : undefined;
+}
+
+/** Flat NOK surcharge for the selected paper type (0 when none). */
+export function paperSurchargeFor(
+  product: { paperTypes?: PaperTypeOption[] } | null | undefined,
+  paperTypeId?: string | null,
+): number {
+  if (!product?.paperTypes?.length || !paperTypeId) return 0;
+  return (
+    normalizePaperSurcharge(
+      product.paperTypes.find((p) => p.id === paperTypeId)?.surcharge,
+    ) ?? 0
+  );
+}
+
+/** Percent surcharge for the selected paper type (0 when none). */
+export function paperSurchargePercentFor(
+  product: { paperTypes?: PaperTypeOption[] } | null | undefined,
+  paperTypeId?: string | null,
+): number {
+  if (!product?.paperTypes?.length || !paperTypeId) return 0;
+  return (
+    normalizePaperSurchargePercent(
+      product.paperTypes.find((p) => p.id === paperTypeId)?.surchargePercent,
+    ) ?? 0
+  );
+}
+
+/** Quote fields for the selected paper (flat NOK and/or percent of the line). */
+export function paperQuoteAdjustments(
+  product: { paperTypes?: PaperTypeOption[] } | null | undefined,
+  paperTypeId?: string | null,
+): { paperSurcharge?: number; paperSurchargePercent?: number } {
+  const paperSurcharge = paperSurchargeFor(product, paperTypeId);
+  const paperSurchargePercent = paperSurchargePercentFor(product, paperTypeId);
+  return {
+    ...(paperSurcharge > 0 ? { paperSurcharge } : {}),
+    ...(paperSurchargePercent > 0 ? { paperSurchargePercent } : {}),
+  };
+}
+
 /** Build paper type options with unique ids from labels (order preserved). */
-export function paperTypesFromLabels(labels: string[]): PaperTypeOption[] {
+export function paperTypesFromLabels(
+  items: Array<{
+    label: string;
+    surcharge?: number;
+    surchargePercent?: number;
+  }>,
+): PaperTypeOption[] {
   const used = new Set<string>();
   const out: PaperTypeOption[] = [];
-  for (const raw of labels) {
-    const label = raw.trim();
+  for (const item of items) {
+    const label = item.label.trim();
     if (!label) continue;
     const base = slugifyPaperTypeId(label);
     let id = base;
@@ -118,7 +195,14 @@ export function paperTypesFromLabels(labels: string[]): PaperTypeOption[] {
       id = `${base}-${n++}`;
     }
     used.add(id);
-    out.push({ id, label });
+    const surcharge = normalizePaperSurcharge(item.surcharge);
+    const surchargePercent = normalizePaperSurchargePercent(
+      item.surchargePercent,
+    );
+    const option: PaperTypeOption = { id, label };
+    if (surcharge != null) option.surcharge = surcharge;
+    if (surchargePercent != null) option.surchargePercent = surchargePercent;
+    out.push(option);
   }
   return out;
 }

@@ -740,6 +740,8 @@
       "paperTypesEmpty": "Ingen papirtyper – kunden velger ikke papir. Legg til minst én for å vise valg på produktsiden.",
       "paperTypeId": "ID",
       "paperTypeLabel": "Navn",
+      "paperTypeSurcharge": "Påslag (NOK)",
+      "paperTypeSurchargeHint": "Fast beløp som legges til linjeprisen når kunden velger denne papirtypen. Vises som +50 på produktsiden. Tomt eller 0 = ingen påslag.",
       "tiersHint": "Produktet har mengdepriser fra katalog. Lagre for å beholde dem.",
       "pricePerSqm": "Pris per m² (egendefinert)",
       "description": "Beskrivelse",

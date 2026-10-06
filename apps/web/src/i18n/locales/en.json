@@ -740,6 +740,8 @@
       "paperTypesEmpty": "No paper types — customers won't see a paper choice. Add at least one to show it on the product page.",
       "paperTypeId": "ID",
       "paperTypeLabel": "Label",
+      "paperTypeSurcharge": "Surcharge (NOK)",
+      "paperTypeSurchargeHint": "Flat amount added to the line price when the customer picks this paper. Shown as +50 on the product page. Empty or 0 = no surcharge.",
       "tiersHint": "This product has quantity tiers from the catalog. Save to keep them.",
       "pricePerSqm": "Price per m² (custom size)",
       "description": "Description",

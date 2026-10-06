@@ -11,6 +11,7 @@ import {
   effectiveMinQuantity,
   formatOrderReference,
   generateOrderReference,
+  paperQuoteAdjustments,
   resolveOrderDeliveryFee,
   tryQuoteLine,
   type CreateOrderResponse,
@@ -126,12 +127,21 @@ export class OrdersService {
           `Maximum quantity for ${product.slug} is ${product.maxQuantity}`,
         );
       }
+      if (product.paperTypes && product.paperTypes.length > 0) {
+        const known = product.paperTypes.some((p) => p.id === item.paperTypeId);
+        if (!known) {
+          throw new BadRequestException(
+            `Unknown paper type for ${product.slug}`,
+          );
+        }
+      }
       const quote = tryQuoteLine(product, {
         sizeId: item.sizeId,
         qty,
         widthCm: item.widthCm,
         heightCm: item.heightCm,
         doubleSided: item.doubleSided,
+        ...paperQuoteAdjustments(product, item.paperTypeId),
       });
       if (!quote) {
         throw new BadRequestException(

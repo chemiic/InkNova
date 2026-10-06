@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
   MinLength,
   ValidateIf,
@@ -33,6 +34,19 @@ export class PaperTypeOptionDto {
 
   @IsString()
   label!: string;
+
+  /** Flat NOK added to the line when this paper is selected. */
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  surcharge?: number;
+
+  /** Percent of the line total when this paper is selected. */
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  surchargePercent?: number;
 }
 
 export class SizeOptionDto {

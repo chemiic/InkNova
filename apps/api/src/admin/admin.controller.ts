@@ -421,7 +421,13 @@ function dtoToProduct(body: UpsertProductDto, id: string): Product {
     doubleSidedOption: body.doubleSidedOption,
     paperTypes:
       body.paperTypes && body.paperTypes.length > 0
-        ? paperTypesFromLabels(body.paperTypes.map((p) => p.label))
+        ? paperTypesFromLabels(
+            body.paperTypes.map((p) => ({
+              label: p.label,
+              surcharge: p.surcharge,
+              surchargePercent: p.surchargePercent,
+            })),
+          )
         : undefined,
     tiers: body.tiers,
     hidden: body.hidden === true,

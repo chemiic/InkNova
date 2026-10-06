@@ -5,6 +5,7 @@ import {
   effectiveMinQuantity,
   linePricingFromProduct,
   mmToPx,
+  paperQuoteAdjustments,
   paperTypeLabelFor,
   quoteLine,
   sizeToMm,
@@ -392,12 +393,17 @@ export function DesignPage() {
         previewFileNameState ?? `${product.slug}-${selectedSize.id}.pdf`
       const doubleSided =
         product.doubleSidedOption === true && doubleSidedRequested
+      const paperAdjustments = paperQuoteAdjustments(
+        product,
+        resolvedPaperTypeId,
+      )
       const quote = quoteLine(product, {
         sizeId: selectedSize.id,
         qty,
         widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
         heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
         doubleSided,
+        ...paperAdjustments,
       })
       const pricing = linePricingFromProduct(product, {
         sizeId: selectedSize.id,
@@ -405,6 +411,7 @@ export function DesignPage() {
         widthCm: Number.isFinite(widthCmParam) ? widthCmParam : undefined,
         heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
         doubleSided,
+        ...paperAdjustments,
       })
       const sizeLabel = buildLineSizeLabel(selectedSize.label, {
         paperTypeLabel: paperTypeLabelFor(product, resolvedPaperTypeId),
@@ -533,6 +540,7 @@ export function DesignPage() {
         heightCm: Number.isFinite(heightCmParam) ? heightCmParam : undefined,
         doubleSided:
           product.doubleSidedOption === true && doubleSidedRequested,
+        ...paperQuoteAdjustments(product, resolvedPaperTypeId),
       }).lineTotal,
     ),
   })

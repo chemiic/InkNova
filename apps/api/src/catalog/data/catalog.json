@@ -13,12 +13,31 @@
       "description": "Profesjonelle flyers. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
       "paperTypes": [
         {
+          "id": "matt-120",
+          "label": "120 g matt"
+        },
+        {
           "id": "matt-150",
           "label": "150 g matt"
         },
         {
           "id": "silk-150",
           "label": "150 g silkepapir"
+        },
+        {
+          "id": "silk-200",
+          "label": "200 g silke",
+          "surchargePercent": 5
+        },
+        {
+          "id": "matt-300",
+          "label": "300 g matt",
+          "surchargePercent": 10
+        },
+        {
+          "id": "silk-300",
+          "label": "300 g silke",
+          "surchargePercent": 10
         }
       ],
       "imageUrl": "/products/flyers.svg",
@@ -194,12 +213,12 @@
       "description": "Klassiske visittkort med skarp trykk og flere størrelser.",
       "paperTypes": [
         {
-          "id": "matt-350",
-          "label": "350 g matt"
+          "id": "matt-300",
+          "label": "300 g matt"
         },
         {
-          "id": "silk-400",
-          "label": "400 g silke"
+          "id": "silk-300",
+          "label": "300 g silke"
         }
       ],
       "imageUrl": "/products/visittkort.jpg",
@@ -951,10 +970,6 @@
         {
           "id": "standard",
           "label": "Standard bannerduk"
-        },
-        {
-          "id": "premium",
-          "label": "Premium bannerduk"
         }
       ],
       "imageUrl": "/products/rollup.svg",
@@ -967,7 +982,7 @@
         {
           "id": "85x200",
           "label": "85×200 cm",
-          "price": 1299
+          "price": 2988
         }
       ]
     },
@@ -1020,12 +1035,12 @@
       "description": "Fire-siders programhefte i A4, A5 eller egendefinert størrelse.",
       "paperTypes": [
         {
-          "id": "matt-130",
-          "label": "130 g matt"
+          "id": "matt-150",
+          "label": "150 g matt"
         },
         {
-          "id": "matt-170",
-          "label": "170 g matt"
+          "id": "silk-150",
+          "label": "150 g silke"
         }
       ],
       "imageUrl": "/products/4-sider.jfif",

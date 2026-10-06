@@ -2,6 +2,7 @@ import {
   clampQuantity,
   effectiveMinQuantity,
   linePricingFromProduct,
+  paperQuoteAdjustments,
   quoteFromPricing,
   quoteLine,
   tryQuoteLine,
@@ -198,6 +199,7 @@ export function syncCartFromCatalog(products: Product[]) {
       widthCm: i.widthCm,
       heightCm: i.heightCm,
       doubleSided: i.doubleSided,
+      ...paperQuoteAdjustments(product, i.paperTypeId),
     })
     if (!pricing) {
       const minQuantity = effectiveMinQuantity(product.minQuantity)
@@ -296,6 +298,8 @@ export function buildCartPricing(
     widthCm?: number
     heightCm?: number
     doubleSided?: boolean
+    paperSurcharge?: number
+    paperSurchargePercent?: number
   },
 ) {
   const pricing = linePricingFromProduct(product, opts)

@@ -1,11 +1,13 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { CookieConsent } from '@/components/CookieConsent'
+import { useEffect } from 'react'
+// Cookie consent banner is off: the site does not set cookies, and the
+// analytics/marketing toggles are not connected to any tracker.
+// import { CookieConsent } from '@/components/CookieConsent'
 import { RouteSeo } from '@/components/RouteSeo'
-import {
-  hasCookieConsent,
-  subscribeCookieConsent,
-} from '@/lib/cookieConsent'
+// import {
+//   hasCookieConsent,
+//   subscribeCookieConsent,
+// } from '@/lib/cookieConsent'
 import { cn } from '@/lib/utils'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
@@ -13,25 +15,25 @@ import { SiteHeader } from './SiteHeader'
 export function RootLayout() {
   const { pathname, hash } = useLocation()
   const isDesign = /\/produkter\/[^/]+\/design\/?$/.test(pathname)
-  const [bannerSpace, setBannerSpace] = useState(() => !hasCookieConsent())
+  // const [bannerSpace, setBannerSpace] = useState(() => !hasCookieConsent())
 
   useEffect(() => {
     if (hash) return
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname, hash])
 
-  useEffect(() => {
-    const sync = () => setBannerSpace(!hasCookieConsent())
-    sync()
-    return subscribeCookieConsent(sync)
-  }, [])
+  // useEffect(() => {
+  //   const sync = () => setBannerSpace(!hasCookieConsent())
+  //   sync()
+  //   return subscribeCookieConsent(sync)
+  // }, [])
 
   return (
     <div
       className={cn(
         'flex flex-col',
         isDesign ? 'h-dvh overflow-hidden' : 'min-h-dvh',
-        bannerSpace && !isDesign && 'pb-44 sm:pb-36',
+        // bannerSpace && !isDesign && 'pb-44 sm:pb-36',
       )}
     >
       <RouteSeo />
@@ -40,7 +42,7 @@ export function RootLayout() {
         <Outlet />
       </main>
       {!isDesign && <SiteFooter />}
-      <CookieConsent hidden={isDesign} />
+      {/* <CookieConsent hidden={isDesign} /> */}
     </div>
   )
 }

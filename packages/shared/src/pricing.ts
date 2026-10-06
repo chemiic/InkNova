@@ -53,6 +53,10 @@ export interface LineQuoteInput {
   widthCm?: number;
   heightCm?: number;
   doubleSided?: boolean;
+  /** Flat NOK added once for the selected paper type. */
+  paperSurcharge?: MoneyNOK;
+  /** Percent of the line total added for the selected paper type. */
+  paperSurchargePercent?: number;
 }
 
 export interface QuoteResult {
@@ -74,6 +78,10 @@ export interface LinePricing {
   pricePerSqm?: boolean;
   tiers?: QtyPriceTier[];
   basePrice: MoneyNOK;
+  /** Flat NOK added once for the selected paper type. */
+  paperSurcharge?: MoneyNOK;
+  /** Percent of the line total added for the selected paper type. */
+  paperSurchargePercent?: number;
 }
 
 export function effectiveMinQuantity(minQuantity?: number): number {
@@ -151,6 +159,10 @@ export function linePricingFromProduct(
     mode === 'perPiece' &&
     product.doubleSidedOption === true &&
     input.doubleSided === true;
+  const paperSurcharge = normalizePaperSurcharge(input.paperSurcharge);
+  const paperSurchargePercent = normalizePaperSurchargePercent(
+    input.paperSurchargePercent,
+  );
   return {
     mode,
     setupFee: product.setupFee ?? 0,
@@ -163,6 +175,46 @@ export function linePricingFromProduct(
     pricePerSqm: resolved.pricePerSqm,
     tiers: resolved.tiers,
     basePrice: resolved.basePrice,
+    paperSurcharge,
+    paperSurchargePercent,
+  };
+}
+
+function normalizePaperSurcharge(value: number | undefined): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+  return Math.round(value);
+}
+
+function normalizePaperSurchargePercent(
+  value: number | undefined,
+): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+  if (value > 100) return undefined;
+  const rounded = Math.round(value * 10) / 10;
+  return rounded > 0 ? rounded : undefined;
+}
+
+function applyPaperAdjustments(
+  result: QuoteResult,
+  surcharge: number | undefined,
+  surchargePercent: number | undefined,
+): QuoteResult {
+  const extra = normalizePaperSurcharge(surcharge) ?? 0;
+  const percent = normalizePaperSurchargePercent(surchargePercent) ?? 0;
+  if (!extra && !percent) return result;
+  let lineTotal = result.lineTotal;
+  if (percent) {
+    lineTotal = Math.round(lineTotal * (1 + percent / 100));
+  }
+  lineTotal += extra;
+  return {
+    lineTotal,
+    unitPrice: result.qty > 0 ? lineTotal / result.qty : lineTotal,
+    qty: result.qty,
   };
 }
 
@@ -186,11 +238,15 @@ export function quoteFromPricing(
         ? (findTier(pricing.tiers, qty)?.price ?? pricing.basePrice)
         : pricing.basePrice;
     const lineTotal = Math.round(setup + kvm * area * qty * double);
-    return {
-      lineTotal,
-      unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
-      qty,
-    };
+    return applyPaperAdjustments(
+      {
+        lineTotal,
+        unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
+        qty,
+      },
+      pricing.paperSurcharge,
+      pricing.paperSurchargePercent,
+    );
   }
 
   if (pricing.mode === 'pack') {
@@ -198,15 +254,23 @@ export function quoteFromPricing(
       const tier = findTier(pricing.tiers, qty);
       const pack = tier?.price ?? pricing.basePrice;
       const lineTotal = Math.round(setup + pack);
-      return {
-        lineTotal,
-        unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
-        qty,
-      };
+      return applyPaperAdjustments(
+        {
+          lineTotal,
+          unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
+          qty,
+        },
+        pricing.paperSurcharge,
+        pricing.paperSurchargePercent,
+      );
     }
     const unit = pricing.basePrice / pricing.minQuantity;
     const lineTotal = Math.round(unit * qty);
-    return { lineTotal, unitPrice: unit, qty };
+    return applyPaperAdjustments(
+      { lineTotal, unitPrice: unit, qty },
+      pricing.paperSurcharge,
+      pricing.paperSurchargePercent,
+    );
   }
 
   // perPiece
@@ -218,11 +282,15 @@ export function quoteFromPricing(
     unitPiece = pricing.basePrice / pricing.minQuantity;
   }
   const lineTotal = Math.round(setup + unitPiece * qty * double);
-  return {
-    lineTotal,
-    unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
-    qty,
-  };
+  return applyPaperAdjustments(
+    {
+      lineTotal,
+      unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
+      qty,
+    },
+    pricing.paperSurcharge,
+    pricing.paperSurchargePercent,
+  );
 }
 
 export function tryQuoteLine(
