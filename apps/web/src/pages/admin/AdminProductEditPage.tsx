@@ -30,6 +30,16 @@ const CATEGORIES: ProductCategory[] = [
   'messe',
 ]
 
+type PaperSurchargeKind = 'fixed' | 'percent'
+
+type PaperFormRow = PaperTypeOption & { surchargeKind: PaperSurchargeKind }
+
+function paperSurchargeKind(paper: PaperTypeOption): PaperSurchargeKind {
+  return paper.surchargePercent != null && paper.surchargePercent > 0
+    ? 'percent'
+    : 'fixed'
+}
+
 type FormState = {
   slug: string
   category: ProductCategory
@@ -53,7 +63,7 @@ type FormState = {
   pricingMode: PricingMode | ''
   setupFee: string
   doubleSidedOption: boolean
-  paperTypes: PaperTypeOption[]
+  paperTypes: PaperFormRow[]
   pricePerSqm: boolean
   productTiers: QtyPriceTier[]
   customTiers: QtyPriceTier[]
@@ -123,7 +133,12 @@ function fromProduct(p: Product): FormState {
     pricingMode: p.pricingMode ?? '',
     setupFee: p.setupFee != null ? String(p.setupFee) : '',
     doubleSidedOption: p.doubleSidedOption === true,
-    paperTypes: p.paperTypes ? p.paperTypes.map((pt) => ({ ...pt })) : [],
+    paperTypes: p.paperTypes
+      ? p.paperTypes.map((pt) => ({
+          ...pt,
+          surchargeKind: paperSurchargeKind(pt),
+        }))
+      : [],
     pricePerSqm: p.customSize?.pricePerSqm === true,
     productTiers: p.tiers ? p.tiers.map((t) => ({ ...t })) : [],
     customTiers: p.customSize?.tiers
@@ -179,11 +194,11 @@ function toPayload(form: FormState, id?: string) {
     setupFee: form.setupFee.trim() ? Number(form.setupFee) : null,
     doubleSidedOption: form.doubleSidedOption,
     paperTypes: paperTypesFromLabels(
-      form.paperTypes.map((pt) => ({
-        label: pt.label,
-        surcharge: pt.surcharge,
-        surchargePercent: pt.surchargePercent,
-      })),
+      form.paperTypes.map((pt) =>
+        pt.surchargeKind === 'percent'
+          ? { label: pt.label, surchargePercent: pt.surchargePercent }
+          : { label: pt.label, surcharge: pt.surcharge },
+      ),
     ),
     tiers: form.productTiers.length > 0 ? form.productTiers : undefined,
     hidden: form.hidden,
@@ -233,20 +248,52 @@ export function AdminProductEditPage() {
     }))
   }
 
-  function updatePaperTypeSurcharge(index: number, raw: string) {
-    const trimmed = raw.trim()
-    let surcharge: number | undefined
-    if (trimmed !== '') {
-      const n = Number(trimmed)
-      if (!Number.isFinite(n) || n < 0) return
-      surcharge = Math.round(n)
-      if (surcharge === 0) surcharge = undefined
-    }
+  function updatePaperSurchargeKind(index: number, kind: PaperSurchargeKind) {
     setForm((f) => ({
       ...f,
       paperTypes: f.paperTypes.map((pt, i) =>
-        i === index ? { ...pt, surcharge } : pt,
+        i === index
+          ? {
+              ...pt,
+              surchargeKind: kind,
+              surcharge: kind === 'fixed' ? pt.surcharge : undefined,
+              surchargePercent:
+                kind === 'percent' ? pt.surchargePercent : undefined,
+            }
+          : pt,
       ),
+    }))
+  }
+
+  function updatePaperSurchargeValue(index: number, raw: string) {
+    const trimmed = raw.trim().replace(',', '.')
+    setForm((f) => ({
+      ...f,
+      paperTypes: f.paperTypes.map((pt, i) => {
+        if (i !== index) return pt
+        if (trimmed === '') {
+          return pt.surchargeKind === 'percent'
+            ? { ...pt, surcharge: undefined, surchargePercent: undefined }
+            : { ...pt, surcharge: undefined, surchargePercent: undefined }
+        }
+        const n = Number(trimmed)
+        if (!Number.isFinite(n) || n < 0) return pt
+        if (pt.surchargeKind === 'percent') {
+          if (n > 100) return pt
+          const surchargePercent = Math.round(n * 10) / 10
+          return {
+            ...pt,
+            surcharge: undefined,
+            surchargePercent: surchargePercent === 0 ? undefined : surchargePercent,
+          }
+        }
+        const surcharge = Math.round(n)
+        return {
+          ...pt,
+          surchargePercent: undefined,
+          surcharge: surcharge === 0 ? undefined : surcharge,
+        }
+      }),
     }))
   }
 
@@ -460,7 +507,10 @@ export function AdminProductEditPage() {
                 onClick={() =>
                   setForm((f) => ({
                     ...f,
-                    paperTypes: [...f.paperTypes, { id: '', label: '' }],
+                    paperTypes: [
+                      ...f.paperTypes,
+                      { id: '', label: '', surchargeKind: 'fixed' },
+                    ],
                   }))
                 }
               >
@@ -479,7 +529,7 @@ export function AdminProductEditPage() {
                 {form.paperTypes.map((paper, index) => (
                   <div
                     key={index}
-                    className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8.5rem_auto] sm:items-end"
+                    className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9rem_7rem_auto] sm:items-end"
                   >
                     <div>
                       <Label className="mb-1 text-xs text-ink-muted">
@@ -496,21 +546,57 @@ export function AdminProductEditPage() {
                     </div>
                     <div>
                       <Label className="mb-1 text-xs text-ink-muted">
-                        {t('admin.products.paperTypeSurcharge')}
+                        {t('admin.products.paperTypeSurchargeKind')}
+                      </Label>
+                      <select
+                        className="flex h-11 w-full rounded-md border border-transparent bg-[#ededed] px-3 text-sm"
+                        value={paper.surchargeKind}
+                        onChange={(e) =>
+                          updatePaperSurchargeKind(
+                            index,
+                            e.target.value as PaperSurchargeKind,
+                          )
+                        }
+                        aria-label={t('admin.products.paperTypeSurchargeKind')}
+                      >
+                        <option value="fixed">
+                          {t('admin.products.paperTypeSurchargeFixed')}
+                        </option>
+                        <option value="percent">
+                          {t('admin.products.paperTypeSurchargePercent')}
+                        </option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="mb-1 text-xs text-ink-muted">
+                        {paper.surchargeKind === 'percent'
+                          ? t('admin.products.paperTypeSurchargePercentValue')
+                          : t('admin.products.paperTypeSurcharge')}
                       </Label>
                       <Input
                         type="number"
                         min={0}
-                        step={1}
-                        inputMode="numeric"
+                        max={paper.surchargeKind === 'percent' ? 100 : undefined}
+                        step={paper.surchargeKind === 'percent' ? 0.1 : 1}
+                        inputMode="decimal"
                         placeholder="0"
                         value={
-                          paper.surcharge == null ? '' : String(paper.surcharge)
+                          paper.surchargeKind === 'percent'
+                            ? paper.surchargePercent == null
+                              ? ''
+                              : String(paper.surchargePercent)
+                            : paper.surcharge == null
+                              ? ''
+                              : String(paper.surcharge)
                         }
                         onChange={(e) =>
-                          updatePaperTypeSurcharge(index, e.target.value)
+                          updatePaperSurchargeValue(index, e.target.value)
                         }
-                        aria-label={t('admin.products.paperTypeSurcharge')}
+                        aria-label={
+                          paper.surchargeKind === 'percent'
+                            ? t('admin.products.paperTypeSurchargePercentValue')
+                            : t('admin.products.paperTypeSurcharge')
+                        }
                       />
                     </div>
                     <Button
