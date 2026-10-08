@@ -1,4 +1,8 @@
-import { resolveOrderDeliveryFee } from '@inknova/shared'
+import {
+  VAT_PERCENT,
+  computeOrderTotals,
+  resolveOrderDeliveryFee,
+} from '@inknova/shared'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -8,6 +12,7 @@ import { fetchDeliverySettings, fetchProducts } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
 import { getDesignPdf } from '@/lib/designStore'
+import { usePriceDisplay } from '@/lib/priceDisplay'
 import { cn, formatNok } from '@/lib/utils'
 
 function readQty(raw: string, minQty: number, maxQty?: number) {
@@ -27,6 +32,7 @@ export function CartPage() {
   const { t } = useTranslation()
   const { items, total, updateQty, syncCartFromCatalog, removeFromCart } =
     useCart()
+  const { inclVat, formatPrice } = usePriceDisplay()
 
   const [draftQty, setDraftQty] = useState<Record<string, string>>({})
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -62,7 +68,10 @@ export function CartPage() {
     }
   }, [syncCartFromCatalog, items])
 
-  const grandTotal = useMemo(() => total + deliveryFee, [total, deliveryFee])
+  const totals = useMemo(
+    () => computeOrderTotals(total, deliveryFee),
+    [total, deliveryFee],
+  )
 
   async function openDesignPreview(
     designPdfKey: string,
@@ -177,7 +186,7 @@ export function CartPage() {
                     {t('cart.previewDesign')}
                   </button>
                   <p className="mt-1 text-sm font-medium">
-                    {formatNok(cartLineTotal(item))}
+                    {formatPrice(cartLineTotal(item))}
                   </p>
                 </div>
                 <div className="flex flex-col items-start gap-1 sm:items-end">
@@ -260,16 +269,28 @@ export function CartPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-muted">{t('cart.subtotal')}</span>
-              <span>{formatNok(total)}</span>
+              <span>{formatPrice(total)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-muted">{t('cart.shipping')}</span>
-              <span>{formatNok(deliveryFee)}</span>
+              <span>{formatPrice(deliveryFee)}</span>
             </div>
             <div className="flex items-center justify-between border-t border-line pt-4">
-              <span className="text-lg font-semibold">{t('cart.total')}</span>
-              <span className="text-2xl font-bold">{formatNok(grandTotal)}</span>
+              <span className="text-lg font-semibold">
+                {inclVat ? t('cart.totalInclVat') : t('cart.totalExVat')}
+              </span>
+              <span className="text-2xl font-bold">
+                {formatNok(inclVat ? totals.totalNok : totals.subtotalExVat)}
+              </span>
             </div>
+            <p className="text-xs text-ink-muted">
+              {inclVat
+                ? t('cart.vatIncluded', {
+                    percent: VAT_PERCENT,
+                    amount: formatNok(totals.vatNok),
+                  })
+                : t('cart.vatHint')}
+            </p>
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

@@ -23,6 +23,8 @@ export type StoredOrder = {
   items: StoredLineItem[];
   /** Flat shipping fee included in totalNok */
   deliveryFee: number;
+  /** MVA included in totalNok */
+  vatNok: number;
   totalNok: number;
   copycatSent: boolean;
   confirmationEmailSent?: boolean;

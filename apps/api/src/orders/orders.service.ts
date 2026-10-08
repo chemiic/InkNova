@@ -8,12 +8,16 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   clampQuantity,
+  computeOrderTotals,
   effectiveMinQuantity,
   formatOrderReference,
   generateOrderReference,
   paperQuoteAdjustments,
   resolveOrderDeliveryFee,
   tryQuoteLine,
+  VAT_PERCENT,
+  formatOrgNumber,
+  type CheckoutCustomer,
   type CreateOrderResponse,
   type OrderStatusResponse,
   type Product,
@@ -171,7 +175,7 @@ export class OrdersService {
       lineProducts.map((p) => p.delivery.fee),
       deliveryDefaults.defaultFee,
     );
-    const totalNok = itemsSubtotal + deliveryFee;
+    const { vatNok, totalNok } = computeOrderTotals(itemsSubtotal, deliveryFee);
     if (totalNok <= 0) {
       throw new BadRequestException('Order total must be positive');
     }
@@ -187,6 +191,7 @@ export class OrdersService {
       status: 'pending_payment',
       paymentMethod: dto.paymentMethod,
       customer: {
+        ...customerOrgFields(dto.customer),
         name: dto.customer.name.trim(),
         email: dto.customer.email.trim(),
         phone: dto.customer.phone.trim(),
@@ -197,6 +202,7 @@ export class OrdersService {
       },
       items: pricedItems,
       deliveryFee,
+      vatNok,
       totalNok,
       copycatSent: false,
       confirmationEmailSent: false,
@@ -498,6 +504,7 @@ export class OrdersService {
         pdf: readPdf(this.db.getOrderFilesRoot(), item.pdfPath),
       })),
       deliveryFee: persisted.deliveryFee,
+      vatNok: persisted.vatNok,
       totalNok: persisted.totalNok,
       copycatSent: persisted.copycatSent,
       confirmationEmailSent: persisted.confirmationEmailSent ?? false,
@@ -536,6 +543,7 @@ export class OrdersService {
       customer: order.customer,
       items,
       deliveryFee: order.deliveryFee,
+      vatNok: order.vatNok,
       totalNok: order.totalNok,
       copycatSent: order.copycatSent,
       confirmationEmailSent: order.confirmationEmailSent ?? false,
@@ -601,6 +609,7 @@ export class OrdersService {
       '',
       `Ordre: ${formatOrderReference(order.reference)}`,
       ...(showPayment ? [`Betaling: ${order.paymentMethod}`, ''] : []),
+      ...companyTextLines(customer),
       'Leveringsadresse:',
       customer.addressLine1,
       customer.addressLine2 || '',
@@ -613,6 +622,7 @@ export class OrdersService {
       ),
       '',
       `Frakt: ${order.deliveryFee} NOK`,
+      ...vatTextLines(order),
       `Totalt: ${order.totalNok} NOK`,
       '',
       'Vi sender deg en e-post når pakken er sendt.',
@@ -636,6 +646,7 @@ export class OrdersService {
             lineTotal: i.lineTotal,
           })),
           deliveryFee: order.deliveryFee,
+          vatNok: order.vatNok,
           totalNok: order.totalNok,
           paymentMethod: order.paymentMethod,
           showPayment,
@@ -665,6 +676,7 @@ export class OrdersService {
 
     const lines = [
       `Ordre: ${formatOrderReference(order.reference)}`,
+      ...companyTextLines(order.customer),
       `Navn: ${order.customer.name}`,
       `E-post: ${order.customer.email}`,
       `Telefon: ${order.customer.phone}`,
@@ -681,6 +693,7 @@ export class OrdersService {
       ),
       '',
       `Frakt: ${order.deliveryFee} NOK`,
+      ...vatTextLines(order),
       `Sum: ${order.totalNok} NOK`,
       `Betaling: ${
         !this.vipps.isConfigured() || this.vipps.isDryRun()
@@ -708,6 +721,7 @@ export class OrdersService {
           customer: order.customer,
           items: order.items,
           deliveryFee: order.deliveryFee,
+          vatNok: order.vatNok,
           totalNok: order.totalNok,
           paymentMethod: order.paymentMethod,
           invoiceMode,
@@ -742,6 +756,43 @@ class PaymentNotReadyError extends Error {
     super(`Vipps payment is not ready (${state})`);
     this.name = 'PaymentNotReadyError';
   }
+}
+
+function customerOrgFields(
+  customer: CreateOrderDto['customer'],
+): Pick<
+  CheckoutCustomer,
+  'customerType' | 'companyName' | 'orgNumber' | 'invoiceReference'
+> {
+  if (customer.customerType !== 'business') {
+    return { customerType: 'private' };
+  }
+  return {
+    customerType: 'business',
+    companyName: customer.companyName?.trim(),
+    orgNumber: customer.orgNumber?.trim(),
+    invoiceReference: customer.invoiceReference?.trim() || undefined,
+  };
+}
+
+function companyTextLines(customer: CheckoutCustomer): string[] {
+  if (customer.customerType !== 'business') return [];
+  return [
+    `Firma: ${customer.companyName ?? ''}`,
+    `Org.nr.: ${formatOrgNumber(customer.orgNumber ?? '')}`,
+    ...(customer.invoiceReference
+      ? [`Deres referanse: ${customer.invoiceReference}`]
+      : []),
+    '',
+  ];
+}
+
+function vatTextLines(order: StoredOrder): string[] {
+  if (order.vatNok <= 0) return [];
+  return [
+    `Sum eks. mva: ${order.totalNok - order.vatNok} NOK`,
+    `MVA ${VAT_PERCENT} %: ${order.vatNok} NOK`,
+  ];
 }
 
 function toOre(nok: number): number {

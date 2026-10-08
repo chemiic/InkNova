@@ -39,7 +39,8 @@ import {
   normalizePrintUpload,
   PRINT_UPLOAD_ACCEPT,
 } from '@/lib/uploadPrintFile'
-import { createId, cn, formatNok } from '@/lib/utils'
+import { usePriceDisplay } from '@/lib/priceDisplay'
+import { createId, cn } from '@/lib/utils'
 
 type DesignMode = 'editor' | 'upload'
 
@@ -49,6 +50,7 @@ export function DesignPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { addToCart } = useCart()
+  const { formatPrice } = usePriceDisplay()
 
   const sizeIdParam = searchParams.get('sizeId')
   const qtyParam = Number(searchParams.get('qty') ?? '1')
@@ -532,7 +534,7 @@ export function DesignPage() {
 
   const lineTotalLabel = t('product.lineTotal', {
     count: qty,
-    total: formatNok(
+    total: formatPrice(
       quoteLine(product, {
         sizeId: selectedSize.id,
         qty,

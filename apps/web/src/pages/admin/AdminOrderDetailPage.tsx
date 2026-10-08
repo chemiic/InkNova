@@ -2,7 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import type { AdminOrder } from '@inknova/shared'
-import { formatOrderReference } from '@inknova/shared'
+import {
+  VAT_PERCENT,
+  formatOrderReference,
+  formatOrgNumber,
+} from '@inknova/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -256,8 +260,46 @@ export function AdminOrderDetailPage() {
     (order.status === 'paid' || order.status === 'completed') &&
     !order.shippedEmailSent
 
+  const isBusiness = customer.customerType === 'business'
   const contactRows: InfoRow[] = [
-    { label: t('admin.orders.fieldName'), value: customer.name },
+    {
+      label: t('admin.orders.fieldCustomerType'),
+      value: isBusiness
+        ? t('admin.orders.customerBusiness')
+        : t('admin.orders.customerPrivate'),
+    },
+    ...(isBusiness
+      ? [
+          { label: t('admin.orders.fieldCompany'), value: customer.companyName },
+          {
+            label: t('admin.orders.fieldOrgNumber'),
+            value: (
+              <a
+                className="underline hover:text-accent"
+                href={`https://virksomhet.brreg.no/oppslag/enheter/${customer.orgNumber}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {formatOrgNumber(customer.orgNumber ?? '')}
+              </a>
+            ),
+          },
+          ...(customer.invoiceReference
+            ? [
+                {
+                  label: t('admin.orders.fieldInvoiceReference'),
+                  value: customer.invoiceReference,
+                },
+              ]
+            : []),
+        ]
+      : []),
+    {
+      label: isBusiness
+        ? t('admin.orders.fieldContactPerson')
+        : t('admin.orders.fieldName'),
+      value: customer.name,
+    },
     {
       label: t('admin.orders.fieldEmail'),
       value: (
@@ -471,6 +513,20 @@ export function AdminOrderDetailPage() {
           <span className="text-ink-muted">{t('admin.orders.shipping')}</span>
           <span>{formatNok(order.deliveryFee)}</span>
         </div>
+        {order.vatNok > 0 && (
+          <>
+            <div className="flex justify-between gap-4">
+              <span className="text-ink-muted">{t('admin.orders.subtotalExVat')}</span>
+              <span>{formatNok(order.totalNok - order.vatNok)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-ink-muted">
+                {t('admin.orders.vat', { percent: VAT_PERCENT })}
+              </span>
+              <span>{formatNok(order.vatNok)}</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between gap-4 text-base font-semibold">
           <span>{t('admin.orders.total')}</span>
           <span>{formatNok(order.totalNok)}</span>

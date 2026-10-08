@@ -1,4 +1,15 @@
+import {
+  formatOrgNumber,
+  isValidOrgNumber,
+  normalizeOrgNumber,
+  type CustomerType,
+} from '@inknova/shared'
+
 export type CheckoutFormState = {
+  customerType: CustomerType
+  companyName: string
+  orgNumber: string
+  invoiceReference: string
   name: string
   email: string
   phone: string
@@ -8,7 +19,7 @@ export type CheckoutFormState = {
   city: string
 }
 
-export type CheckoutField = keyof CheckoutFormState
+export type CheckoutField = Exclude<keyof CheckoutFormState, 'customerType'>
 export type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>
 
 /**
@@ -285,6 +296,23 @@ export function applyNoPostalInput(
   return { value: combined, caret: beforeLen }
 }
 
+/** Groups as "923 609 016" while typing; caret stays after the same digit. */
+export function applyOrgNumberInput(
+  next: string,
+  caret: number,
+): { value: string; caret: number } {
+  const digitsBefore = normalizeOrgNumber(next.slice(0, caret)).length
+  const value = formatOrgNumber(next)
+  const capped = Math.min(digitsBefore, normalizeOrgNumber(value).length)
+  let seen = 0
+  let pos = 0
+  while (pos < value.length && seen < capped) {
+    if (/\d/.test(value[pos] ?? '')) seen += 1
+    pos += 1
+  }
+  return { value, caret: pos }
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/
 
 export function validateCheckoutForm(
@@ -297,6 +325,20 @@ export function validateCheckoutForm(
   const address1 = form.addressLine1.trim()
   const postal = formatNoPostal(form.postalCode)
   const city = form.city.trim()
+
+  if (form.customerType === 'business') {
+    const company = form.companyName.trim()
+    const org = normalizeOrgNumber(form.orgNumber)
+    if (!company) errors.companyName = t('checkout.errors.companyRequired')
+    else if (company.length < 2) errors.companyName = t('checkout.errors.companyShort')
+
+    if (!org) errors.orgNumber = t('checkout.errors.orgNumberRequired')
+    else if (!isValidOrgNumber(org)) errors.orgNumber = t('checkout.errors.orgNumberInvalid')
+
+    if (form.invoiceReference.trim().length > 100) {
+      errors.invoiceReference = t('checkout.errors.tooLong')
+    }
+  }
 
   if (!name) errors.name = t('checkout.errors.nameRequired')
   else if (name.length < 2) errors.name = t('checkout.errors.nameShort')
@@ -329,6 +371,9 @@ type ValidatorNode = {
 }
 
 const API_FIELD_MAP: Record<string, CheckoutField> = {
+  companyName: 'companyName',
+  orgNumber: 'orgNumber',
+  invoiceReference: 'invoiceReference',
   name: 'name',
   email: 'email',
   phone: 'phone',
@@ -368,6 +413,12 @@ function messageForApiConstraint(
   t: (key: string) => string,
 ): string {
   if (constraints.isEmail) return t('checkout.errors.emailInvalid')
+  if (field === 'orgNumber' && (constraints.orgNumber || constraints.matches)) {
+    return t('checkout.errors.orgNumberInvalid')
+  }
+  if (field === 'companyName' && constraints.minLength) {
+    return t('checkout.errors.companyShort')
+  }
   if (constraints.matches && field === 'phone') {
     return t('checkout.errors.phoneInvalid')
   }

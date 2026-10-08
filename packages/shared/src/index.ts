@@ -474,8 +474,19 @@ export interface ContactPayload {
   name?: string;
 }
 
+export type CustomerType = "private" | "business";
+
 /** Checkout customer + delivery address (NO) */
 export interface CheckoutCustomer {
+  /** Omitted on orders placed before business checkout existed (= private). */
+  customerType?: CustomerType;
+  /** Business only. */
+  companyName?: string;
+  /** Business only; 9 digits without spaces. */
+  orgNumber?: string;
+  /** Business only; the buyer's reference / PO number for the invoice. */
+  invoiceReference?: string;
+  /** Private: the buyer. Business: contact person. */
   name: string;
   email: string;
   phone: string;
@@ -560,6 +571,8 @@ export interface AdminOrder {
   customer: CheckoutCustomer;
   items: AdminOrderItem[];
   deliveryFee: MoneyNOK;
+  /** MVA included in totalNok; 0 on orders placed before MVA was added. */
+  vatNok: MoneyNOK;
   totalNok: MoneyNOK;
   copycatSent: boolean;
   shippedEmailSent: boolean;
@@ -624,3 +637,13 @@ export {
   formatOrderReference,
   generateOrderReference,
 } from "./order-reference";
+
+export type { OrderTotals } from "./vat";
+export {
+  VAT_PERCENT,
+  VAT_RATE,
+  computeOrderTotals,
+  formatOrgNumber,
+  isValidOrgNumber,
+  normalizeOrgNumber,
+} from "./vat";

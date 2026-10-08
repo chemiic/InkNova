@@ -19,12 +19,14 @@ import { fetchProduct } from '@/lib/api'
 import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
 import { absoluteUrl, metaDescription } from '@/lib/site'
-import { cn, formatNok } from '@/lib/utils'
+import { displayAmount, usePriceDisplay } from '@/lib/priceDisplay'
+import { cn } from '@/lib/utils'
 
 export function ProductPage() {
   const { slug = '' } = useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { display, inclVat, formatPrice } = usePriceDisplay()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -250,6 +252,12 @@ export function ProductPage() {
                 '@type': 'Offer',
                 priceCurrency: 'NOK',
                 price: String(fromPrice),
+                priceSpecification: {
+                  '@type': 'PriceSpecification',
+                  price: String(fromPrice),
+                  priceCurrency: 'NOK',
+                  valueAddedTaxIncluded: false,
+                },
                 availability: 'https://schema.org/InStock',
                 url: absoluteUrl(productPath),
               },
@@ -357,12 +365,15 @@ export function ProductPage() {
           {quote && (
             <div className="mt-4">
               <p className="text-2xl font-bold text-ink">
-                {formatNok(quote.lineTotal)}
+                {formatPrice(quote.lineTotal)}
+                <span className="ml-2 text-sm font-normal text-ink-muted">
+                  {inclVat ? t('price.inclVat') : t('price.exVat')}
+                </span>
               </p>
               {product.setupFee != null && product.setupFee > 0 && (
                 <p className="mt-1 text-sm text-ink-muted">
                   {t('product.setupIncluded', {
-                    fee: formatNok(product.setupFee),
+                    fee: formatPrice(product.setupFee),
                   })}
                 </p>
               )}
@@ -394,7 +405,7 @@ export function ProductPage() {
               >
                 <span className="block text-sm font-semibold">{size.label}</span>
                 <span className="mt-1 block text-sm text-ink-muted">
-                  {formatNok(sizeTileTotal(size))}
+                  {formatPrice(sizeTileTotal(size))}
                 </span>
               </button>
             ))}
@@ -420,7 +431,7 @@ export function ProductPage() {
                 </span>
                 {customDims && (
                   <span className="mt-1 block text-sm text-ink-muted">
-                    {formatNok(
+                    {formatPrice(
                       quoteLine(product, {
                         sizeId: 'custom',
                         qty: qtyValid && qtyNumber != null ? qtyNumber : minQty,
@@ -524,7 +535,7 @@ export function ProductPage() {
                   <span>{paper.label}</span>
                   {paper.surcharge != null && paper.surcharge > 0 && (
                     <span className="ml-1.5 tabular-nums text-ink-muted">
-                      +{Math.round(paper.surcharge)}
+                      +{displayAmount(Math.round(paper.surcharge), display)}
                     </span>
                   )}
                   {paper.surchargePercent != null && paper.surchargePercent > 0 && (
@@ -595,7 +606,7 @@ export function ProductPage() {
                 }).lineTotal
                 return (
                   <option key={tier.minQty} value={tier.minQty}>
-                    {tier.minQty} — {formatNok(total)}
+                    {tier.minQty} — {formatPrice(total)}
                   </option>
                 )
               })}
@@ -640,7 +651,7 @@ export function ProductPage() {
             <p className="mt-2 text-sm font-medium text-ink">
               {t('product.lineTotal', {
                 count: quote.qty,
-                total: formatNok(quote.lineTotal),
+                total: formatPrice(quote.lineTotal),
               })}
             </p>
           )}
@@ -660,7 +671,7 @@ export function ProductPage() {
             <dd className="font-medium">
               {product.delivery.fee == null
                 ? '—'
-                : formatNok(product.delivery.fee)}
+                : formatPrice(product.delivery.fee)}
             </dd>
           </div>
         </dl>
@@ -694,7 +705,7 @@ export function ProductPage() {
             <p className="truncate text-sm font-semibold text-ink">
               {t('product.lineTotal', {
                 count: quote.qty,
-                total: formatNok(quote.lineTotal),
+                total: formatPrice(quote.lineTotal),
               })}
             </p>
           ) : null}

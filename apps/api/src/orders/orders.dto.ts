@@ -12,11 +12,48 @@ import {
   MaxLength,
   Min,
   MinLength,
+  Validate,
+  ValidateIf,
   ValidateNested,
+  ValidatorConstraint,
+  type ValidatorConstraintInterface,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { isValidOrgNumber } from '@inknova/shared';
+
+@ValidatorConstraint({ name: 'orgNumber' })
+class OrgNumberConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown): boolean {
+    return typeof value === 'string' && isValidOrgNumber(value);
+  }
+
+  defaultMessage(): string {
+    return 'orgNumber is not a valid Norwegian organisation number';
+  }
+}
 
 export class CheckoutCustomerDto {
+  @IsOptional()
+  @IsIn(['private', 'business'])
+  customerType?: 'private' | 'business';
+
+  @ValidateIf((o: CheckoutCustomerDto) => o.customerType === 'business')
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
+  companyName?: string;
+
+  @ValidateIf((o: CheckoutCustomerDto) => o.customerType === 'business')
+  @IsString()
+  @Matches(/^\d{9}$/)
+  @Validate(OrgNumberConstraint)
+  orgNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  invoiceReference?: string;
+
   @IsString()
   @MinLength(2)
   @MaxLength(200)

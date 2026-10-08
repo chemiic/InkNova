@@ -73,6 +73,7 @@ type OrderRow = {
   payment_method: string;
   customer_json: string;
   delivery_fee: number;
+  vat_nok?: number;
   total_nok: number;
   copycat_sent: number;
   shipped_email_sent?: number;
@@ -117,6 +118,7 @@ export type PersistOrderInput = {
   customer: CheckoutCustomer;
   items: PersistOrderItemInput[];
   deliveryFee: number;
+  vatNok: number;
   totalNok: number;
   copycatSent: boolean;
   confirmationEmailSent?: boolean;
@@ -271,6 +273,11 @@ export class DatabaseService implements OnModuleInit {
       .all() as { name: string }[];
     if (!colsAfter.some((c) => c.name === 'shipment_tracking')) {
       this.db.exec('ALTER TABLE orders ADD COLUMN shipment_tracking TEXT');
+    }
+    if (!colsAfter.some((c) => c.name === 'vat_nok')) {
+      this.db.exec(
+        'ALTER TABLE orders ADD COLUMN vat_nok REAL NOT NULL DEFAULT 0',
+      );
     }
   }
 
@@ -474,8 +481,8 @@ export class DatabaseService implements OnModuleInit {
         .prepare(
           `INSERT INTO orders (
             id, reference, created_at, status, payment_method,
-            customer_json, delivery_fee, total_nok, copycat_sent
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            customer_json, delivery_fee, vat_nok, total_nok, copycat_sent
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
           order.id,
@@ -485,6 +492,7 @@ export class DatabaseService implements OnModuleInit {
           order.paymentMethod,
           JSON.stringify(order.customer),
           order.deliveryFee,
+          order.vatNok,
           order.totalNok,
           order.copycatSent ? 1 : 0,
         );
@@ -625,7 +633,9 @@ export class DatabaseService implements OnModuleInit {
         createdAt: new Date(row.created_at).toISOString(),
         status: row.status as OrderStatus,
         paymentMethod: row.payment_method as PaymentMethod,
-        customerName: customer.name,
+        customerName: customer.companyName
+          ? `${customer.companyName} (${customer.name})`
+          : customer.name,
         customerEmail: customer.email,
         itemCount: items.length,
         itemsSummary: items
@@ -677,6 +687,7 @@ export class DatabaseService implements OnModuleInit {
       customer,
       items: items.map((item) => rowToAdminItem(item, this.orderFilesRoot)),
       deliveryFee: row.delivery_fee,
+      vatNok: row.vat_nok ?? 0,
       totalNok: row.total_nok,
       copycatSent: row.copycat_sent === 1,
       shippedEmailSent: (row.shipped_email_sent ?? 0) === 1,
@@ -827,6 +838,7 @@ function rowToPersistOrder(
       pdfPath: item.pdf_path,
     })),
     deliveryFee: row.delivery_fee,
+    vatNok: row.vat_nok ?? 0,
     totalNok: row.total_nok,
     copycatSent: row.copycat_sent === 1,
     confirmationEmailSent: (row.confirmation_email_sent ?? 0) === 1,

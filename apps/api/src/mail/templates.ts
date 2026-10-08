@@ -1,5 +1,9 @@
 import type { CheckoutCustomer, PaymentMethod } from '@inknova/shared';
-import { formatOrderReference } from '@inknova/shared';
+import {
+  VAT_PERCENT,
+  formatOrderReference,
+  formatOrgNumber,
+} from '@inknova/shared';
 import {
   dataTable,
   escapeHtml,
@@ -16,6 +20,36 @@ const PAYMENT_LABEL: Record<PaymentMethod, string> = {
   vipps: 'Vipps',
   card: 'Kort',
 };
+
+function companyRows(c: CheckoutCustomer): Array<[string, string]> {
+  if (c.customerType !== 'business') return [];
+  return [
+    ['Firma', `<strong>${escapeHtml(c.companyName ?? '')}</strong>`],
+    ['Org.nr.', escapeHtml(formatOrgNumber(c.orgNumber ?? ''))],
+    ...(c.invoiceReference
+      ? [['Deres referanse', escapeHtml(c.invoiceReference)] as [string, string]]
+      : []),
+  ];
+}
+
+/** Totals with an MVA breakdown; legacy orders without MVA show only Frakt/Totalt. */
+function orderTotalsRows(
+  deliveryFee: number,
+  vatNok: number,
+  totalNok: number,
+): Array<[string, string, boolean?]> {
+  const rows: Array<[string, string, boolean?]> = [
+    ['Frakt', formatNok(deliveryFee)],
+  ];
+  if (vatNok > 0) {
+    rows.push(['Sum eks. mva', formatNok(totalNok - vatNok)]);
+    rows.push([`MVA ${VAT_PERCENT} %`, formatNok(vatNok)]);
+    rows.push(['Totalt inkl. mva', formatNok(totalNok), true]);
+  } else {
+    rows.push(['Totalt', formatNok(totalNok), true]);
+  }
+  return rows;
+}
 
 export function contactEmailHtml(input: {
   name: string;
@@ -59,6 +93,7 @@ export function orderEmailHtml(input: {
   customer: CheckoutCustomer;
   items: OrderEmailItem[];
   deliveryFee: number;
+  vatNok: number;
   totalNok: number;
   paymentMethod: PaymentMethod;
   /** When true, order was placed without online payment (manual invoice). */
@@ -94,7 +129,9 @@ export function orderEmailHtml(input: {
     ]),
     sectionTitle('Kunde'),
     kvTable([
-      ['Navn', escapeHtml(c.name)],
+      ['Kundetype', c.customerType === 'business' ? 'Bedrift' : 'Privat'],
+      ...companyRows(c),
+      [c.customerType === 'business' ? 'Kontaktperson' : 'Navn', escapeHtml(c.name)],
       [
         'E-post',
         `<a href="mailto:${escapeHtml(c.email)}" style="color:#1a1a1a;">${escapeHtml(c.email)}</a>`,
@@ -107,11 +144,10 @@ export function orderEmailHtml(input: {
     sectionTitle('Levering'),
     kvTable([['Adresse', address]]),
     sectionTitle('Produkter'),
-    dataTable(['Produkt', 'Antall', 'Fil', 'Sum'], itemRows),
-    totalsBlock([
-      ['Frakt', formatNok(input.deliveryFee)],
-      ['Totalt', formatNok(input.totalNok), true],
-    ]),
+    dataTable(['Produkt', 'Antall', 'Fil', 'Sum eks. mva'], itemRows),
+    totalsBlock(
+      orderTotalsRows(input.deliveryFee, input.vatNok, input.totalNok),
+    ),
     `<p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b6560;">Trykkfiler ligger vedlagt.</p>`,
   ].join('');
 
@@ -151,6 +187,7 @@ export function orderConfirmationEmailHtml(input: {
   customer: CheckoutCustomer;
   items: ConfirmationEmailItem[];
   deliveryFee: number;
+  vatNok: number;
   totalNok: number;
   paymentMethod: PaymentMethod;
   /** When false, hides the payment method row (e.g. before live Vipps). */
@@ -177,6 +214,7 @@ export function orderConfirmationEmailHtml(input: {
   const showPayment = input.showPayment !== false;
   const orderRows: Array<[string, string]> = [
     ['Referanse', `<strong>${escapeHtml(formatOrderReference(input.reference))}</strong>`],
+    ...companyRows(c),
   ];
   if (showPayment) {
     orderRows.push([
@@ -193,11 +231,10 @@ export function orderConfirmationEmailHtml(input: {
     sectionTitle('Leveringsadresse'),
     kvTable([['Adresse', address]]),
     sectionTitle('Varer'),
-    dataTable(['Produkt', 'Antall', 'Sum'], itemRows),
-    totalsBlock([
-      ['Frakt', formatNok(input.deliveryFee)],
-      ['Totalt', formatNok(input.totalNok), true],
-    ]),
+    dataTable(['Produkt', 'Antall', 'Sum eks. mva'], itemRows),
+    totalsBlock(
+      orderTotalsRows(input.deliveryFee, input.vatNok, input.totalNok),
+    ),
     `<p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;">Vi sender deg en e-post når pakken er sendt. Har du spørsmål? Skriv til <a href="mailto:${contact}" style="color:#1a1a1a;">${contact}</a>.</p>`,
   ].join('');
 
@@ -227,7 +264,8 @@ export function previewOrderConfirmationEmailHtml(siteUrl?: string): string {
       { productName: 'Flyers', sizeLabel: 'A5', qty: 250, lineTotal: 890 },
     ],
     deliveryFee: 99,
-    totalNok: 1488,
+    vatNok: 372,
+    totalNok: 1860,
     paymentMethod: 'vipps',
     showPayment: false,
     siteUrl,
@@ -322,6 +360,10 @@ export function previewOrderEmailHtml(siteUrl?: string): string {
   return orderEmailHtml({
     reference: '482917',
     customer: {
+      customerType: 'business',
+      companyName: 'Firma AS',
+      orgNumber: '923609016',
+      invoiceReference: 'PO-1042',
       name: 'Anna Hansen',
       email: 'anna@firma.no',
       phone: '+47 900 00 000',
@@ -346,7 +388,8 @@ export function previewOrderEmailHtml(siteUrl?: string): string {
       },
     ],
     deliveryFee: 99,
-    totalNok: 1488,
+    vatNok: 372,
+    totalNok: 1860,
     paymentMethod: 'vipps',
     invoiceMode: true,
     siteUrl,

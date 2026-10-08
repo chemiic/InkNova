@@ -1,4 +1,11 @@
-import { resolveOrderDeliveryFee, type PaymentMethod } from '@inknova/shared'
+import {
+  VAT_PERCENT,
+  computeOrderTotals,
+  normalizeOrgNumber,
+  resolveOrderDeliveryFee,
+  type CustomerType,
+  type PaymentMethod,
+} from '@inknova/shared'
 import {
   useEffect,
   useLayoutEffect,
@@ -21,6 +28,7 @@ import { cartLineTotal, useCart } from '@/lib/cart'
 import {
   applyNoPostalInput,
   applyNordicPhoneInput,
+  applyOrgNumberInput,
   checkoutErrorsFromApi,
   formatNoPostal,
   toNordicPhoneE164,
@@ -31,9 +39,14 @@ import {
 } from '@/lib/checkoutFields'
 import { getDesignPdf } from '@/lib/designStore'
 import { PAYMENT_ENABLED } from '@/lib/features'
+import { usePriceDisplay } from '@/lib/priceDisplay'
 import { cn, formatNok } from '@/lib/utils'
 
 const emptyForm: CheckoutFormState = {
+  customerType: 'private',
+  companyName: '',
+  orgNumber: '',
+  invoiceReference: '',
   name: '',
   email: '',
   phone: '',
@@ -47,7 +60,11 @@ export function CheckoutPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { items, total, clearCart } = useCart()
-  const [form, setForm] = useState<CheckoutFormState>(emptyForm)
+  const { display } = usePriceDisplay()
+  const [form, setForm] = useState<CheckoutFormState>(() => ({
+    ...emptyForm,
+    customerType: display === 'exVat' ? 'business' : 'private',
+  }))
   // Kept for API compatibility; live Vipps UI is gated by PAYMENT_ENABLED.
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -59,8 +76,11 @@ export function CheckoutPage() {
   const [deliveryFee, setDeliveryFee] = useState(0)
   const phoneRef = useRef<HTMLInputElement>(null)
   const postalRef = useRef<HTMLInputElement>(null)
+  const orgRef = useRef<HTMLInputElement>(null)
   const phoneCaretRef = useRef<number | null>(null)
   const postalCaretRef = useRef<number | null>(null)
+  const orgCaretRef = useRef<number | null>(null)
+  const isBusiness = form.customerType === 'business'
 
   useLayoutEffect(() => {
     const pos = phoneCaretRef.current
@@ -75,6 +95,13 @@ export function CheckoutPage() {
     postalRef.current.setSelectionRange(pos, pos)
     postalCaretRef.current = null
   }, [form.postalCode])
+
+  useLayoutEffect(() => {
+    const pos = orgCaretRef.current
+    if (pos === null || !orgRef.current) return
+    orgRef.current.setSelectionRange(pos, pos)
+    orgCaretRef.current = null
+  }, [form.orgNumber])
 
   useEffect(() => {
     let cancelled = false
@@ -99,7 +126,10 @@ export function CheckoutPage() {
     }
   }, [items])
 
-  const grandTotal = useMemo(() => total + deliveryFee, [total, deliveryFee])
+  const totals = useMemo(
+    () => computeOrderTotals(total, deliveryFee),
+    [total, deliveryFee],
+  )
 
   const lineSummary = useMemo(
     () =>
@@ -135,6 +165,30 @@ export function CheckoutPage() {
       return
     }
     patch('phone', value)
+  }
+
+  function setCustomerType(customerType: CustomerType) {
+    setForm((f) => ({ ...f, customerType }))
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      delete next.companyName
+      delete next.orgNumber
+      delete next.invoiceReference
+      return next
+    })
+  }
+
+  function onOrgNumberChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value, caret } = applyOrgNumberInput(
+      e.target.value,
+      e.target.selectionStart ?? e.target.value.length,
+    )
+    orgCaretRef.current = caret
+    if (value === form.orgNumber) {
+      e.target.setSelectionRange(caret, caret)
+      return
+    }
+    patch('orgNumber', value)
   }
 
   function onPostalChange(e: ChangeEvent<HTMLInputElement>) {
@@ -189,6 +243,14 @@ export function CheckoutPage() {
       const result = await submitOrder(
         {
           customer: {
+            customerType: form.customerType,
+            ...(isBusiness
+              ? {
+                  companyName: form.companyName.trim(),
+                  orgNumber: normalizeOrgNumber(form.orgNumber),
+                  invoiceReference: form.invoiceReference.trim() || undefined,
+                }
+              : {}),
             name: form.name.trim(),
             email: form.email.trim(),
             phone,
@@ -289,11 +351,22 @@ export function CheckoutPage() {
             <span className="text-ink-muted">{t('cart.shipping')}</span>
             <span>{formatNok(deliveryFee)}</span>
           </div>
+          <div className="flex justify-between border-t border-line pt-2">
+            <span className="text-ink-muted">{t('checkout.subtotalExVat')}</span>
+            <span>{formatNok(totals.subtotalExVat)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-ink-muted">
+              {t('checkout.vat', { percent: VAT_PERCENT })}
+            </span>
+            <span>{formatNok(totals.vatNok)}</span>
+          </div>
           <div className="flex justify-between pt-1">
-            <span className="font-semibold">{t('cart.total')}</span>
-            <span className="text-lg font-bold">{formatNok(grandTotal)}</span>
+            <span className="font-semibold">{t('checkout.totalInclVat')}</span>
+            <span className="text-lg font-bold">{formatNok(totals.totalNok)}</span>
           </div>
         </div>
+        <p className="mt-3 text-xs text-ink-muted">{t('checkout.vatNote')}</p>
       </aside>
 
       <div className="order-last lg:order-first">
@@ -307,13 +380,111 @@ export function CheckoutPage() {
         >
           <section className="space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+              {t('checkout.customerTypeSection')}
+            </h2>
+            <div
+              role="radiogroup"
+              aria-label={t('checkout.customerTypeSection')}
+              className="grid grid-cols-2 gap-2"
+            >
+              {(
+                [
+                  ['private', t('checkout.customerPrivate')],
+                  ['business', t('checkout.customerBusiness')],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.customerType === value}
+                  onClick={() => setCustomerType(value)}
+                  className={cn(
+                    'rounded-lg border-2 px-4 py-3 text-left text-sm font-medium transition',
+                    form.customerType === value
+                      ? 'border-accent bg-paper-card'
+                      : 'border-line hover:border-ink/30',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {isBusiness && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  className="sm:col-span-2"
+                  id="companyName"
+                  label={t('checkout.companyName')}
+                  error={fieldErrors.companyName}
+                >
+                  <Input
+                    id="companyName"
+                    className={fieldClass(fieldErrors.companyName)}
+                    value={form.companyName}
+                    onChange={(e) => patch('companyName', e.target.value)}
+                    autoComplete="organization"
+                    aria-invalid={Boolean(fieldErrors.companyName)}
+                    aria-describedby={
+                      fieldErrors.companyName ? 'companyName-error' : undefined
+                    }
+                  />
+                </Field>
+                <Field
+                  id="orgNumber"
+                  label={t('checkout.orgNumber')}
+                  error={fieldErrors.orgNumber}
+                  hint={t('checkout.orgNumberHint')}
+                >
+                  <Input
+                    ref={orgRef}
+                    id="orgNumber"
+                    inputMode="numeric"
+                    className={fieldClass(fieldErrors.orgNumber)}
+                    value={form.orgNumber}
+                    placeholder="000 000 000"
+                    onChange={onOrgNumberChange}
+                    autoComplete="off"
+                    aria-invalid={Boolean(fieldErrors.orgNumber)}
+                    aria-describedby={
+                      fieldErrors.orgNumber ? 'orgNumber-error' : 'orgNumber-hint'
+                    }
+                  />
+                </Field>
+                <Field
+                  id="invoiceReference"
+                  label={t('checkout.invoiceReference')}
+                  error={fieldErrors.invoiceReference}
+                  hint={t('checkout.invoiceReferenceHint')}
+                >
+                  <Input
+                    id="invoiceReference"
+                    className={fieldClass(fieldErrors.invoiceReference)}
+                    value={form.invoiceReference}
+                    onChange={(e) => patch('invoiceReference', e.target.value)}
+                    autoComplete="off"
+                    aria-invalid={Boolean(fieldErrors.invoiceReference)}
+                    aria-describedby={
+                      fieldErrors.invoiceReference
+                        ? 'invoiceReference-error'
+                        : 'invoiceReference-hint'
+                    }
+                  />
+                </Field>
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               {t('checkout.contactSection')}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 className="sm:col-span-2"
                 id="name"
-                label={t('checkout.name')}
+                label={isBusiness ? t('checkout.contactPerson') : t('checkout.name')}
                 error={fieldErrors.name}
               >
                 <Input
