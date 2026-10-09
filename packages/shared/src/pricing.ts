@@ -198,8 +198,10 @@ function normalizePaperSurchargePercent(
   return rounded > 0 ? rounded : undefined;
 }
 
+/** Percent surcharge applies to the printed pieces only, never to setupFee. */
 function applyPaperAdjustments(
   result: QuoteResult,
+  setup: number,
   surcharge: number | undefined,
   surchargePercent: number | undefined,
 ): QuoteResult {
@@ -208,7 +210,8 @@ function applyPaperAdjustments(
   if (!extra && !percent) return result;
   let lineTotal = result.lineTotal;
   if (percent) {
-    lineTotal = Math.round(lineTotal * (1 + percent / 100));
+    const pieces = Math.max(0, lineTotal - setup);
+    lineTotal = Math.round(lineTotal + pieces * (percent / 100));
   }
   lineTotal += extra;
   return {
@@ -244,6 +247,7 @@ export function quoteFromPricing(
         unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
         qty,
       },
+      setup,
       pricing.paperSurcharge,
       pricing.paperSurchargePercent,
     );
@@ -260,6 +264,7 @@ export function quoteFromPricing(
           unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
           qty,
         },
+        setup,
         pricing.paperSurcharge,
         pricing.paperSurchargePercent,
       );
@@ -268,6 +273,7 @@ export function quoteFromPricing(
     const lineTotal = Math.round(unit * qty);
     return applyPaperAdjustments(
       { lineTotal, unitPrice: unit, qty },
+      0,
       pricing.paperSurcharge,
       pricing.paperSurchargePercent,
     );
@@ -288,6 +294,7 @@ export function quoteFromPricing(
       unitPrice: qty > 0 ? lineTotal / qty : lineTotal,
       qty,
     },
+    setup,
     pricing.paperSurcharge,
     pricing.paperSurchargePercent,
   );

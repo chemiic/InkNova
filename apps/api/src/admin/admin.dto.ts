@@ -123,11 +123,6 @@ export class CustomSizeDto {
 export class DeliveryInfoDto {
   @IsString()
   label!: string;
-
-  @IsOptional()
-  @ValidateIf((_, v) => v !== null && v !== undefined)
-  @IsNumber()
-  fee!: number | null;
 }
 
 export class UpsertProductDto {
@@ -260,10 +255,27 @@ export class DeliverySettingsDto {
   @IsString()
   defaultLabel!: string;
 
+  @IsNumber()
+  @Min(0)
+  smallParcelFee!: number;
+
+  @IsNumber()
+  @Min(0)
+  largeParcelFee!: number;
+
   @IsOptional()
   @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsNumber()
-  defaultFee!: number | null;
+  @Min(0)
+  freeShippingFromInclVat!: number | null;
+
+  @IsNumber()
+  @Min(1)
+  largeParcelMinSideCm!: number;
+
+  @IsNumber()
+  @Min(0)
+  largeParcelMinAreaSqm!: number;
 }
 
 export class HomepageSettingsDto {

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router-dom'
 import { FlagNorway, FlagUk } from '@/components/LanguageFlags'
 import { Logo } from '@/components/Logo'
-import { PriceDisplayToggle } from '@/components/PriceDisplayToggle'
 import { StableI18nText } from '@/components/StableI18nText'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/lib/cart'
@@ -109,9 +108,6 @@ export function SiteHeader({ compact = false }: SiteHeaderProps) {
             compact ? 'flex-1 md:col-start-3 md:justify-self-end' : 'md:justify-self-end',
           )}
         >
-          <PriceDisplayToggle
-            className={cn('mr-1 hidden', compact ? 'md:inline-flex' : 'sm:inline-flex')}
-          />
           <button
             type="button"
             className={cn(
@@ -220,10 +216,6 @@ export function SiteHeader({ compact = false }: SiteHeaderProps) {
               </nav>
 
               <div className="shrink-0 border-t border-white/10 px-4 py-4 sticky-bar-padding">
-                <div className="flex items-center justify-between gap-3 px-3 py-3 text-base text-white/80">
-                  <span>{t('price.toggleLabel')}</span>
-                  <PriceDisplayToggle className="text-sm" />
-                </div>
                 <button
                   type="button"
                   className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-3 text-left text-base text-white/80 transition hover:bg-white/10"

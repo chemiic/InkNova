@@ -9,12 +9,12 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
-import { usePriceDisplay } from '@/lib/priceDisplay'
+import { formatInclVat } from '@/lib/priceDisplay'
+import { formatNok } from '@/lib/utils'
 
 export function ProductCard({ product }: { product: Product }) {
   const { t } = useTranslation()
-  const { inclVat, formatPrice } = usePriceDisplay()
-  const vatLabel = inclVat ? t('price.inclVat') : t('price.exVat')
+  const vatLabel = t('price.exVat')
   const price = startingPrice(product)
   const copy = catalogCopy(product, t)
   const minQty = effectiveMinQuantity(product.minQuantity)
@@ -38,11 +38,14 @@ export function ProductCard({ product }: { product: Product }) {
           <p className="mt-2 text-sm font-semibold text-ink">
             {minQty > 1
               ? t('product.fromPriceMin', {
-                  price: formatPrice(price),
+                  price: formatNok(price),
                   vat: vatLabel,
                   count: minQty,
                 })
-              : t('product.fromPrice', { price: formatPrice(price), vat: vatLabel })}
+              : t('product.fromPrice', { price: formatNok(price), vat: vatLabel })}
+          </p>
+          <p className="text-xs text-ink-muted">
+            {formatInclVat(price)} {t('price.inclVat')}
           </p>
         </div>
         <Button asChild className="mt-auto w-fit uppercase tracking-wide">

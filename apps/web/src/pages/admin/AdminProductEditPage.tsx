@@ -55,7 +55,6 @@ type FormState = {
   maxHeightCm: string
   basePrice: string
   deliveryLabel: string
-  deliveryFee: string
   leadTime: string
   minQuantity: string
   maxQuantity: string
@@ -86,7 +85,6 @@ function emptyForm(): FormState {
     maxHeightCm: '42',
     basePrice: '0',
     deliveryLabel: '3–5 virkedager',
-    deliveryFee: '99',
     leadTime: '3–5 virkedager',
     minQuantity: '',
     maxQuantity: '',
@@ -125,7 +123,6 @@ function fromProduct(p: Product): FormState {
     maxHeightCm: String(p.customSize?.maxHeightCm ?? 42),
     basePrice: String(p.customSize?.basePrice ?? 0),
     deliveryLabel: p.delivery.label,
-    deliveryFee: p.delivery.fee == null ? '' : String(p.delivery.fee),
     leadTime: p.leadTime,
     minQuantity: p.minQuantity != null ? String(p.minQuantity) : '',
     maxQuantity: p.maxQuantity != null ? String(p.maxQuantity) : '',
@@ -154,7 +151,6 @@ function toPayload(form: FormState, id?: string) {
     : form.imageUrl
       ? [form.imageUrl]
       : []
-  const feeRaw = form.deliveryFee.trim()
   return {
     id,
     slug: form.slug.trim(),
@@ -182,7 +178,6 @@ function toPayload(form: FormState, id?: string) {
       : null,
     delivery: {
       label: form.deliveryLabel,
-      fee: feeRaw === '' ? null : Number(feeRaw),
     },
     leadTime: form.leadTime,
     minQuantity: form.minQuantity.trim() ? Number(form.minQuantity) : null,
@@ -925,19 +920,6 @@ export function AdminProductEditPage() {
                 className="mt-1"
                 value={form.deliveryLabel}
                 onChange={(e) => patch('deliveryLabel', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="deliveryFee">
-                {t('admin.products.deliveryFee')}
-              </Label>
-              <Input
-                id="deliveryFee"
-                className="mt-1"
-                type="number"
-                min={0}
-                value={form.deliveryFee}
-                onChange={(e) => patch('deliveryFee', e.target.value)}
               />
             </div>
           </div>

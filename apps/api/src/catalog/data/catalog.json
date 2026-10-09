@@ -1,7 +1,11 @@
 {
   "deliveryDefaults": {
-    "label": "3–5 virkedager",
-    "fee": 99
+    "defaultLabel": "3–5 virkedager",
+    "smallParcelFee": 240,
+    "largeParcelFee": 400,
+    "freeShippingFromInclVat": 3000,
+    "largeParcelMinSideCm": 50,
+    "largeParcelMinAreaSqm": 15
   },
   "products": [
     {
@@ -10,7 +14,7 @@
       "category": "trykk",
       "hidden": false,
       "name": "Flyers",
-      "description": "Profesjonelle flyers. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
+      "description": "Profesjonelle flyers. Tosidig koster dobbelt per stykk.",
       "paperTypes": [
         {
           "id": "matt-120",
@@ -26,25 +30,21 @@
         },
         {
           "id": "silk-200",
-          "label": "200 g silke",
-          "surchargePercent": 5
+          "label": "200 g silke"
         },
         {
           "id": "matt-300",
-          "label": "300 g matt",
-          "surchargePercent": 10
+          "label": "300 g matt"
         },
         {
           "id": "silk-300",
-          "label": "300 g silke",
-          "surchargePercent": 10
+          "label": "300 g silke"
         }
       ],
-      "imageUrl": "/products/flyers.svg",
+      "imageUrl": "/products/flyers.jpg",
       "leadTime": "3–5 virkedager",
       "delivery": {
-        "label": "3–5 virkedager",
-        "fee": 99
+        "label": "3–5 virkedager"
       },
       "pricingMode": "perPiece",
       "setupFee": 600,
@@ -55,111 +55,111 @@
         {
           "id": "a6",
           "label": "A6",
-          "price": 740,
+          "price": 670,
           "tiers": [
             {
               "minQty": 10,
               "maxQty": 50,
-              "price": 14
+              "price": 7
             },
             {
               "minQty": 51,
               "maxQty": 100,
-              "price": 14
+              "price": 7
             },
             {
               "minQty": 101,
               "maxQty": 200,
-              "price": 13
+              "price": 6.5
             },
             {
               "minQty": 201,
               "maxQty": 300,
-              "price": 13
+              "price": 6.5
             },
             {
               "minQty": 301,
               "maxQty": 400,
-              "price": 12
+              "price": 6
             },
             {
               "minQty": 401,
               "maxQty": 500,
-              "price": 11
+              "price": 5.5
             }
           ]
         },
         {
           "id": "a5",
           "label": "A5",
-          "price": 780,
+          "price": 690,
           "tiers": [
             {
               "minQty": 10,
               "maxQty": 50,
-              "price": 18
+              "price": 9
             },
             {
               "minQty": 51,
               "maxQty": 100,
-              "price": 17
+              "price": 8.5
             },
             {
               "minQty": 101,
               "maxQty": 200,
-              "price": 16
+              "price": 8
             },
             {
               "minQty": 201,
               "maxQty": 300,
-              "price": 15
+              "price": 7.5
             },
             {
               "minQty": 301,
               "maxQty": 400,
-              "price": 14
+              "price": 7
             },
             {
               "minQty": 401,
               "maxQty": 500,
-              "price": 13
+              "price": 6.5
             }
           ]
         },
         {
           "id": "a4",
           "label": "A4",
-          "price": 850,
+          "price": 725,
           "tiers": [
             {
               "minQty": 10,
               "maxQty": 50,
-              "price": 25
+              "price": 12.5
             },
             {
               "minQty": 51,
               "maxQty": 100,
-              "price": 24
+              "price": 12
             },
             {
               "minQty": 101,
               "maxQty": 200,
-              "price": 23
+              "price": 11.5
             },
             {
               "minQty": 201,
               "maxQty": 300,
-              "price": 20
+              "price": 10
             },
             {
               "minQty": 301,
               "maxQty": 400,
-              "price": 20
+              "price": 10
             },
             {
               "minQty": 401,
               "maxQty": 500,
-              "price": 18
+              "price": 9
             }
           ]
         }
@@ -169,37 +169,37 @@
         "minHeightCm": 5,
         "maxWidthCm": 30,
         "maxHeightCm": 42,
-        "basePrice": 850,
+        "basePrice": 725,
         "tiers": [
           {
             "minQty": 10,
             "maxQty": 50,
-            "price": 25
+            "price": 12.5
           },
           {
             "minQty": 51,
             "maxQty": 100,
-            "price": 24
+            "price": 12
           },
           {
             "minQty": 101,
             "maxQty": 200,
-            "price": 23
+            "price": 11.5
           },
           {
             "minQty": 201,
             "maxQty": 300,
-            "price": 20
+            "price": 10
           },
           {
             "minQty": 301,
             "maxQty": 400,
-            "price": 20
+            "price": 10
           },
           {
             "minQty": 401,
             "maxQty": 500,
-            "price": 18
+            "price": 9
           }
         ]
       }
@@ -227,8 +227,7 @@
       ],
       "leadTime": "3–5 virkedager",
       "delivery": {
-        "label": "3–5 virkedager",
-        "fee": 79
+        "label": "3–5 virkedager"
       },
       "pricingMode": "pack",
       "minQuantity": 50,
@@ -315,7 +314,7 @@
       "category": "trykk",
       "hidden": false,
       "name": "Plakater",
-      "description": "Plakater – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "description": "Plakater – fra A3 til A0 og populære mål.",
       "paperTypes": [
         {
           "id": "satin",
@@ -332,8 +331,7 @@
       ],
       "leadTime": "4–6 virkedager",
       "delivery": {
-        "label": "4–6 virkedager",
-        "fee": 149
+        "label": "4–6 virkedager"
       },
       "pricingMode": "perPiece",
       "setupFee": 600,
@@ -656,11 +654,10 @@
           "label": "Vinyl"
         }
       ],
-      "imageUrl": "/products/klistremerker.svg",
+      "imageUrl": "/products/klistremerker.jpg",
       "leadTime": "3–5 virkedager",
       "delivery": {
-        "label": "3–5 virkedager",
-        "fee": 79
+        "label": "3–5 virkedager"
       },
       "sizes": [
         {
@@ -702,11 +699,10 @@
           "label": "90 g tykkere papir"
         }
       ],
-      "imageUrl": "/products/arbeidstegninger.svg",
+      "imageUrl": "/products/arbeidstegninger.jpg",
       "leadTime": "2–4 virkedager",
       "delivery": {
-        "label": "2–4 virkedager",
-        "fee": 129
+        "label": "2–4 virkedager"
       },
       "pricingMode": "perPiece",
       "minQuantity": 1,
@@ -839,11 +835,10 @@
           "label": "90 g tykkere papir"
         }
       ],
-      "imageUrl": "/products/arbeidstegninger.svg",
+      "imageUrl": "/products/arbeidstegninger.jpg",
       "leadTime": "2–4 virkedager",
       "delivery": {
-        "label": "2–4 virkedager",
-        "fee": 129
+        "label": "2–4 virkedager"
       },
       "pricingMode": "perPiece",
       "minQuantity": 1,
@@ -972,11 +967,10 @@
           "label": "Standard bannerduk"
         }
       ],
-      "imageUrl": "/products/rollup.svg",
+      "imageUrl": "/products/rollup.jpg",
       "leadTime": "5–7 virkedager",
       "delivery": {
-        "label": "5–7 virkedager",
-        "fee": 199
+        "label": "5–7 virkedager"
       },
       "sizes": [
         {
@@ -1009,8 +1003,7 @@
       ],
       "leadTime": "5–8 virkedager",
       "delivery": {
-        "label": "5–8 virkedager",
-        "fee": 149
+        "label": "5–8 virkedager"
       },
       "minQuantity": 20,
       "sizes": [
@@ -1046,8 +1039,7 @@
       "imageUrl": "/products/4-sider.jfif",
       "leadTime": "4–7 virkedager",
       "delivery": {
-        "label": "4–7 virkedager",
-        "fee": 129
+        "label": "4–7 virkedager"
       },
       "minQuantity": 20,
       "sizes": [

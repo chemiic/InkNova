@@ -1,5 +1,10 @@
 import { Logger } from '@nestjs/common';
-import type { Article, DeliverySettings, Product } from '@inknova/shared';
+import {
+  DEFAULT_DELIVERY_SETTINGS,
+  normalizeDeliverySettings,
+  type Article,
+  type Product,
+} from '@inknova/shared';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DatabaseService } from './database.service';
@@ -7,7 +12,7 @@ import type { DatabaseService } from './database.service';
 const logger = new Logger('DatabaseSeed');
 
 /** Bump to re-apply catalog.json prices/images onto an existing DB. */
-export const CATALOG_PRICING_VERSION = 'katalog-2026-10-08-rollup';
+export const CATALOG_PRICING_VERSION = 'katalog-2026-10-09-product-art-v2';
 
 const ARTICLE_SEED: Omit<Article, 'createdAt' | 'updatedAt'>[] = [
   {
@@ -71,7 +76,7 @@ const ARTICLE_SEED: Omit<Article, 'createdAt' | 'updatedAt'>[] = [
 ];
 
 interface CatalogFile {
-  deliveryDefaults?: DeliverySettings | { label: string; fee: number | null };
+  deliveryDefaults?: unknown;
   products: Product[];
 }
 
@@ -82,30 +87,12 @@ export function seedIfEmpty(db: DatabaseService) {
       upsertCatalogProduct(db, product, null);
     }
 
-    const defaults = data.deliveryDefaults;
-    if (defaults) {
-      if ('defaultLabel' in defaults) {
-        db.setDeliverySettings(defaults);
-      } else {
-        db.setDeliverySettings({
-          defaultLabel: defaults.label,
-          defaultFee: defaults.fee,
-        });
-      }
-    } else {
-      db.setDeliverySettings({
-        defaultLabel: '3–5 virkedager',
-        defaultFee: 99,
-      });
-    }
+    db.setDeliverySettings(normalizeDeliverySettings(data.deliveryDefaults));
 
     logger.log(`Seeded ${data.products.length} products from catalog.json`);
     db.setSetting('catalog_pricing_version', CATALOG_PRICING_VERSION);
   } else if (!hasDeliverySettings(db)) {
-    db.setDeliverySettings({
-      defaultLabel: '3–5 virkedager',
-      defaultFee: 99,
-    });
+    db.setDeliverySettings({ ...DEFAULT_DELIVERY_SETTINGS });
   }
 
   syncCatalogPricing(db);

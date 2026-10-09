@@ -1,18 +1,15 @@
-import {
-  VAT_PERCENT,
-  computeOrderTotals,
-  resolveOrderDeliveryFee,
-} from '@inknova/shared'
+import { VAT_PERCENT, computeOrderTotals } from '@inknova/shared'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { DesignPreviewModal } from '@/components/DesignPreviewModal'
+import { FreeShippingHint } from '@/components/FreeShippingHint'
 import { Button } from '@/components/ui/button'
-import { fetchDeliverySettings, fetchProducts } from '@/lib/api'
+import { fetchProducts } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
+import { useDeliveryQuote } from '@/lib/delivery'
 import { getDesignPdf } from '@/lib/designStore'
-import { usePriceDisplay } from '@/lib/priceDisplay'
 import { cn, formatNok } from '@/lib/utils'
 
 function readQty(raw: string, minQty: number, maxQty?: number) {
@@ -32,33 +29,20 @@ export function CartPage() {
   const { t } = useTranslation()
   const { items, total, updateQty, syncCartFromCatalog, removeFromCart } =
     useCart()
-  const { inclVat, formatPrice } = usePriceDisplay()
-
   const [draftQty, setDraftQty] = useState<Record<string, string>>({})
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null)
   const [previewFileName, setPreviewFileName] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState<string | null>(null)
-  const [deliveryFee, setDeliveryFee] = useState(0)
+  const delivery = useDeliveryQuote(items, total)
+  const deliveryFee = delivery?.fee ?? 0
 
   useEffect(() => {
     let cancelled = false
-    void Promise.all([fetchProducts(), fetchDeliverySettings()])
-      .then(([products, delivery]) => {
-        if (cancelled) return
-        syncCartFromCatalog(products)
-        const feesByKey = new Map<string, number | null>()
-        for (const p of products) {
-          feesByKey.set(p.id, p.delivery.fee)
-          feesByKey.set(p.slug, p.delivery.fee)
-        }
-        const fees = items.map(
-          (i) => feesByKey.get(i.productId) ?? feesByKey.get(i.productSlug),
-        )
-        setDeliveryFee(
-          resolveOrderDeliveryFee(fees, delivery.defaultFee),
-        )
+    void fetchProducts()
+      .then((products) => {
+        if (!cancelled) syncCartFromCatalog(products)
       })
       .catch(() => {
         /* keep local cart if catalog unavailable */
@@ -66,7 +50,7 @@ export function CartPage() {
     return () => {
       cancelled = true
     }
-  }, [syncCartFromCatalog, items])
+  }, [syncCartFromCatalog])
 
   const totals = useMemo(
     () => computeOrderTotals(total, deliveryFee),
@@ -186,7 +170,10 @@ export function CartPage() {
                     {t('cart.previewDesign')}
                   </button>
                   <p className="mt-1 text-sm font-medium">
-                    {formatPrice(cartLineTotal(item))}
+                    {formatNok(cartLineTotal(item))}
+                    <span className="ml-1 text-xs font-normal text-ink-muted">
+                      {t('price.exVat')}
+                    </span>
                   </p>
                 </div>
                 <div className="flex flex-col items-start gap-1 sm:items-end">
@@ -269,28 +256,37 @@ export function CartPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-muted">{t('cart.subtotal')}</span>
-              <span>{formatPrice(total)}</span>
+              <span>{formatNok(total)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-ink-muted">{t('cart.shipping')}</span>
-              <span>{formatPrice(deliveryFee)}</span>
-            </div>
-            <div className="flex items-center justify-between border-t border-line pt-4">
-              <span className="text-lg font-semibold">
-                {inclVat ? t('cart.totalInclVat') : t('cart.totalExVat')}
+              <span className="text-ink-muted">
+                {t('cart.shipping')}
+                {delivery?.parcel && (
+                  <> · {t(`cart.parcel.${delivery.parcel}`)}</>
+                )}
               </span>
-              <span className="text-2xl font-bold">
-                {formatNok(inclVat ? totals.totalNok : totals.subtotalExVat)}
+              <span>
+                {delivery?.freeShipping
+                  ? t('cart.freeShipping')
+                  : formatNok(deliveryFee)}
               </span>
             </div>
-            <p className="text-xs text-ink-muted">
-              {inclVat
-                ? t('cart.vatIncluded', {
-                    percent: VAT_PERCENT,
-                    amount: formatNok(totals.vatNok),
-                  })
-                : t('cart.vatHint')}
-            </p>
+            <FreeShippingHint delivery={delivery} />
+            <div className="flex items-center justify-between border-t border-line pt-4 text-sm">
+              <span className="text-ink-muted">{t('checkout.subtotalExVat')}</span>
+              <span>{formatNok(totals.subtotalExVat)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-muted">
+                {t('checkout.vat', { percent: VAT_PERCENT })}
+              </span>
+              <span>{formatNok(totals.vatNok)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-lg font-semibold">{t('checkout.totalInclVat')}</span>
+              <span className="text-2xl font-bold">{formatNok(totals.totalNok)}</span>
+            </div>
+            <p className="text-xs text-ink-muted">{t('checkout.vatNote')}</p>
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

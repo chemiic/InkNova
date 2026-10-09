@@ -13,14 +13,13 @@ import {
   formatOrderReference,
   generateOrderReference,
   paperQuoteAdjustments,
-  resolveOrderDeliveryFee,
+  quoteDelivery,
   tryQuoteLine,
   VAT_PERCENT,
   formatOrgNumber,
   type CheckoutCustomer,
   type CreateOrderResponse,
   type OrderStatusResponse,
-  type Product,
 } from '@inknova/shared';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
@@ -108,14 +107,12 @@ export class OrdersService {
     const byId = new Map(products.map((p) => [p.id, p]));
     const bySlug = new Map(products.map((p) => [p.slug, p]));
 
-    const lineProducts: Product[] = [];
     const pricedItems: StoredLineItem[] = dto.items.map((item, index) => {
       const product =
         byId.get(item.productId) ?? bySlug.get(item.productSlug) ?? null;
       if (!product) {
         throw new BadRequestException(`Unknown product: ${item.productSlug}`);
       }
-      lineProducts.push(product);
       const minQty = effectiveMinQuantity(product.minQuantity);
       const qty = clampQuantity(product.minQuantity, item.qty, {
         maxQuantity: product.maxQuantity,
@@ -170,13 +167,18 @@ export class OrdersService {
     });
 
     const itemsSubtotal = pricedItems.reduce((sum, i) => sum + i.lineTotal, 0);
-    const deliveryDefaults = this.db.getDeliverySettings();
-    const deliveryFee = resolveOrderDeliveryFee(
-      lineProducts.map((p) => p.delivery.fee),
-      deliveryDefaults.defaultFee,
+    const { fee: deliveryFee } = quoteDelivery(
+      dto.items.map((item, index) => ({
+        sizeId: item.sizeId,
+        qty: pricedItems[index]!.qty,
+        widthCm: item.widthCm,
+        heightCm: item.heightCm,
+      })),
+      itemsSubtotal,
+      this.db.getDeliverySettings(),
     );
     const { vatNok, totalNok } = computeOrderTotals(itemsSubtotal, deliveryFee);
-    if (totalNok <= 0) {
+    if (!Number.isFinite(totalNok) || totalNok <= 0) {
       throw new BadRequestException('Order total must be positive');
     }
 

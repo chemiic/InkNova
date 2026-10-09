@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  normalizeDeliverySettings,
   type AdminOrder,
   type AdminOrderItem,
   type AdminOrderSummary,
@@ -351,7 +352,7 @@ export class DatabaseService implements OnModuleInit {
         JSON.stringify(product.sizes),
         product.customSize ? JSON.stringify(product.customSize) : null,
         product.delivery.label,
-        product.delivery.fee,
+        null,
         product.leadTime,
         product.minQuantity ?? null,
         pricingToJson(product),
@@ -431,10 +432,9 @@ export class DatabaseService implements OnModuleInit {
     const row = this.db
       .prepare('SELECT value_json FROM settings WHERE key = ?')
       .get('delivery') as { value_json: string } | undefined;
-    if (!row) {
-      return { defaultLabel: '3–5 virkedager', defaultFee: 99 };
-    }
-    return JSON.parse(row.value_json) as DeliverySettings;
+    return normalizeDeliverySettings(
+      row ? (JSON.parse(row.value_json) as unknown) : null,
+    );
   }
 
   setDeliverySettings(settings: DeliverySettings): DeliverySettings {
@@ -443,7 +443,7 @@ export class DatabaseService implements OnModuleInit {
         `INSERT INTO settings (key, value_json) VALUES (?, ?)
          ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json`,
       )
-      .run('delivery', JSON.stringify(settings));
+      .run('delivery', JSON.stringify(normalizeDeliverySettings(settings)));
     return this.getDeliverySettings();
   }
 
@@ -787,7 +787,6 @@ function rowToProduct(row: ProductRow): Product {
       customSize,
       delivery: {
         label: row.delivery_label,
-        fee: row.delivery_fee,
       },
       leadTime: row.lead_time,
       minQuantity: row.min_quantity ?? undefined,

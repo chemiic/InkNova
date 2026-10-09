@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Professional flyers. Setup and cutting 600 NOK. Double-sided costs twice per piece.",
+      "description": "Professional flyers. Double-sided costs twice per piece.",
       "leadTime": "3–5 business days"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Posters",
-      "description": "Posters – from A3 to A0 and popular sizes. Setup and cutting 600 NOK.",
+      "description": "Posters – from A3 to A0 and popular sizes.",
       "leadTime": "4–6 business days"
     },
     "klistremerker": {
@@ -90,6 +90,8 @@
     "delivery": "Delivery",
     "leadTime": "Lead time",
     "deliveryFee": "Shipping",
+    "deliveryFrom": "From {{amount}} excl. VAT",
+    "freeShippingFrom": "Free shipping over {{amount}} incl. VAT",
     "addToCart": "Add to cart",
     "continueDesign": "Continue to design",
     "uploadOwnFile": "I already have a file",
@@ -105,11 +107,11 @@
     "fromPrice": "From {{price}} {{vat}}",
     "fromPriceMin": "From {{price}} {{vat}} (min. {{count}})",
     "priceForQty": "{{price}} for {{count}}",
-    "lineTotal": "Total for {{count}}: {{total}}",
+    "lineTotal": "Total for {{count}}: {{total}} excl. VAT",
     "moreSizes": "+{{count}}",
     "minOrder": "Minimum order: {{count}}",
     "maxOrder": "Max {{count}}",
-    "setupIncluded": "Incl. setup and cutting {{fee}}",
+    "setupIncludedEx": "Setup and cutting {{fee}} excl. VAT",
     "paperType": "Paper",
     "printSides": "Sides",
     "singleSided": "Single-sided",
@@ -119,9 +121,6 @@
   },
 
   "price": {
-    "toggleLabel": "Show prices",
-    "inclVatShort": "Incl. VAT",
-    "exVatShort": "Excl. VAT",
     "inclVat": "incl. VAT",
     "exVat": "excl. VAT"
   },
@@ -129,13 +128,14 @@
     "title": "Cart",
     "empty": "Your cart is empty.",
     "continue": "Continue shopping",
-    "total": "Total",
-    "totalExVat": "Total excl. VAT",
-    "totalInclVat": "Total incl. VAT",
-    "vatHint": "VAT (25%) is added at checkout.",
-    "vatIncluded": "Includes VAT {{percent}}%: {{amount}}",
     "subtotal": "Items",
     "shipping": "Shipping",
+    "parcel": {
+      "small": "small parcel",
+      "large": "large parcel"
+    },
+    "freeShipping": "Free",
+    "freeShippingRemaining": "Add {{amount}} more (incl. VAT) for free shipping.",
     "checkout": "Go to checkout",
     "checkoutSoon": "Checkout coming soon",
     "remove": "Remove",
@@ -480,7 +480,7 @@
     },
     "prices": {
       "title": "Prices",
-      "p1": "All prices are shown in Norwegian kroner (NOK) and by default include 25% VAT. Business customers can choose to see prices excl. VAT. At checkout you see the subtotal excl. VAT, the VAT and the total before you send the order. We reserve the right to correct obvious pricing errors."
+      "p1": "All prices are shown in Norwegian kroner (NOK). Product prices are listed excl. VAT, with the price incl. 25% VAT shown directly below. In the cart and at checkout you see the subtotal excl. VAT, the VAT and the total before you send the order. We reserve the right to correct obvious pricing errors."
     },
     "order": {
       "title": "Ordering",
@@ -640,7 +640,6 @@
       },
       "necessaryList": [
         "Shopping cart (localStorage)",
-        "Your incl./excl. VAT price display choice (localStorage)",
         "Design PDF before checkout (IndexedDB)",
         "Pending Vipps payment (sessionStorage)",
         "Your cookie consent choice"
@@ -800,10 +799,9 @@
       "maxHeight": "Max. height (cm)",
       "basePrice": "Base price (NOK)",
       "basePriceHint": "Price for custom size",
-      "productDelivery": "Shipping (product)",
-      "productDeliveryHint": "Overrides default shipping. Empty fee = use global default.",
-      "deliveryLabel": "Label",
-      "deliveryFee": "Fee (NOK)"
+      "productDelivery": "Delivery (product)",
+      "productDeliveryHint": "Text shown on the product page. The shipping price is calculated for the whole order under Shipping.",
+      "deliveryLabel": "Label"
     },
     "articles": {
       "title": "Articles",
@@ -920,9 +918,18 @@
     },
     "delivery": {
       "title": "Shipping",
-      "intro": "Default flat fee is used when a product has no own fee. At checkout the highest fee among cart items is charged (otherwise the default).",
+      "intro": "Shipping is calculated for the whole order: small or large parcel. The order becomes a large parcel if any item is long (e.g. A2+ poster or roll-up), or if the total print area in the cart is large. All fees are excl. VAT.",
       "defaultLabel": "Default label",
-      "defaultFee": "Default fee (NOK)",
+      "smallParcelFee": "Small parcel (NOK excl. VAT)",
+      "smallParcelFeeHint": "The customer pays + 25% VAT. Example: 240 excl. VAT = 300 incl. VAT.",
+      "largeParcelFee": "Large parcel (NOK excl. VAT)",
+      "largeParcelFeeHint": "Example: 400 excl. VAT = 500 incl. VAT.",
+      "freeShippingFromInclVat": "Free shipping from (NOK incl. VAT)",
+      "freeShippingFromInclVatHint": "Product total incl. VAT, without shipping. Empty = never free.",
+      "largeParcelMinSideCm": "Large parcel from longest side (cm)",
+      "largeParcelMinSideCmHint": "A3 = 42 cm, A2 = 59.4 cm, roll-up = 200 cm.",
+      "largeParcelMinAreaSqm": "Large parcel from total print area (m²)",
+      "largeParcelMinAreaSqmHint": "Sum of width × height × quantity for all items. 100 A4 ≈ 6.2 m², 100 A5 ≈ 3.1 m².",
       "loadError": "Could not load shipping"
     },
     "homepage": {

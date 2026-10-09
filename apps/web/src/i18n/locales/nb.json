@@ -40,7 +40,7 @@
   "catalog": {
     "flyers": {
       "name": "Flyers",
-      "description": "Profesjonelle flyers. Oppstart og skjæring 600 kr. Tosidig koster dobbelt per stykk.",
+      "description": "Profesjonelle flyers. Tosidig koster dobbelt per stykk.",
       "leadTime": "3–5 virkedager"
     },
     "visittkort": {
@@ -50,7 +50,7 @@
     },
     "plakater": {
       "name": "Plakater",
-      "description": "Plakater – fra A3 til A0 og populære mål. Oppstart og skjæring 600 kr.",
+      "description": "Plakater – fra A3 til A0 og populære mål.",
       "leadTime": "4–6 virkedager"
     },
     "klistremerker": {
@@ -90,6 +90,8 @@
     "delivery": "Levering",
     "leadTime": "Leveringstid",
     "deliveryFee": "Frakt",
+    "deliveryFrom": "Fra {{amount}} eks. mva",
+    "freeShippingFrom": "Gratis frakt over {{amount}} inkl. mva",
     "addToCart": "Legg i handlekurv",
     "continueDesign": "Fortsett til design",
     "uploadOwnFile": "Jeg har allerede en fil",
@@ -105,11 +107,11 @@
     "fromPrice": "Fra {{price}} {{vat}}",
     "fromPriceMin": "Fra {{price}} {{vat}} (min. {{count}} stk)",
     "priceForQty": "{{price}} for {{count}} stk",
-    "lineTotal": "Totalt for {{count}} stk: {{total}}",
+    "lineTotal": "Totalt for {{count}} stk: {{total}} eks. mva",
     "moreSizes": "+{{count}}",
     "minOrder": "Minstebestilling: {{count}} stk",
     "maxOrder": "Maks {{count}} stk",
-    "setupIncluded": "Inkl. oppstart og skjæring {{fee}}",
+    "setupIncludedEx": "Oppstart og skjæring {{fee}} eks. mva",
     "paperType": "Papir",
     "printSides": "Sider",
     "singleSided": "Ensidig",
@@ -119,9 +121,6 @@
   },
 
   "price": {
-    "toggleLabel": "Vis priser",
-    "inclVatShort": "Inkl. mva",
-    "exVatShort": "Eks. mva",
     "inclVat": "inkl. mva",
     "exVat": "eks. mva"
   },
@@ -129,13 +128,14 @@
     "title": "Handlekurv",
     "empty": "Handlekurven er tom.",
     "continue": "Fortsett å handle",
-    "total": "Sum",
-    "totalExVat": "Sum eks. mva",
-    "totalInclVat": "Sum inkl. mva",
-    "vatHint": "MVA (25 %) legges til i kassen.",
-    "vatIncluded": "Herav MVA {{percent}} %: {{amount}}",
     "subtotal": "Varer",
     "shipping": "Frakt",
+    "parcel": {
+      "small": "liten pakke",
+      "large": "stor pakke"
+    },
+    "freeShipping": "Gratis",
+    "freeShippingRemaining": "Handle for {{amount}} til (inkl. mva) for gratis frakt.",
     "checkout": "Gå til kassen",
     "checkoutSoon": "Checkout kommer snart",
     "remove": "Fjern",
@@ -480,7 +480,7 @@
     },
     "prices": {
       "title": "Priser",
-      "p1": "Alle priser vises i norske kroner (NOK) og som standard inkludert 25 % merverdiavgift. Bedriftskunder kan velge å se priser eks. mva. I kassen vises sum eks. mva, MVA og totalbeløp før du sender bestillingen. Vi forbeholder oss retten til å rette åpenbare prisfeil."
+      "p1": "Alle priser vises i norske kroner (NOK). Produktpriser oppgis eks. mva, med pris inkl. 25 % merverdiavgift vist rett under. I handlekurven og kassen vises sum eks. mva, MVA og totalbeløp før du sender bestillingen. Vi forbeholder oss retten til å rette åpenbare prisfeil."
     },
     "order": {
       "title": "Bestilling",
@@ -640,7 +640,6 @@
       },
       "necessaryList": [
         "Handlekurv (localStorage)",
-        "Valg av prisvisning inkl./eks. mva (localStorage)",
         "Design-PDF før kassen (IndexedDB)",
         "Pågående Vipps-betaling (sessionStorage)",
         "Ditt samtykkevalg for informasjonskapsler"
@@ -800,10 +799,9 @@
       "maxHeight": "Maks. høyde (cm)",
       "basePrice": "Grunnpris (NOK)",
       "basePriceHint": "Pris for egendefinert størrelse",
-      "productDelivery": "Frakt (produkt)",
-      "productDeliveryHint": "Overstyrer standardfrakt. Tomt gebyr = bruk global default.",
-      "deliveryLabel": "Etikett",
-      "deliveryFee": "Gebyr (NOK)"
+      "productDelivery": "Levering (produkt)",
+      "productDeliveryHint": "Teksten som vises på produktsiden. Fraktprisen beregnes for hele ordren under Frakt.",
+      "deliveryLabel": "Etikett"
     },
     "articles": {
       "title": "Artikler",
@@ -920,9 +918,18 @@
     },
     "delivery": {
       "title": "Frakt",
-      "intro": "Standard flat fee brukes når produktet ikke har eget gebyr. Ved checkout belastes maks gebyr blant varene i handlekurven (ellers standard).",
+      "intro": "Frakt beregnes for hele ordren: liten eller stor pakke. Ordren blir stor pakke hvis en vare er lang (f.eks. plakat A2+ eller roll-up), eller hvis samlet trykkflate i handlekurven er stor. Alle gebyrer er eks. mva.",
       "defaultLabel": "Standard etikett",
-      "defaultFee": "Standard gebyr (NOK)",
+      "smallParcelFee": "Liten pakke (NOK eks. mva)",
+      "smallParcelFeeHint": "Kunden betaler + 25 % mva. Eksempel: 240 eks. mva = 300 inkl. mva.",
+      "largeParcelFee": "Stor pakke (NOK eks. mva)",
+      "largeParcelFeeHint": "Eksempel: 400 eks. mva = 500 inkl. mva.",
+      "freeShippingFromInclVat": "Gratis frakt fra (NOK inkl. mva)",
+      "freeShippingFromInclVatHint": "Varesum inkl. mva, uten frakt. Tomt = aldri gratis frakt.",
+      "largeParcelMinSideCm": "Stor pakke fra lengste side (cm)",
+      "largeParcelMinSideCmHint": "A3 = 42 cm, A2 = 59,4 cm, roll-up = 200 cm.",
+      "largeParcelMinAreaSqm": "Stor pakke fra samlet trykkflate (m²)",
+      "largeParcelMinAreaSqmHint": "Summen av bredde × høyde × antall for alle varer. 100 A4 ≈ 6,2 m², 100 A5 ≈ 3,1 m².",
       "loadError": "Kunne ikke hente frakt"
     },
     "homepage": {

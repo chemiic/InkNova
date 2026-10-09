@@ -25,6 +25,7 @@ export {
   effectiveMinQuantity,
 } from "./pricing";
 import { effectiveMinQuantity } from "./pricing";
+import { VAT_RATE } from "./vat";
 
 export type MoneyNOK = number;
 
@@ -272,15 +273,60 @@ export function customSizeMinCm(config: CustomSizeConfig): {
 export interface DeliveryInfo {
   /** Short label from API, e.g. "3–5 virkedager" */
   label: string;
-  /** Optional flat delivery fee in NOK; null = included / TBD */
-  fee: MoneyNOK | null;
 }
 
-/** Global flat delivery defaults (admin-editable). */
+export type ParcelSize = "small" | "large";
+
+/** Order-level shipping rules (admin-editable). Fees are ex. MVA. */
 export interface DeliverySettings {
   defaultLabel: string;
-  /** Flat fee in NOK; null = free / TBD */
-  defaultFee: MoneyNOK | null;
+  smallParcelFee: MoneyNOK;
+  largeParcelFee: MoneyNOK;
+  /** Free shipping when products incl. MVA reach this amount; null = never. */
+  freeShippingFromInclVat: MoneyNOK | null;
+  /** A line whose longest side reaches this many cm ships as a large parcel. */
+  largeParcelMinSideCm: number;
+  /** Total printed area (m²) across the cart that makes it a large parcel. */
+  largeParcelMinAreaSqm: number;
+}
+
+export const DEFAULT_DELIVERY_SETTINGS: DeliverySettings = {
+  defaultLabel: "3–5 virkedager",
+  smallParcelFee: 240,
+  largeParcelFee: 400,
+  freeShippingFromInclVat: 3000,
+  largeParcelMinSideCm: 50,
+  largeParcelMinAreaSqm: 15,
+};
+
+function nonNegative(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : undefined;
+}
+
+/** Fill missing fields; also reads the old `{ defaultLabel, defaultFee }` shape. */
+export function normalizeDeliverySettings(raw: unknown): DeliverySettings {
+  const d = DEFAULT_DELIVERY_SETTINGS;
+  if (!raw || typeof raw !== "object") return { ...d };
+  const r = raw as Record<string, unknown>;
+  const freeRaw = r.freeShippingFromInclVat;
+  return {
+    defaultLabel:
+      typeof r.defaultLabel === "string" && r.defaultLabel.trim()
+        ? r.defaultLabel
+        : d.defaultLabel,
+    smallParcelFee: nonNegative(r.smallParcelFee) ?? d.smallParcelFee,
+    largeParcelFee: nonNegative(r.largeParcelFee) ?? d.largeParcelFee,
+    freeShippingFromInclVat:
+      freeRaw === null
+        ? null
+        : (nonNegative(freeRaw) ?? d.freeShippingFromInclVat),
+    largeParcelMinSideCm:
+      nonNegative(r.largeParcelMinSideCm) ?? d.largeParcelMinSideCm,
+    largeParcelMinAreaSqm:
+      nonNegative(r.largeParcelMinAreaSqm) ?? d.largeParcelMinAreaSqm,
+  };
 }
 
 /** Homepage content (admin-editable). */
@@ -370,24 +416,79 @@ export function productGallery(product: Product): string[] {
   return product.imageUrl ? [product.imageUrl] : [];
 }
 
-/**
- * Order shipping = max of product delivery fees in the cart;
- * if all null/missing, use global defaultFee (or 0).
- */
-export function resolveOrderDeliveryFee(
-  productFees: Array<MoneyNOK | null | undefined>,
-  defaultFee: MoneyNOK | null | undefined,
-): MoneyNOK {
-  const fees = productFees.filter(
-    (f): f is number => typeof f === 'number' && Number.isFinite(f) && f >= 0,
-  );
-  if (fees.length > 0) {
-    return Math.max(...fees);
+/** Cart/order line fields that decide the parcel size. */
+export interface DeliveryLine {
+  sizeId: string;
+  qty: number;
+  widthCm?: number;
+  heightCm?: number;
+}
+
+export interface DeliveryQuote {
+  /** ex. MVA */
+  fee: MoneyNOK;
+  parcel: ParcelSize | null;
+  freeShipping: boolean;
+  /** Products incl. MVA still needed for free shipping; null when n/a. */
+  remainingForFreeInclVat: MoneyNOK | null;
+}
+
+function lineDimsCm(line: DeliveryLine): { w: number; h: number } {
+  if (
+    line.sizeId === "custom" &&
+    Number.isFinite(line.widthCm) &&
+    Number.isFinite(line.heightCm)
+  ) {
+    return { w: line.widthCm!, h: line.heightCm! };
   }
-  if (typeof defaultFee === 'number' && Number.isFinite(defaultFee)) {
-    return Math.max(0, defaultFee);
+  const mm = sizeToMm(line.sizeId);
+  return { w: mm.widthMm / 10, h: mm.heightMm / 10 };
+}
+
+/** Large when any line is long (tube/roll-up) or the cart's total print area is big. */
+export function orderParcelSize(
+  lines: DeliveryLine[],
+  settings: DeliverySettings,
+): ParcelSize | null {
+  if (lines.length === 0) return null;
+  let areaSqm = 0;
+  for (const line of lines) {
+    const { w, h } = lineDimsCm(line);
+    if (Math.max(w, h) >= settings.largeParcelMinSideCm) return "large";
+    const qty = Number.isFinite(line.qty) && line.qty > 0 ? line.qty : 0;
+    areaSqm += ((w * h) / 10_000) * qty;
   }
-  return 0;
+  return areaSqm >= settings.largeParcelMinAreaSqm ? "large" : "small";
+}
+
+export function quoteDelivery(
+  lines: DeliveryLine[],
+  itemsSubtotalExVat: MoneyNOK,
+  settings: DeliverySettings,
+): DeliveryQuote {
+  const parcel = orderParcelSize(lines, settings);
+  if (!parcel) {
+    return {
+      fee: 0,
+      parcel: null,
+      freeShipping: false,
+      remainingForFreeInclVat: null,
+    };
+  }
+  const threshold = settings.freeShippingFromInclVat;
+  const itemsInclVat = Math.round(itemsSubtotalExVat * (1 + VAT_RATE));
+  if (threshold != null && itemsInclVat >= threshold) {
+    return { fee: 0, parcel, freeShipping: true, remainingForFreeInclVat: 0 };
+  }
+  const fee =
+    parcel === "large" ? settings.largeParcelFee : settings.smallParcelFee;
+  return {
+    fee,
+    parcel,
+    freeShipping: false,
+    remainingForFreeInclVat:
+      threshold != null ? threshold - itemsInclVat : null,
+  };
 }
 
 export interface ArticleLocalized {

@@ -232,7 +232,11 @@ export class AdminController {
   updateDelivery(@Body() body: DeliverySettingsDto) {
     return this.db.setDeliverySettings({
       defaultLabel: body.defaultLabel,
-      defaultFee: body.defaultFee ?? null,
+      smallParcelFee: body.smallParcelFee,
+      largeParcelFee: body.largeParcelFee,
+      freeShippingFromInclVat: body.freeShippingFromInclVat ?? null,
+      largeParcelMinSideCm: body.largeParcelMinSideCm,
+      largeParcelMinAreaSqm: body.largeParcelMinAreaSqm,
     });
   }
 
@@ -410,7 +414,6 @@ function dtoToProduct(body: UpsertProductDto, id: string): Product {
       : undefined,
     delivery: {
       label: body.delivery.label,
-      fee: body.delivery.fee ?? null,
     },
     leadTime: body.leadTime,
     minQuantity: body.minQuantity ?? undefined,

@@ -2,12 +2,10 @@ import {
   VAT_PERCENT,
   computeOrderTotals,
   normalizeOrgNumber,
-  resolveOrderDeliveryFee,
   type CustomerType,
   type PaymentMethod,
 } from '@inknova/shared'
 import {
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -19,12 +17,14 @@ import {
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { ConsentCheckbox } from '@/components/ConsentCheckbox'
+import { FreeShippingHint } from '@/components/FreeShippingHint'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { fetchDeliverySettings, fetchProducts, submitOrder } from '@/lib/api'
+import { submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
+import { useDeliveryQuote } from '@/lib/delivery'
 import {
   applyNoPostalInput,
   applyNordicPhoneInput,
@@ -39,7 +39,6 @@ import {
 } from '@/lib/checkoutFields'
 import { getDesignPdf } from '@/lib/designStore'
 import { PAYMENT_ENABLED } from '@/lib/features'
-import { usePriceDisplay } from '@/lib/priceDisplay'
 import { cn, formatNok } from '@/lib/utils'
 
 const emptyForm: CheckoutFormState = {
@@ -60,11 +59,7 @@ export function CheckoutPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { items, total, clearCart } = useCart()
-  const { display } = usePriceDisplay()
-  const [form, setForm] = useState<CheckoutFormState>(() => ({
-    ...emptyForm,
-    customerType: display === 'exVat' ? 'business' : 'private',
-  }))
+  const [form, setForm] = useState<CheckoutFormState>(emptyForm)
   // Kept for API compatibility; live Vipps UI is gated by PAYMENT_ENABLED.
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('vipps')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -73,7 +68,8 @@ export function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<CheckoutFieldErrors>({})
-  const [deliveryFee, setDeliveryFee] = useState(0)
+  const delivery = useDeliveryQuote(items, total)
+  const deliveryFee = delivery?.fee ?? 0
   const phoneRef = useRef<HTMLInputElement>(null)
   const postalRef = useRef<HTMLInputElement>(null)
   const orgRef = useRef<HTMLInputElement>(null)
@@ -102,29 +98,6 @@ export function CheckoutPage() {
     orgRef.current.setSelectionRange(pos, pos)
     orgCaretRef.current = null
   }, [form.orgNumber])
-
-  useEffect(() => {
-    let cancelled = false
-    void Promise.all([fetchProducts(), fetchDeliverySettings()])
-      .then(([products, delivery]) => {
-        if (cancelled) return
-        const feesByKey = new Map<string, number | null>()
-        for (const p of products) {
-          feesByKey.set(p.id, p.delivery.fee)
-          feesByKey.set(p.slug, p.delivery.fee)
-        }
-        const fees = items.map(
-          (i) => feesByKey.get(i.productId) ?? feesByKey.get(i.productSlug),
-        )
-        setDeliveryFee(resolveOrderDeliveryFee(fees, delivery.defaultFee))
-      })
-      .catch(() => {
-        /* ignore — server recalculates */
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [items])
 
   const totals = useMemo(
     () => computeOrderTotals(total, deliveryFee),
@@ -348,9 +321,17 @@ export function CheckoutPage() {
             <span>{formatNok(total)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-ink-muted">{t('cart.shipping')}</span>
-            <span>{formatNok(deliveryFee)}</span>
+            <span className="text-ink-muted">
+              {t('cart.shipping')}
+              {delivery?.parcel && <> · {t(`cart.parcel.${delivery.parcel}`)}</>}
+            </span>
+            <span>
+              {delivery?.freeShipping
+                ? t('cart.freeShipping')
+                : formatNok(deliveryFee)}
+            </span>
           </div>
+          <FreeShippingHint delivery={delivery} />
           <div className="flex justify-between border-t border-line pt-2">
             <span className="text-ink-muted">{t('checkout.subtotalExVat')}</span>
             <span>{formatNok(totals.subtotalExVat)}</span>
