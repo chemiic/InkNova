@@ -96,6 +96,7 @@ export function seedIfEmpty(db: DatabaseService) {
   }
 
   syncCatalogPricing(db);
+  clearProductMaxQuantities(db);
 
   if (db.countArticles() === 0) {
     const now = new Date().toISOString();
@@ -171,6 +172,19 @@ function upsertCatalogProduct(
     hidden: product.hidden === true ? true : existing.hidden,
     delivery: existing.delivery,
   });
+}
+
+/** Drop product order caps once. Admin can set a new cap later. */
+function clearProductMaxQuantities(db: DatabaseService) {
+  const flag = 'max_quantity_removed';
+  if (db.getSetting(flag) === '1') return;
+
+  for (const product of db.listProducts()) {
+    if (product.maxQuantity == null) continue;
+    db.upsertProduct({ ...product, maxQuantity: undefined });
+  }
+  db.setSetting(flag, '1');
+  logger.log('Removed product max order quantities');
 }
 
 function hasDeliverySettings(db: DatabaseService): boolean {
