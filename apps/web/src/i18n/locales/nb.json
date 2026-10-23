@@ -520,7 +520,7 @@
   "privacy": {
     "title": "Personvernerklæring",
     "intro": "Denne erklæringen forklarer hvordan InkNova behandler personopplysninger når du bruker nettbutikken, bestiller trykk eller kontakter oss. Vi følger personvernforordningen (GDPR) og norsk personopplysningslov.",
-    "updated": "Sist oppdatert: august 2026",
+    "updated": "Sist oppdatert: oktober 2026",
     "controller": {
       "title": "Behandlingsansvarlig",
       "p1": "Nordlie Invest er behandlingsansvarlig for personopplysningene vi samler inn via nettstedet.",
@@ -550,7 +550,8 @@
         "Avtale (GDPR art. 6 nr. 1 bokstav b): å motta og produsere bestillingen, ta betalt, levere varen og svare på henvendelser knyttet til kjøpet",
         "Rettlig plikt (art. 6 nr. 1 bokstav c): bokføring og regnskap",
         "Samtykke (art. 6 nr. 1 bokstav a): valgfri e-postmarkedsføring og eventuelle ikke-nødvendige informasjonskapsler",
-        "Berettiget interesse (art. 6 nr. 1 bokstav f): å sikre nettstedet, forebygge misbruk og forbedre tjenesten uten å gå på tvers av dine rettigheter"
+        "Berettiget interesse (art. 6 nr. 1 bokstav f): å sikre nettstedet, forebygge misbruk og forbedre tjenesten uten å gå på tvers av dine rettigheter",
+        "Berettiget interesse: én e-post hvis en påbegynt betaling ikke blir fullført, slik at bestillingen kan gjøres ferdig"
       ]
     },
     "recipients": {
@@ -560,7 +561,8 @@
         "Produksjonspartner (Copycat Lillestrøm): navn, leveringsadresse, produkt, antall og trykkfiler",
         "Vipps MobilePay: beløp, ordrehenvisning og nødvendig betalingsinformasjon",
         "E-postleverandør: for ordrebekreftelse, produksjonsmail og kontaktskjema",
-        "Frakt/post: navn og leveringsadresse"
+        "Frakt/post: navn og leveringsadresse",
+        "Google (Analytics eller annonser): bare hvis du samtykker til analyse eller markedsføring"
       ],
       "vipps": "Vipps MobilePay behandler betalingsdata etter sine egne vilkår. Se <vipps>Vipps’ personvernerklæring</vipps>."
     },
@@ -623,17 +625,17 @@
       },
       "analytics": {
         "title": "Analyse",
-        "body": "Hjelper oss å forstå hvordan nettstedet brukes. Vi bruker ikke analyseverktøy før du har gitt samtykke, og kategorien er slått av som standard."
+        "body": "Hjelper oss å forstå hvordan nettstedet brukes, og om et kjøp blir fullført. Etter samtykke laster vi Google Analytics. Vanlige informasjonskapsler er _ga og _ga_*. Kategorien er slått av til du sier ja."
       },
       "marketing": {
         "title": "Markedsføring",
-        "body": "Brukes til å vise eller måle relevant markedsføring. Vi setter ikke slike informasjonskapsler uten samtykke."
+        "body": "Brukes til å måle annonser og til å kunne følge opp et besøk som ikke ble et kjøp, for eksempel via Google Ads. Vi setter ikke slike informasjonskapsler uten samtykke."
       }
     },
     "page": {
       "title": "Informasjonskapsler",
       "intro": "Her forklarer vi hvilken lagring InkNova bruker i nettleseren din, og hvordan du kan styre valgene dine.",
-      "updated": "Sist oppdatert: august 2026",
+      "updated": "Sist oppdatert: oktober 2026",
       "what": {
         "title": "Hva er dette?",
         "p1": "Informasjonskapsler og lignende teknologi (for eksempel localStorage og IndexedDB) er små data som lagres i nettleseren. Etter ekomloven og GDPR skal du få informasjon om dette, og samtykke når lagringen ikke er strengt nødvendig."

@@ -356,6 +356,75 @@ export function previewOrderShippedEmailHtml(siteUrl?: string): string {
   });
 }
 
+export function unpaidOrderEmailHtml(input: {
+  toShop: boolean;
+  reference: string;
+  customer: CheckoutCustomer;
+  items: OrderEmailItem[];
+  deliveryFee: number;
+  vatNok: number;
+  totalNok: number;
+  cartUrl: string;
+  siteUrl?: string;
+  contactEmail?: string;
+}): string {
+  const c = input.customer;
+  const contact = escapeHtml(input.contactEmail ?? 'Kontakt@inknova.no');
+  const cartUrl = escapeHtml(input.cartUrl);
+  const itemRows = input.items.map((item) => [
+    `<strong>${escapeHtml(item.productName)}</strong><br/><span style="color:#6b6560;font-size:13px;">${escapeHtml(item.sizeLabel)}</span>`,
+    String(item.qty),
+    formatNok(item.lineTotal),
+  ]);
+  const who = input.toShop
+    ? kvTable([
+        ['Navn', escapeHtml(c.name)],
+        [
+          'E-post',
+          `<a href="mailto:${escapeHtml(c.email)}" style="color:#1a1a1a;">${escapeHtml(c.email)}</a>`,
+        ],
+        ['Telefon', escapeHtml(c.phone)],
+        ...companyRows(c),
+      ])
+    : '';
+  const intro = input.toShop
+    ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Kunden startet en bestilling, men betalingen ble ikke fullført. Ingenting er trukket, og ordren er ikke sendt til produksjon. Ta kontakt hvis dere vil følge opp.</p>`
+    : [
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Hei ${escapeHtml(c.name)},</p>`,
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Vi registrerte bestillingen din, men betalingen ble ikke fullført. Det er ikke trukket noe beløp, og trykkingen er ikke startet.</p>`,
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#1a1a1a;">Du kan gå tilbake til handlekurven og bestille på nytt: <a href="${cartUrl}" style="color:#1a1a1a;font-weight:600;">${cartUrl}</a></p>`,
+      ].join('');
+
+  const bodyHtml = [
+    intro,
+    who ? sectionTitle('Kunde') : '',
+    who,
+    sectionTitle('Ordre'),
+    kvTable([
+      [
+        'Referanse',
+        `<strong>${escapeHtml(formatOrderReference(input.reference))}</strong>`,
+      ],
+    ]),
+    sectionTitle('Varer'),
+    dataTable(['Produkt', 'Antall', 'Sum eks. mva'], itemRows),
+    totalsBlock(orderTotalsRows(input.deliveryFee, input.vatNok, input.totalNok)),
+    input.toShop
+      ? ''
+      : `<p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;">Har du spørsmål? Svar på denne e-posten eller skriv til <a href="mailto:${contact}" style="color:#1a1a1a;">${contact}</a>.</p>`,
+  ].join('');
+
+  return wrapEmail({
+    kicker: input.toShop ? 'Oppfølging' : 'Bestilling',
+    title: input.toShop ? 'Ufullført kjøp' : 'Betalingen ble ikke fullført',
+    intro: input.toShop
+      ? 'En kunde fullførte ikke betalingen.'
+      : 'Ordren er ikke satt i produksjon.',
+    bodyHtml,
+    siteUrl: input.siteUrl,
+  });
+}
+
 export function previewOrderEmailHtml(siteUrl?: string): string {
   return orderEmailHtml({
     reference: '482917',

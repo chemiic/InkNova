@@ -280,6 +280,16 @@ export class DatabaseService implements OnModuleInit {
         'ALTER TABLE orders ADD COLUMN vat_nok REAL NOT NULL DEFAULT 0',
       );
     }
+    const orderCols = this.db
+      .prepare('PRAGMA table_info(orders)')
+      .all() as { name: string }[];
+    if (!orderCols.some((c) => c.name === 'followup_email_sent')) {
+      this.db.exec(
+        'ALTER TABLE orders ADD COLUMN followup_email_sent INTEGER NOT NULL DEFAULT 0',
+      );
+      // Do not email orders that already existed when follow-up was added.
+      this.db.exec('UPDATE orders SET followup_email_sent = 1');
+    }
   }
 
   countProducts(): number {
@@ -644,6 +654,36 @@ export class DatabaseService implements OnModuleInit {
         totalNok: row.total_nok,
       };
     });
+  }
+
+  listUnpaidOrdersForFollowup(olderThan: number, newerThan: number): string[] {
+    const rows = this.db
+      .prepare(
+        `SELECT reference FROM orders
+         WHERE followup_email_sent = 0
+           AND status IN ('pending_payment', 'failed')
+           AND created_at <= ?
+           AND created_at >= ?`,
+      )
+      .all(olderThan, newerThan) as { reference: string }[];
+    return rows.map((row) => row.reference);
+  }
+
+  markFollowupEmailSent(reference: string): void {
+    this.db
+      .prepare('UPDATE orders SET followup_email_sent = 1 WHERE reference = ?')
+      .run(reference);
+  }
+
+  skipStaleFollowups(olderThan: number): void {
+    this.db
+      .prepare(
+        `UPDATE orders SET followup_email_sent = 1
+         WHERE followup_email_sent = 0
+           AND status IN ('pending_payment', 'failed')
+           AND created_at < ?`,
+      )
+      .run(olderThan);
   }
 
   listOrdersForFileCleanup(): Array<{

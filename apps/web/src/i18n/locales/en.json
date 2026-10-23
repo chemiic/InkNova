@@ -520,7 +520,7 @@
   "privacy": {
     "title": "Privacy policy",
     "intro": "This policy explains how InkNova processes personal data when you use the webshop, order print or contact us. We follow the GDPR and the Norwegian Personal Data Act.",
-    "updated": "Last updated: August 2026",
+    "updated": "Last updated: October 2026",
     "controller": {
       "title": "Controller",
       "p1": "Nordlie Invest is the controller for personal data we collect via the website.",
@@ -550,7 +550,8 @@
         "Contract (GDPR Art. 6(1)(b)): receiving and producing the order, taking payment, delivering the goods and answering purchase-related enquiries",
         "Legal obligation (Art. 6(1)(c)): bookkeeping and accounting",
         "Consent (Art. 6(1)(a)): optional email marketing and any non-essential cookies",
-        "Legitimate interest (Art. 6(1)(f)): securing the site, preventing abuse and improving the service without overriding your rights"
+        "Legitimate interest (Art. 6(1)(f)): securing the site, preventing abuse and improving the service without overriding your rights",
+        "Legitimate interest: one email if a started payment is not completed, so the order can still be finished"
       ]
     },
     "recipients": {
@@ -560,7 +561,8 @@
         "Production partner (Copycat Lillestrøm): name, delivery address, product, quantity and print files",
         "Vipps MobilePay: amount, order reference and necessary payment information",
         "Email provider: for order confirmation, production mail and the contact form",
-        "Postal/shipping: name and delivery address"
+        "Postal/shipping: name and delivery address",
+        "Google (Analytics or ads): only if you consent to analytics or marketing"
       ],
       "vipps": "Vipps MobilePay processes payment data under its own terms. See the <vipps>Vipps privacy policy</vipps>."
     },
@@ -623,17 +625,17 @@
       },
       "analytics": {
         "title": "Analytics",
-        "body": "Helps us understand how the site is used. We do not use analytics tools until you have consented, and this category is off by default."
+        "body": "Helps us understand how the site is used, and whether a purchase is completed. After consent we load Google Analytics. Typical cookies are _ga and _ga_*. This category stays off until you say yes."
       },
       "marketing": {
         "title": "Marketing",
-        "body": "Used to show or measure relevant marketing. We do not set such cookies without consent."
+        "body": "Used to measure ads and to follow up a visit that did not become a purchase, for example via Google Ads. We do not set such cookies without consent."
       }
     },
     "page": {
       "title": "Cookies",
       "intro": "This page explains what storage InkNova uses in your browser, and how you can manage your choices.",
-      "updated": "Last updated: August 2026",
+      "updated": "Last updated: October 2026",
       "what": {
         "title": "What is this?",
         "p1": "Cookies and similar technology (for example localStorage and IndexedDB) are small data stored in the browser. Under the Electronic Communications Act and the GDPR you must be informed, and consent is required when the storage is not strictly necessary."

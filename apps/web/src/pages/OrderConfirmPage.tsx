@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { formatOrderReference } from '@inknova/shared'
 import { Button } from '@/components/ui/button'
+import { trackEvent } from '@/lib/analytics'
 import { confirmOrderPaymentWithRetry, fetchOrderStatus } from '@/lib/api'
 import { useCart } from '@/lib/cart'
 import { PAYMENT_ENABLED } from '@/lib/features'
@@ -20,6 +21,28 @@ export function OrderConfirmPage() {
   const [state, setState] = useState<ViewState>('loading')
   const [totalNok, setTotalNok] = useState<number | null>(null)
   const [orderRef, setOrderRef] = useState(reference)
+  const reported = useRef<'ok' | 'err' | null>(null)
+
+  useEffect(() => {
+    if (reported.current === state) return
+    if (state === 'ok' && orderRef) {
+      reported.current = 'ok'
+      trackEvent('purchase', {
+        transaction_id: orderRef,
+        currency: 'NOK',
+        value: totalNok ?? undefined,
+      })
+      return
+    }
+    if (state === 'err' && reference) {
+      reported.current = 'err'
+      trackEvent('checkout_incomplete', {
+        transaction_id: reference,
+        currency: 'NOK',
+        value: totalNok ?? undefined,
+      })
+    }
+  }, [state, orderRef, reference, totalNok])
 
   useEffect(() => {
     if (!reference) {

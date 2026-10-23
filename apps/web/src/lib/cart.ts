@@ -10,6 +10,7 @@ import {
   type Product,
 } from '@inknova/shared'
 import { useSyncExternalStore } from 'react'
+import { trackEvent } from './analytics'
 import { deleteDesignPdf, deleteDesignPdfs } from './designStore'
 import { createId } from './utils'
 
@@ -147,6 +148,19 @@ export function addToCart(item: Omit<CartItem, 'id'>) {
     items = [...items, { ...nextItem, id: createId() }]
   }
   persist()
+  trackEvent('add_to_cart', {
+    currency: 'NOK',
+    value: quote.lineTotal,
+    items: [
+      {
+        item_id: nextItem.productId,
+        item_name: nextItem.productName,
+        item_variant: nextItem.sizeLabel,
+        quantity: nextItem.qty,
+        price: nextItem.unitPrice,
+      },
+    ],
+  })
 }
 
 export function updateQty(id: string, qty: number) {

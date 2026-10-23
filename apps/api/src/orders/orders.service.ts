@@ -3,6 +3,8 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -26,7 +28,11 @@ import { validateOrReject } from 'class-validator';
 import { CatalogService } from '../catalog/catalog.service';
 import { DatabaseService } from '../database/database.service';
 import { MailService } from '../mail/mail.service';
-import { orderConfirmationEmailHtml, orderEmailHtml } from '../mail/templates';
+import {
+  orderConfirmationEmailHtml,
+  orderEmailHtml,
+  unpaidOrderEmailHtml,
+} from '../mail/templates';
 import { orderReferenceFromVipps } from '../payments/vipps-reference';
 import {
   VippsService,
@@ -39,13 +45,18 @@ import { join } from 'node:path';
 
 const MAX_FILE_BYTES = 40 * 1024 * 1024;
 const MAX_FILES = 20;
+const FOLLOWUP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Injectable()
-export class OrdersService {
+export class OrdersService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OrdersService.name);
   private readonly store = new OrderStore();
   /** Serializes confirm calls so a double return cannot capture twice. */
   private readonly confirmQueue = new Map<string, Promise<void>>();
+  private followupAfterMs = 60 * 60 * 1000;
+  private followupTimer: ReturnType<typeof setInterval> | null = null;
+  private followupStart: ReturnType<typeof setTimeout> | null = null;
+  private followupRunning = false;
 
   constructor(
     private readonly catalog: CatalogService,
@@ -54,6 +65,27 @@ export class OrdersService {
     private readonly vipps: VippsService,
     private readonly config: ConfigService,
   ) {}
+
+  onModuleInit() {
+    const minutes = Number(
+      this.config.get<string>('ORDER_FOLLOWUP_AFTER_MINUTES', '60'),
+    );
+    if (!Number.isFinite(minutes) || minutes <= 0) {
+      this.logger.log('Unpaid-order follow-up is disabled');
+      return;
+    }
+    this.followupAfterMs = minutes * 60 * 1000;
+    const tick = () => {
+      void this.sendDueFollowups();
+    };
+    this.followupStart = setTimeout(tick, 20_000);
+    this.followupTimer = setInterval(tick, 15 * 60 * 1000);
+  }
+
+  onModuleDestroy() {
+    if (this.followupStart) clearTimeout(this.followupStart);
+    if (this.followupTimer) clearInterval(this.followupTimer);
+  }
 
   async create(
     payloadRaw: string,
@@ -742,6 +774,146 @@ export class OrdersService {
       this.logger.error('Copycat mail failed', e);
       throw e;
     }
+  }
+
+  private async sendDueFollowups(): Promise<void> {
+    if (this.followupRunning) return;
+    this.followupRunning = true;
+    try {
+      const now = Date.now();
+      const newerThan = now - FOLLOWUP_WINDOW_MS;
+      const references = this.db.listUnpaidOrdersForFollowup(
+        now - this.followupAfterMs,
+        newerThan,
+      );
+      for (const reference of references) {
+        try {
+          await this.sendUnpaidFollowup(reference);
+        } catch (error) {
+          this.logger.error(`Unpaid follow-up failed for ${reference}`, error);
+        }
+      }
+      this.db.skipStaleFollowups(newerThan);
+    } finally {
+      this.followupRunning = false;
+    }
+  }
+
+  private async sendUnpaidFollowup(reference: string): Promise<void> {
+    const order = this.db.loadPersistedOrder(reference);
+    if (!order) {
+      this.db.markFollowupEmailSent(reference);
+      return;
+    }
+    if (order.status !== 'pending_payment' && order.status !== 'failed') {
+      this.db.markFollowupEmailSent(reference);
+      return;
+    }
+    const email = order.customer.email?.trim();
+    if (!email) {
+      this.logger.warn(`Unpaid order ${reference} has no customer email`);
+      this.db.markFollowupEmailSent(reference);
+      return;
+    }
+
+    const siteUrl = this.config
+      .get<string>(
+        'WEB_ORIGIN',
+        this.config.get<string>('CORS_ORIGIN', 'https://inknova.no'),
+      )
+      .replace(/\/$/, '');
+    const contactEmail =
+      this.config.get<string>('CONTACT_TO') || 'Kontakt@inknova.no';
+    const cartUrl = `${siteUrl}/handlekurv`;
+    const label = formatOrderReference(order.reference);
+    const itemLines = order.items.map(
+      (item) =>
+        `- ${item.productName} (${item.sizeLabel}) × ${item.qty} — ${item.lineTotal} NOK`,
+    );
+    const customerText = [
+      `Hei ${order.customer.name},`,
+      '',
+      'Vi registrerte bestillingen din, men betalingen ble ikke fullført. Det er ikke trukket noe beløp, og trykkingen er ikke startet.',
+      '',
+      `Ordre: ${label}`,
+      ...itemLines,
+      '',
+      `Totalt: ${order.totalNok} NOK`,
+      '',
+      `Du kan gå tilbake til handlekurven og bestille på nytt: ${cartUrl}`,
+      `Har du spørsmål? Skriv til ${contactEmail}.`,
+    ].join('\n');
+
+    await this.mail.send({
+      to: email,
+      replyTo: contactEmail,
+      subject: `Du fullførte ikke bestillingen – ${label}`,
+      text: customerText,
+      html: unpaidOrderEmailHtml({
+        toShop: false,
+        reference: order.reference,
+        customer: order.customer,
+        items: order.items.map((item) => ({
+          productName: item.productName,
+          sizeLabel: item.sizeLabel,
+          qty: item.qty,
+          lineTotal: item.lineTotal,
+          designFileName: item.designFileName,
+        })),
+        deliveryFee: order.deliveryFee,
+        vatNok: order.vatNok,
+        totalNok: order.totalNok,
+        cartUrl,
+        siteUrl,
+        contactEmail,
+      }),
+    });
+
+    const shopText = [
+      'Kunden startet en bestilling, men betalingen ble ikke fullført.',
+      '',
+      `Ordre: ${label}`,
+      `Navn: ${order.customer.name}`,
+      `E-post: ${email}`,
+      `Telefon: ${order.customer.phone}`,
+      ...itemLines,
+      '',
+      `Totalt: ${order.totalNok} NOK`,
+    ].join('\n');
+    try {
+      await this.mail.send({
+        to: contactEmail,
+        replyTo: email,
+        subject: `Ufullført kjøp – ${label} – ${order.customer.name}`,
+        text: shopText,
+        html: unpaidOrderEmailHtml({
+          toShop: true,
+          reference: order.reference,
+          customer: order.customer,
+          items: order.items.map((item) => ({
+            productName: item.productName,
+            sizeLabel: item.sizeLabel,
+            qty: item.qty,
+            lineTotal: item.lineTotal,
+            designFileName: item.designFileName,
+          })),
+          deliveryFee: order.deliveryFee,
+          vatNok: order.vatNok,
+          totalNok: order.totalNok,
+          cartUrl,
+          siteUrl,
+          contactEmail,
+        }),
+      });
+    } catch (error) {
+      this.logger.error(
+        `Shop notice for unpaid order ${reference} failed`,
+        error,
+      );
+    }
+
+    this.db.markFollowupEmailSent(reference);
+    this.logger.log(`Sent unpaid-order follow-up for ${reference}`);
   }
 }
 

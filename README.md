@@ -44,6 +44,13 @@ Or both: `pnpm dev`.
 | `SMTP_PORT` | `587` |
 | `SMTP_USER` / `SMTP_PASS` | mailbox credentials |
 | `CONTACT_TO` | `Kontakt@inknova.no` |
+| `ORDER_FOLLOWUP_AFTER_MINUTES` | One email to the customer and the shop if a Vipps payment is still unpaid. Default `60`. `0` turns it off |
+
+The storefront reads `VITE_*` from the repo-root `.env` at **build** time (`apps/web` `envDir`).
+
+| Variable | Notes |
+|----------|--------|
+| `VITE_GOOGLE_TAG_ID` | GA4 `G-…`, Google tag `GT-…`, Ads `AW-…`, or Tag Manager `GTM-…`. Empty disables the tag. It loads only after cookie consent |
 
 Prices, delivery and lead time come **only** from `GET /api/products` — never hardcode NOK in the UI.
 

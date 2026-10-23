@@ -6,6 +6,7 @@ import {
   type PaymentMethod,
 } from '@inknova/shared'
 import {
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -21,6 +22,7 @@ import { FreeShippingHint } from '@/components/FreeShippingHint'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { trackEvent } from '@/lib/analytics'
 import { submitOrder } from '@/lib/api'
 import { catalogName } from '@/lib/catalogI18n'
 import { cartLineTotal, useCart } from '@/lib/cart'
@@ -103,6 +105,22 @@ export function CheckoutPage() {
     () => computeOrderTotals(total, deliveryFee),
     [total, deliveryFee],
   )
+  const checkoutTracked = useRef(false)
+
+  useEffect(() => {
+    if (checkoutTracked.current || items.length === 0 || !delivery) return
+    checkoutTracked.current = true
+    trackEvent('begin_checkout', {
+      currency: 'NOK',
+      value: totals.totalNok,
+      items: items.map((item) => ({
+        item_id: item.productId,
+        item_name: item.productName,
+        item_variant: item.sizeLabel,
+        quantity: item.qty,
+      })),
+    })
+  }, [items, delivery, totals.totalNok])
 
   const lineSummary = useMemo(
     () =>

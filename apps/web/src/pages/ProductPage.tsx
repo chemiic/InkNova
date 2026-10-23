@@ -15,6 +15,7 @@ import { Seo } from '@/components/Seo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { trackEvent } from '@/lib/analytics'
 import { fetchProduct } from '@/lib/api'
 import { assetUrl } from '@/lib/assetUrl'
 import { catalogCopy } from '@/lib/catalogI18n'
@@ -39,6 +40,15 @@ export function ProductPage() {
   const [doubleSided, setDoubleSided] = useState(false)
   const [paperTypeId, setPaperTypeId] = useState<string | null>(null)
   const [activeImage, setActiveImage] = useState(0)
+
+  useEffect(() => {
+    if (!product) return
+    trackEvent('view_item', {
+      currency: 'NOK',
+      value: startingPrice(product),
+      items: [{ item_id: product.id, item_name: product.name }],
+    })
+  }, [product])
 
   useEffect(() => {
     let cancelled = false

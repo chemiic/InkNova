@@ -1,11 +1,12 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import {
   LegalDocument,
   LegalList,
   LegalP,
   LegalSection,
 } from '@/components/LegalDocument'
-// import { openCookieSettings } from '@/lib/cookieConsent'
+import { openCookieSettings } from '@/lib/cookieConsent'
 
 export function CookiesPage() {
   const { t } = useTranslation()
@@ -35,7 +36,6 @@ export function CookiesPage() {
         <LegalP>{t('cookies.categories.marketing.body')}</LegalP>
       </LegalSection>
 
-      {/* Consent dialog is disabled while the site sets no cookies.
       <LegalSection title={t('cookies.page.manage.title')}>
         <LegalP>
           <Trans
@@ -53,7 +53,6 @@ export function CookiesPage() {
           />
         </LegalP>
       </LegalSection>
-      */}
     </LegalDocument>
   )
 }

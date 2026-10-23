@@ -7,7 +7,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
-// import { openCookieSettings } from '@/lib/cookieConsent'
+import { openCookieSettings } from '@/lib/cookieConsent'
 
 // const socials = [
 //   { href: 'https://facebook.com', label: 'Facebook', Icon: Facebook },
@@ -95,7 +95,6 @@ export function SiteFooter() {
                 {t(`nav.${link.key}`)}
               </Link>
             ))}
-            {/* Cookie settings — re-enable with the consent banner
             <button
               type="button"
               className="text-left text-ink hover:underline"
@@ -103,7 +102,6 @@ export function SiteFooter() {
             >
               {t('nav.cookieSettings')}
             </button>
-            */}
           </div>
           <p className="mt-6 text-xs text-ink-muted">
             © {new Date().getFullYear()} InkNova. {t('footer.rights')}
