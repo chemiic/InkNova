@@ -668,7 +668,7 @@
     "swipeHint": "Sveip horisontalt for å se flere kolonner",
     "nav": {
       "dashboard": "Oversikt",
-      "orders": "Ordrer",
+      "orders": "Ordre",
       "products": "Produkter",
       "articles": "Artikler",
       "delivery": "Frakt",
@@ -838,7 +838,7 @@
       "redo": "Gjør om"
     },
     "orders": {
-      "title": "Ordrer",
+      "title": "Ordre",
       "intro": "Alle innkommende bestillinger. Nye ordrer vises øverst.",
       "empty": "Ingen ordrer ennå.",
       "loadError": "Kunne ikke hente ordrer",
